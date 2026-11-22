@@ -6,6 +6,10 @@
    ========================================================= */
 
 const W = new Proxy({}, { get: (_, type) => (...params) => ({ type, params }) });
+// The ASCII table of capital letters (letter + binary code), pinned on the Mail Room wall (day 2).
+const tableAscii = () => '<div class="table-ascii">' + [...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'].map(l => `<span><b>${l}</b><code>${l.charCodeAt(0).toString(2).padStart(8, '0')}</code></span>`).join('') + '</div>';
+// The numbered alphabet (A = 1 … Z = 26), as a reminder under the seal puzzle (day 20).
+const tableAlphabet = () => '<div class="table-ascii rangs">' + [...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'].map((l, i) => `<span><b>${l}</b><code>${i + 1}</code></span>`).join('') + '</div>';
 const FR = require('./jours');
 const piece = (n) => FR[n - 1].piece;
 const particules = (n) => FR[n - 1].particules;
@@ -28,29 +32,29 @@ const JOURS = [
     ],
     fuite: "My bulbs are shining… I'm melting! Tell the snowmen I'm sorry. Just kidding.",
   },
-  chrono: 900,
-  histoire: `<p>This morning, nobody can get into the workshop: one of Kryos's <b>Keres</b> has replaced the lock with a <b>string of 8 light bulbs</b>, and carved a number in binary on the door with the tip of its icy claws.</p>`,
-  cours: `<p>To write our numbers, we use <b>10 digits</b> (0 to 9), and the <b>place</b> of a digit changes its value. In <code>352</code>, the 3 is worth 300, the 5 is worth 50 and the 2 is worth 2: each place is worth <b>10 times</b> more than the one to its right.</p>
+  histoire: `<p>This morning, nobody can get into the workshop: one of Kryos's <b>Keres</b> has replaced the lock with a <b>string of 8 light bulbs</b>. To open it, you have to switch on the right bulbs… in the language of computers: <b>binary</b>!</p>`,
+  cours: `<p>To write our numbers, we use <b>10 digits</b> (0 to 9), and the <b>place</b> of a digit changes its value. In <code>352</code>, the 3 is worth 300, the 5 is worth 50 and the 2 is worth 2.</p>
 <p>A computer, on the other hand, is full of tiny switches that only have two positions: <b>on</b> or <b>off</b>. So it writes everything with only <b>two digits</b>: <b>1</b> for on, <b>0</b> for off. That's <b>binary</b>.</p>
-<p>With only two digits, each place is worth <b>2 times</b> more than the one to its right: 1, 2, 4, 8, 16, 32, 64, 128. To read a binary number, just <b>add up the places that have a 1</b>:</p>
+<p>Picture a string of 8 light bulbs. Each bulb has a value, and each one is worth <b>double</b> its neighbor on the right: 1, 2, 4, 8, 16, 32, 64, 128. The number written is <b>the total of the bulbs that are on</b>:</p>
 <div class="defilement"><table class="tableau compact">
 <tr><th>128</th><th>64</th><th>32</th><th>16</th><th>8</th><th>4</th><th>2</th><th>1</th><th>Total</th></tr>
 <tr><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td class="allume">1</td><td>0</td><td class="allume">1</td><td>4 + 1 = <b>5</b></td></tr>
+<tr><td>0</td><td>0</td><td>0</td><td>0</td><td class="allume">1</td><td>0</td><td class="allume">1</td><td>0</td><td>8 + 2 = <b>10</b></td></tr>
 <tr><td class="allume">1</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td><b>128</b></td></tr>
-<tr><td class="allume">1</td><td class="allume">1</td><td class="allume">1</td><td class="allume">1</td><td class="allume">1</td><td class="allume">1</td><td class="allume">1</td><td class="allume">1</td><td><b>255</b></td></tr>
 </table></div>
-<p>Why is <code>10000000</code> worth 128? Because only the place worth 128 is on. And <code>11111111</code> = 128 + 64 + 32 + 16 + 8 + 4 + 2 + 1 = <b>255</b>: the biggest number you can write with 8 places.</p>
-<p class="petit">💡 Why double, exactly? If you switch on every place to the right of a place, you always get 1 less than it (1 + 2 + 4 = 7, just before 8). That way, every number from 0 to 255 can be written in <b>exactly one</b> way, with no gaps and no duplicates.</p>`,
+<p><b>To write a number</b>, it's like giving change with coins worth 128, 64, 32, 16, 8, 4, 2 and 1: take the biggest bulb that doesn't go over your number, switch it on, and start again with what's left.</p>
+<p>Example with <b>6</b>: the biggest bulb that doesn't go over 6 is 4. That leaves 6 − 4 = 2: switch on the 2. Nothing left! So 6 = 4 + 2 = <code>00000110</code>.</p>`,
   enigme: `<p>The Ker pinned this note to the workshop door:</p>
-<blockquote class="note">“Last night, I melted some snowmen. Their number is carved on the door, in binary of course: <code class="gros">0 0 0 1 0 0 0 1</code><br>To open it, switch on that number <b>plus</b> the number of boxes in this chalet's Advent calendar. Good luck… you'll need it.” <br><i>— The workshop's Ker</i></blockquote>
-<p>Click the bulbs to switch them on or off, then try to open the door.</p>`,
+<blockquote class="note">“The code for my lock? <b>Christmas Day</b>, simple as that. Well… if Christmas ever comes this year. Hee hee hee!” <br><i>— The workshop's Ker</i></blockquote>
+<p>Christmas Day is <b>25 December</b>. Switch on the bulbs so that their total is <b>25</b>, then try to open the door!</p>
+<div class="rappel">📌 <b>Reminder</b>: from left to right, the bulbs are worth <code>128 · 64 · 32 · 16 · 8 · 4 · 2 · 1</code>. Each bulb that's on adds its value to the total.</div>`,
   widget: W.ampoules(),
   indices: [
-    "First, read the carved number: add up the places where there is a 1 (look at the table in the little lesson). Then count the boxes of the Advent calendar: they are the boxes on the front of the chalet.",
-    "0 0 0 1 0 0 0 1 = 16 + 1 = 17 snowmen. The Advent calendar has 24 boxes: 17 + 24 = 41. Write 41 with the bulbs, starting with the biggest one that doesn't go over.",
+    "Start with the biggest bulb that doesn't go over 25: it's the 16. That leaves 25 − 16 = 9 to find.",
+    "9 = 8 + 1. So switch on the bulbs 16, 8 and 1: 16 + 8 + 1 = 25.",
   ],
-  lecon: `<p>Well done! You first had to <b>read</b> binary, then <b>write</b> it:</p>
-<div class="schema"><code>0 0 0 1 0 0 0 1</code> = 16 + 1 = <b>17</b> melted snowmen<br>17 + 24 boxes = <b>41</b><br><code>0 0 1 0 1 0 0 1</code> = 32 + 8 + 1 = <b>41</b></div>
+  lecon: `<p>Well done! Christmas Day, in binary, is written:</p>
+<div class="schema"><code>0 0 0 1 1 0 0 1</code> = 16 + 8 + 1 = <b>25</b></div>
 <p>Each 0 or 1 is called a <b>bit</b> (short for <i>binary digit</i>). 8 bits make a <b>byte</b>, which can represent 256 values (from 0 to 255). Inside a computer, <b>everything</b> is made of bits: text, photos, music, videos… You'll see it in the next rooms!</p>
 <h4>🌍 In real life</h4>
 <ul>
@@ -75,25 +79,31 @@ const JOURS = [
     ],
     fuite: "My lovely binary mail… read by a human?! I'm sticking a stamp on myself and posting myself far, far away!",
   },
-  chrono: 900,
   histoire: `<p>In the chalet's Mail Room, the Ker breathed on the label printer. Frozen down to its circuits, it no longer prints letters… only <b>0s</b> and <b>1s</b>!</p>`,
-  cours: `<p>You saw it on day 1: a computer can only store <b>numbers</b> (written in binary). So how does it remember letters, like your name?</p>
-<p>It's simple: the whole world agreed on a big <b>lookup table</b> where every character gets a number. When you type a letter, the computer stores its number. When it has to display it, it looks the number up in the table and draws the matching letter.</p>
-<p>It's like a playground secret code where A = 1, B = 2, C = 3… with one difference: in the computer table, the first numbers are already taken by other symbols (space, punctuation, digits…). So the letters start a bit further along, but they always follow the order of the alphabet.</p>
-<p>And in memory, each number is stored… in binary, of course, on 8 bulbs (a <b>byte</b>), just like on day 1. For example, number 5 is written <code>00000101</code> there (4 + 1).</p>`,
-  enigme: `<p>We absolutely need to know which gift is hidden in this parcel. Here is its label:</p>
+  cours: `<p>You saw it on day 1: a computer can only store <b>numbers</b>, written in binary. So how does it remember letters, like your name?</p>
+<p>The whole world agreed on a big lookup table, the <b>ASCII table</b>: every letter gets a code of 8 binary digits (a <b>byte</b>). It's like a playground secret code, shared by every computer on the planet!</p>
+<div class="defilement"><table class="tableau compact">
+<tr><th>Letter</th><th>Number</th><th>Binary code</th></tr>
+<tr><td><b>A</b></td><td>65</td><td><code>01000001</code></td></tr>
+<tr><td><b>B</b></td><td>66</td><td><code>01000010</code></td></tr>
+<tr><td><b>C</b></td><td>67</td><td><code>01000011</code></td></tr>
+<tr><td colspan="3">… and so on, in alphabetical order, all the way to Z</td></tr>
+</table></div>
+<p>To read a word written in binary, cut it into groups of 8 digits: <b>one group = one letter</b>. Then look up each group in the table.</p>
+<p>Example: <code>01000011 · 01000001 · 01000010</code> → C, A, B → <b>CAB</b>.</p>`,
+  enigme: `<p>We absolutely need to know which gift is hidden in this parcel. Here is its label: <b>5 groups of 8 digits, so 5 letters</b>.</p>
 <div class="etiquette-colis binaire">01010010 · 01001111 · 01000010 · 01001111 · 01010100</div>
-<p>On the side of the printer, a sticker half torn off by the Ker says:</p>
-<div class="schema"><code>A = 65 = 01000001</code></div>
-<p>What is the gift?</p>`,
+<p>Luckily, the elves' ASCII table is pinned on the wall of the mail room:</p>
+${tableAscii()}
+<p>Look up each group of the label in the table. <b>What is the gift?</b></p>`,
   reponses: ['1746b0affbe4a8883e44fede0b5d3f7c691c0f93de62516a959119a7466583e2', '481a2a1bc6ecfedc871409b4c92a795186b6ac8e16fa00157e09270ee2247dc0'],
   placeholder: 'The gift…',
   indices: [
-    'Turn each group of 8 digits into a number, like the bulbs on day 1 (128, 64, 32, 16, 8, 4, 2, 1). Then find the matching letter: A = 65, B = 66, C = 67…',
-    '01010010 = 64 + 16 + 2 = 82, and 82 − 65 = 17: it is the letter 17 places after A, the 18th of the alphabet. Tip: every group starts with 010, worth 64; only the last 5 digits change.',
+    'The first group of the label, 01010010, is in the table next to the letter R. Do the same with the other 4 groups.',
+    'R, O, B, O… Only the last letter is missing: look up 01010100 in the table. It\'s a toy that moves all by itself!',
   ],
-  lecon: `<p>You had to decode <b>twice</b>: binary into numbers (82, 79, 66, 79, 84), then numbers into letters: <b>ROBOT</b>.</p>
-<p>Did you notice that every group started with <code>010</code>? Capital letters go from 65 to 90: they all start with 010, and the last 5 digits give their place in the alphabet directly (R = <code>10010</code> = 18, the 18th letter). The people who designed the table did it on purpose!</p>
+  lecon: `<p>You just had to look up each group in the table: <code>01010010</code> = R, <code>01001111</code> = O, <code>01000010</code> = B, <code>01001111</code> = O, <code>01010100</code> = T → <b>ROBOT</b>!</p>
+<p>Did you notice that every group starts with <code>010</code>? For capital letters, the last 5 digits give the letter's place in the alphabet directly: R = <code>10010</code> = 16 + 2 = 18, the 18th letter. The people who designed the table did it on purpose!</p>
 <p>That table giving <b>a number to every character</b> is called an <b>encoding</b>. The most famous one, <b>ASCII</b> (1963), has 128 characters: <code>A</code> = 65, <code>a</code> = 97, a space = 32, the digit <code>0</code> = 48…</p>
 <p>The problem: ASCII was designed for English. No “é”, no “ñ”, and certainly no emojis! Today we use <b>Unicode</b>, which numbers nearly <b>160,000 characters</b> from every language in the world. The Christmas tree 🎄 is number <code>U+1F384</code>.</p>
 <h4>🌍 In real life</h4>
@@ -113,35 +123,34 @@ const JOURS = [
   emoji: '📜',
   concept: 'Encryption (Caesar cipher)',
   givrin: {
-    ricane: "Two keys, one child's letter, zero hope. I adore wishes that never come true.",
+    ricane: "One wheel, one child's letter, zero hope. I adore wishes that never come true.",
     piques: [
       "Wrong. That kid's getting socks. Your fault.",
-      "Spin, spin my pretty wheels… and go round in circles.",
+      "Spin, spin my pretty wheel… and go round in circles.",
       "Even Caesar would give up. Then again, he ended up stabbed: he was used to nasty surprises.",
     ],
-    fuite: "Both my keys, shattered like glass! I'm off to the cellar to encrypt my will.",
+    fuite: "My wheel, shattered like glass! I'm off to the cellar to encrypt my will.",
   },
-  chrono: 900,
-  histoire: `<p>In the Letter Attic, between two old trunks, a child's letter was found… but the attic's <b>Ker</b> has <b>encrypted</b> it. It knows the Caesar cipher, and it knows that cipher breaks in 25 tries. So it was craftier: it used <b>two keys</b>, taking turns!</p>`,
+  histoire: `<p>In the Letter Attic, between two old trunks, a child's letter to Santa was found… but the attic's <b>Ker</b> has <b>encrypted</b> it with the Caesar cipher: every letter moved forward by the same number of steps in the alphabet. Nobody can read it anymore!</p>`,
   cours: `<p>To <b>encrypt</b> a message is to transform it so that only people who know the secret can read it again. That secret is called the <b>key</b>.</p>
 <p>The Ker's method is one of the oldest: you move every letter forward in the alphabet by the same number of steps. With a key of 3:</p>
 <div class="schema"><code>A → D &nbsp; B → E &nbsp; C → F &nbsp; … &nbsp; X → A &nbsp; Y → B &nbsp; Z → C</code></div>
 <p>When you reach Z, you go back to the start of the alphabet, like on a <b>wheel</b>. With this key, <code>NOEL</code> becomes <code>QRHO</code>.</p>
 <p>To <b>decrypt</b>, you go the other way: you move every letter back by the same number of steps.</p>
-<p>A crafty Ker can also use <b>two keys</b>, taking turns: the 1st letter with the first key, the 2nd with the second, the 3rd with the first again… (only letters count). With keys 1 and 2, <code>NOEL</code> becomes <code>OQFN</code>. To decrypt, you need to find <b>both</b> keys… and this time, you don't know them.</p>`,
-  enigme: `<p>The 1st letter was shifted with the <b>gold key</b>, the 2nd with the <b>silver key</b>, the 3rd with the gold one again, and so on (only letters count, not spaces or punctuation).</p>
-<p>Set both wheels to recover the message. <b>Which gift did the child ask for?</b></p>`,
-  widget: W.cesar('LDIQ AZVSI, SPHA XMZZ H ENCKL KWUM ZV DTDKSZHK FCHBZZ SW OTZG QWBS HV LG AMCZNWL. BGIMS XWT! TNC', 2),
+<p>And if you don't know the key? You can try all 25 keys one by one… or be clever: if you can guess <b>a single word</b> of the message, you find the key straight away!</p>`,
+  enigme: `<p>Here is the letter the Ker encrypted. Good news: we know how letters to Santa begin!</p>
+<blockquote class="note">💡 The first word of the letter is <b>DEAR</b>. So the first encrypted L must turn back into a <b>D</b>.</blockquote>
+<p>Turn the wheel until the first word becomes <b>DEAR</b>: the whole message will appear. <b>Which gift did the child ask for?</b></p>`,
+  widget: W.cesar('LMIZ AIVBI, BPQA GMIZ Q EWCTL TWDM IV MTMKBZQK OCQBIZ BW XTIG ZWKS QV UG JMLZWWU. BPIVS GWC! TWC', 1),
   reponses: ['9931f63314743ab42b1fe91e4ac33bf733eeae407b156f39e5e7146f64668cc9', '25e56a0f2c22de9d8a74118a735bc9b14a057e9aa2a1474c4acc83f09df58067', 'a90c1a0b7a6bae5991b1fc1505ee58e14b68e84fa803ac0163288ec08ccb49fb', '92953085cc639c756a52d65a0d2e5a99be816c17a4818ff319a216fd9809ccf8'],
   placeholder: 'The gift asked for…',
   indices: [
-    'One wheel at a time: set the gold wheel until the gold letters at the start look like English, ignoring the silver ones. Then do the same with the silver wheel.',
-    'Every letter to Santa starts with “DEAR SANTA”! The 1st encrypted letter, L, must turn back into D (gold wheel); the 2nd, D, must turn back into E (silver wheel).',
+    'The first encrypted word is LMIZ. Turn the wheel until it becomes DEAR: the L must turn back into D.',
+    'You have to move every letter back by 8 steps, like Santa\'s 8 reindeer! The gift is written right after “I WOULD LOVE AN”.',
   ],
-  lecon: `<p>The keys were <b>8</b> (like the reindeer pulling the sleigh) for the gold letters and <b>25</b> for the silver ones. Encrypting with several keys in turn is the idea behind the <b>Vigenère cipher</b> (1586), nicknamed “the indecipherable cipher” for nearly 300 years!</p>
-<p>With a single key, there are only 25 tries. With two, there are 25 × 25 = <b>625</b>. And with a 10-letter key, nearly <b>100 trillion</b>: far too many to try by hand.</p>
+  lecon: `<p>The key was <b>8</b>, like the reindeer pulling the sleigh! With the Caesar cipher there are only <b>25</b> possible keys: you can try them all in a few minutes. So people invented something better: the <b>Vigenère cipher</b> (1586) uses several keys in turn. It was nicknamed “the indecipherable cipher” for nearly 300 years!</p>
 <h4>🕵️ How did you crack it?</h4>
-<p>Thanks to a mistake by the Ker: every letter to Santa starts with “DEAR SANTA”. Knowing a piece of the message lets you find the keys one by one: that's a <b>known-plaintext attack</b>. That's how Alan Turing and his team broke the German <b>Enigma</b> machine during the Second World War: many messages started with the weather report!</p>
+<p>Thanks to a mistake by the Ker: every letter to Santa starts with “DEAR”. Knowing a piece of the message lets you find the key: that's a <b>known-plaintext attack</b>. That's how Alan Turing and his team broke the German <b>Enigma</b> machine during the Second World War: many messages started with the weather report!</p>
 <p>Modern ciphers (like <b>AES</b>, which protects your messages and payments) resist this kind of attack, with keys that have 2<sup>256</sup> possibilities: a 78-digit number.</p>
 <h4>🌍 In real life</h4>
 <ul>
@@ -156,9 +165,9 @@ const JOURS = [
   jour: 4, piece: piece(4), particules: particules(4), couleurs: couleurs(4),
   univers: 'The Paint Workshop',
   emoji: '🎨',
-  concept: 'Pixels and colors (RGB, hexadecimal)',
+  concept: 'Pixels and colors (RGB)',
   givrin: {
-    ricane: "I've switched the machine to negative. Your tree will come out candy pink, and your snow… black as my soul.",
+    ricane: "I've drained all the colors out of the machine. Your tree will be grey, your snow grey, and your Christmas… grey as my soul.",
     piques: [
       "Wrong! Another ruined bauble: I'm keeping it for my collection of horrors.",
       "You mix colours like a colour-blind elf. Mind you, they're all frozen now: they can't see a thing.",
@@ -166,38 +175,37 @@ const JOURS = [
     ],
     fuite: "Too many colours! My eyes! I'm going back to the polar night, at least it's black…",
   },
-  chrono: 900,
-  histoire: `<p>In the Paint Workshop, the Ker has tampered with the machine that paints the tree's baubles: now it paints everything <b>in negative</b>! Each lamp does the opposite of what you ask.</p>`,
-  cours: `<p>Look at your screen very closely (even better with a magnifying glass): it's made of millions of tiny dots, called <b>pixels</b>. Each pixel contains <b>3 tiny lamps</b>: a <span class="r">red</span> one, a <span class="g">green</span> one and a <span class="b">blue</span> one. By setting how bright each one is, the screen makes every color.</p>
-<p>⚠️ Here we're mixing <b>light</b>, not paint: the rules aren't the ones from your paint box! For example, all 3 lamps at full power make <b>white</b>, and all 3 lamps off make <b>black</b>.</p>
-<p>To set each lamp, the computer uses 2 characters written in <b>hexadecimal</b>: a way of counting with <b>16 digits</b> instead of 10. After 9, since there are no more digits, it carries on with letters:</p>
-<div class="schema"><code>0 1 2 3 4 5 6 7 8 9 A B C D E F</code><br><span class="petit">A is 10, B is 11… and F is 15</span></div>
-<p>No need to calculate: just remember that <code>00</code> = lamp <b>off</b>, <code>80</code> = lamp at <b>half power</b> and <code>FF</code> = lamp at <b>full power</b> (it's the biggest 2-character number, like 99 for us).</p>
-<p><b>Taking a pair away from FF</b> is very easy: replace each digit with “F minus that digit”, counting along the list above. Example: FF − <code>3A</code> = <code>C5</code>, because F − 3 = C (15 − 3 = 12) and F − A = 5 (15 − 10 = 5).</p>
-<p>A color code sticks the settings of the 3 lamps together, always in the order <span class="r">red</span>, <span class="g">green</span>, <span class="b">blue</span>. Example: <code>#0000FF</code> = red off, green off, blue at full power → pure blue.</p>`,
-  enigme: `<p>The elves had left some instructions… and the Ker added to them:</p>
-<div class="note">
-<p>📘 <b>Machine instructions</b></p>
-<p>A color code = <b>3 pairs</b> of characters: <span class="r">Red</span>, <span class="g">Green</span>, <span class="b">Blue</span>. Each pair goes from <code>00</code> (light off) to <code>FF</code> (light at full power). The machine mixes <b>light</b>, not paint.</p>
-<p>✏️ <i>New setting: every pair is inverted. The machine paints <b>FF minus</b> what you type. You type <code>00</code> → it paints <code>FF</code>. You type <code>FF</code> → it paints <code>00</code>. Icy kisses. — The Ker</i></p>
-</div>
-<p>Urgent order: an <b>ORANGE</b> bauble for the tree, which means <span class="r">red at full power</span>, <span class="g">green at half power</span> (<code>80</code>) and <span class="b">blue off</span>. Which code must you type so that the machine really paints it?</p>`,
-  widget: W.couleur(true),
-  reponses: ['11d9c66df32acc61307a1733c8b7894db9469a3f448a585da7510f6b334496c2'],
+  histoire: `<p>In the Paint Workshop, the Ker has wiped every setting of the machine that paints the tree baubles: they all come out <b>grey</b>! To restart it, you have to give it the right <b>color code</b>.</p>`,
+  cours: `<p>Look at your screen up close (with a magnifying glass, it's even better): it's made of millions of tiny dots, the <b>pixels</b>. Each pixel holds <b>3 tiny lamps</b>: a <span class="r">red</span> one, a <span class="g">green</span> one and a <span class="b">blue</span> one. By turning them up or down, the screen makes every color.</p>
+<p>⚠️ Here we're mixing <b>light</b>, not paint: the rules aren't the ones from your poster paints! Here's what you get with the lamps at full power:</p>
+<div class="defilement"><table class="tableau compact">
+<tr><th>Lamps on</th><th>Color you get</th></tr>
+<tr><td><span class="r">red</span> + <span class="g">green</span></td><td>🟡 <b>yellow</b></td></tr>
+<tr><td><span class="r">red</span> + <span class="b">blue</span></td><td>🟣 <b>magenta</b> (pinky purple)</td></tr>
+<tr><td><span class="g">green</span> + <span class="b">blue</span></td><td>🩵 <b>cyan</b> (sky blue)</td></tr>
+<tr><td>all three</td><td>⚪ <b>white</b></td></tr>
+<tr><td>none</td><td>⚫ <b>black</b></td></tr>
+</table></div>
+<p>To set the lamps, the computer uses a <b>color code</b> of 3 pairs of characters, always in the order <span class="r">red</span>, <span class="g">green</span>, <span class="b">blue</span>. No need to calculate: <code>00</code> = lamp <b>off</b> and <code>FF</code> = lamp at <b>full power</b>.</p>
+<p>Examples: <code>#0000FF</code> = red off, green off, blue at full power → <b>blue</b>. And <code>#FF00FF</code> = red at full power, green off, blue at full power → <b>magenta</b>.</p>`,
+  enigme: `<p>Today's order is pinned on the machine:</p>
+<blockquote class="note">🎄 “A nice shiny <b>YELLOW</b> bauble for the top of the tree!” <br><i>— The decorator elves</i></blockquote>
+<div class="rappel">📌 <b>Reminder</b>: a color code = 3 pairs, in the order <span class="r">Red</span>, <span class="g">Green</span>, <span class="b">Blue</span>. <code>00</code> = lamp off, <code>FF</code> = lamp at full power.</div>
+<p>Type a code in the box: the test bauble takes on the color live. <b>Which code makes a yellow bauble?</b></p>`,
+  widget: W.couleur(),
+  reponses: ['67bc6c9e0281772c053b894fec941c34e8e09f1a25c618442013a3114b28d6b9', '566f54f819dabdb3f4c66f13bee24db3df0b00a635270a90077e4c8a530512e4'],
   placeholder: '#RRGGBB',
   indices: [
-    'First write the code of the orange you want (red FF, green 80, blue 00), then invert each pair. Check with the test bauble: it shows what the machine really paints.',
-    'To invert a pair, replace each digit with F minus that digit: F → 0, 8 → 7, 0 → F. So FF → 00, 80 → 7F, 00 → FF.',
+    'Look at the table in the little lesson: with light, yellow comes from switching on red and green.',
+    'Red at full power (FF), green at full power (FF), blue off (00): the code is #FFFF00.',
   ],
-  lecon: `<p>You had to type <code>#007FFF</code>: the tampered machine paints FF − 00 = <span class="r">FF</span>, FF − 7F = <span class="g">80</span> and FF − FF = <span class="b">00</span>… which is the orange <code>#FF8000</code> that was ordered!</p>
-<p>The inverse of a color is called its <b>negative</b>, like on old photo film: orange turns sky blue, green turns pink. Every drawing program has an “Invert colors” button that does exactly this calculation.</p>
-<p>When you mix light, red + green = <b>yellow</b>, and red + a little green = <b>orange</b>! (With paint, you'd get something brownish: light mixing is <i>additive</i>, paint mixing is <i>subtractive</i>.) This 3-lamp system is called <b>RGB</b>.</p>
-<p>Each lamp has 256 levels (one byte, like on day 1!). In hexadecimal, the first character counts “bundles of 16”: <code>FF</code> = 15 × 16 + 15 = <b>255</b>, <code>80</code> = 8 × 16 = 128 and <code>7F</code> = 7 × 16 + 15 = 127. And 128 + 127 = 255: a pair and its negative always add up to FF.</p>
-<p>256 × 256 × 256 = <b>16,777,216</b> possible colors!</p>
+  lecon: `<p>You had to type <code>#FFFF00</code>: <span class="r">red at full power</span>, <span class="g">green at full power</span>, <span class="b">blue off</span>. Surprising, isn't it? With paint, red + green would make brown; with light, it makes <b>yellow</b>!</p>
+<p>It's called <b>additive</b> mixing for light (you add lights: it gets brighter, all the way to white) and <b>subtractive</b> mixing for paint (you mix pigments: it gets darker). This 3-lamp system is called <b>RGB</b>.</p>
+<p>The codes are written in <b>hexadecimal</b>: you count with 16 digits, 0 to 9 then A, B, C, D, E, F. <code>FF</code> is worth 255, the biggest number with 2 characters (like 99 for us). So each lamp has 256 levels, one byte just like on day 1! And 256 × 256 × 256 = <b>16,777,216</b> possible colors.</p>
 <h4>🌍 In real life</h4>
 <ul>
 <li>Every website uses these codes: the gold of this page's star is written <code>#F5C542</code> in its code.</li>
-<li>Hold a magnifying glass (or a drop of water) close to a screen: you'll see the little red, green and blue lights!</li>
+<li>Hold a magnifying glass (or a drop of water) up to a screen: you'll see the little red, green and blue lights!</li>
 </ul>`,
   fragment: [2, '01010101'],
 },
@@ -209,40 +217,37 @@ const JOURS = [
   emoji: '🔒',
   concept: 'Logic and logic gates',
   givrin: {
-    ricane: "Five switches, one circuit, and me in the middle. Touch the wrong wire and we'll laugh. Mostly me.",
+    ricane: "Three switches, one circuit, and me in the middle. Touch the wrong wire and we'll laugh. Mostly me.",
     piques: [
       "Bzzzt! Wrong. Can you smell burning? That's your reasoning.",
       "NOT, NOT and NOT again. It's my favourite logic gate.",
-      "Keep trying at random. A monkey would get there too… in a few million years.",
+      "Keep trying at random. A monkey would get there too… someday.",
     ],
     fuite: "The current's flowing?! Stop, it tickles… it sizzles… I'm short-circuiting!",
   },
-  chrono: 900,
-  histoire: `<p>In the basement, the armoured door of the Toy Storeroom is protected by an <b>electronic circuit</b>. The Ker has rewired it: now <b>five switches</b> (A to E) send current through <b>five logic gates</b>. All five must be on at the same time for the star to light up and the door to open.</p>`,
+  histoire: `<p>In the basement, the armored door of the Toy Storeroom is protected by an <b>electronic circuit</b>. The Ker has rewired it: <b>three switches</b> (A, B and C) send current into <b>three logic gates</b>. All three must light up at the same time for the star to shine and the door to open.</p>`,
   cours: `<p>To make decisions, a computer uses billions of <b>logic gates</b>. A logic gate receives one or two signals, each one <b>on (1)</b> or <b>off (0)</b>, and lets only one signal out, following a very simple rule. You already use these rules every day without knowing it:</p>
 <div class="defilement"><table class="tableau">
 <tr><th>Gate</th><th>It's on if…</th><th>In everyday life</th></tr>
 <tr><td><b>AND</b></td><td class="gauche"><b>both</b> inputs are on</td><td class="gauche">I have my ticket AND the bus is here → I get on.</td></tr>
 <tr><td><b>OR</b></td><td class="gauche"><b>at least one</b> input is on (or both)</td><td class="gauche">Someone rings at the front door OR the back door → the bell rings.</td></tr>
-<tr><td><b>NOT</b></td><td class="gauche">its input is <b>off</b>: it does the opposite</td><td class="gauche">It's NOT daytime → the night light comes on.</td></tr>
-<tr><td><b>XOR</b></td><td class="gauche"><b>exactly one</b> of the two inputs is on (not both)</td><td class="gauche">On the menu: cheese OR dessert, but not both!</td></tr>
+<tr><td><b>NOT</b></td><td class="gauche">its input is <b>off</b>: it does the opposite</td><td class="gauche">It is NOT daytime → the night light comes on.</td></tr>
 </table></div>
-<p>Just like in maths, you work out what's <b>in brackets</b> first: in <code>(NOT A) OR C</code>, you look at NOT A first, then do the OR with C.</p>`,
-  enigme: `<p>Find the <b>only</b> position of the switches that turns on all five gates. There are 32 possible positions: <b>reason it out</b> instead of trying them all, a real engineer reads the circuit! Tip: start with the gate that tells you the most.</p>`,
+<p>Example: the gate <code>A AND B</code> only lights up if switch A <b>and</b> switch B are both on.</p>`,
+  enigme: `<p>Light up all <b>three gates</b> at the same time to switch the star back on! Read each gate carefully: it tells you which switches must be on… or off.</p>`,
   widget: W.portes(),
   indices: [
-    'Start with P2: it contains “NOT D”, so D must be off. With D off, what do you need to switch on P4?',
-    'D = 0 forces E = 1 (for P4). P5 then forbids A being on: A = 0. So for P2 you need C = 1. Only B is left, and P3 decides it.',
+    'P1 (A AND B) only lights up if A and B are both on. And P2 (NOT C) wants C to be off.',
+    'A on, B on, C off: P1, P2 and P3 all light up!',
   ],
-  lecon: `<p>The solution was <b>A = 0, B = 0, C = 1, D = 0, E = 1</b>… the only one out of 32 possible positions! The reasoning: P2 requires D = 0; then P4 needs E = 1; P5 forbids switching on A together with E, so A = 0; P2 then asks for C = 1; finally P3 wants B to be different from C: B = 0.</p>
-<p>You worked like a real engineer: start from what is <b>certain</b>, then draw the consequences one by one. That's called <b>deduction</b>.</p>
-<p>AND, OR and NOT are called <b>logic gates</b>. They follow <b>Boolean algebra</b>, invented by George Boole in 1854… almost 100 years before the first computer!</p>
-<p>Inside a processor, each gate is built from <b>transistors</b>: tiny switches controlled by electricity. By combining gates, you can build a circuit that adds two binary numbers, then a calculator, then… a whole computer.</p>
+  lecon: `<p>The solution was <b>A = 1, B = 1, C = 0</b>. P1 (an AND gate) needed A and B on; P2 (a NOT gate) needed C off; and P3 (an OR gate) was happy with B on.</p>
+<p>The AND, OR and NOT gates follow <b>Boolean algebra</b>, invented by George Boole in 1854… almost 100 years before the first computer!</p>
+<p>In a processor, each gate is built from <b>transistors</b>: tiny switches controlled by electricity. By combining gates, you build a circuit that adds two binary numbers, then a calculator, then… a whole computer.</p>
 <h4>🌍 In real life</h4>
 <ul>
-<li>Your phone's processor contains <b>billions of transistors</b>, each smaller than a virus.</li>
-<li>The same words are used to search the web or a database: “cats AND dogs”, “NOT expensive”…</li>
-<li>In Minecraft, “redstone” lets you build real logic gates… and even entire computers!</li>
+<li>Your phone's processor contains <b>billions of transistors</b>, each one smaller than a virus.</li>
+<li>The same words work for searching the Internet or a database: “cats AND dogs”, “NOT expensive”…</li>
+<li>In Minecraft, “redstone” lets you build real logic gates… and even whole computers!</li>
 </ul>`,
   fragment: [11, '01000111'],
 },
@@ -254,7 +259,7 @@ const JOURS = [
   emoji: '🎁',
   concept: 'Sorting algorithms',
   givrin: {
-    ricane: "I've siphoned off the sleigh's fuel. There's exactly enough left for a genius. Not for you.",
+    ricane: "I've siphoned off the sleigh's fuel. There's just enough left for someone clever. Not for you.",
     piques: [
       "Out of fuel! The sleigh stays in the garage and the children cry. Delicious.",
       "You swap parcels the way you'd shuffle cards: at random, and losing.",
@@ -262,29 +267,27 @@ const JOURS = [
     ],
     fuite: "All sorted with fuel to spare?! I'm off, before you pack me in a box too!",
   },
-  chrono: 900,
-  histoire: `<p>In the Sleigh Garage, the gifts must be loaded <b>from lightest to heaviest</b>. But the conveyor belt is half frozen: the only thing you can do is <b>swap two neighboring parcels</b>. And every swap burns precious sleigh fuel…</p>`,
-  cours: `<p>An <b>algorithm</b> is a <b>precise method</b>, step by step, for solving a problem. A cooking recipe or the instructions for flat-pack furniture are algorithms!</p>
-<p>There are often several methods that give the same result… but some are much faster than others. So computer scientists are always looking for the one that needs <b>as few operations as possible</b>.</p>
-<p>Here, only one operation is allowed: <b>swapping two neighboring parcels</b>, with the <b>⇄</b> button between them. Every swap costs fuel: think before you click!</p>`,
-  enigme: `<p>Sort the parcels from lightest (left) to heaviest (right) in <b>14 swaps maximum</b>: that's the minimum possible, not one more! Careful: the Ker has slipped two parcels that weigh <b>exactly the same</b> into the row…</p>`,
+  histoire: `<p>In the Sleigh Garage, the gifts must be loaded onto the sleigh <b>from lightest to heaviest</b>. But the conveyor belt is half frozen: the only thing you can do is <b>swap two neighboring parcels</b>. And every swap uses up precious sleigh fuel…</p>`,
+  cours: `<p>An <b>algorithm</b> is a <b>precise method</b>, step by step, for solving a problem. A recipe or the instructions for flat-pack furniture are algorithms!</p>
+<p>To sort things from smallest to biggest, there's a very simple method called <b>bubble sort</b>: you go along the row from left to right, and whenever two neighbors are in the wrong order, you swap them. The biggest one then “rises” all the way to the end, like a bubble in lemonade. Then you start again with the others.</p>
+<p>Example with 3 parcels <code>3 kg · 1 kg · 2 kg</code>: swap 3 and 1 → <code>1 · 3 · 2</code>, then 3 and 2 → <code>1 · 2 · 3</code>. Sorted in 2 swaps!</p>
+<p>Here, only one move is allowed: <b>swapping two neighboring parcels</b>, with the <b>⇄</b> button between them.</p>`,
+  enigme: `<p>Sort the parcels from lightest (left) to heaviest (right). There's fuel left for <b>12 swaps</b>: no need to be perfect, but avoid useless swaps!</p>`,
   widget: W.tri([
-    { emoji: '🧸', poids: 5 }, { emoji: '🎈', poids: 2 }, { emoji: '🚂', poids: 7 }, { emoji: '📚', poids: 3 },
-    { emoji: '🛷', poids: 8 }, { emoji: '🎁', poids: 3 }, { emoji: '🪀', poids: 1 }, { emoji: '🎸', poids: 6 },
-  ], 14),
+    { emoji: '🧸', poids: 4 }, { emoji: '🎈', poids: 1 }, { emoji: '🚂', poids: 6 },
+    { emoji: '📚', poids: 3 }, { emoji: '🛷', poids: 5 }, { emoji: '🎁', poids: 2 },
+  ], 12),
   indices: [
-    'Before clicking, count the pairs in the wrong order (a heavier parcel somewhere to the left of a lighter one): that is the minimum number of swaps. Never swap two parcels that are already in order… nor two parcels of the same weight!',
-    'Bubble sort: go along the row from left to right and swap every pair where the heavier one is on the left. The heaviest “bubbles up” to the end. Then start again, never swapping the two 3 kg parcels with each other.',
+    'Start by moving the heaviest one (the train, 6 kg) all the way to the right: swap it with its right-hand neighbor, again and again.',
+    'Then do the same with the next one (the sled, 5 kg), and so on. Never swap two parcels that are already in the right order!',
   ],
-  lecon: `<p>You've just used <b>bubble sort</b>: the heavy parcels “bubble up” to the right like bubbles in lemonade.</p>
-<p>Why 14 swaps? There were exactly 14 <b>inversions</b>: 14 pairs of parcels in the wrong order (for example 5 kg placed before 2 kg). Swapping two neighbors fixes at most one inversion: you can't do better!</p>
-<p>And the two 3 kg parcels? They are never “in the wrong order” compared with each other: swapping them fixes no inversion at all. That was the Ker's trap: fuel thrown out of the window!</p>
-<p>The problem: for 1,000 gifts, bubble sort can need nearly <b>500,000 swaps</b>. Computer scientists invented much smarter sorts, like <b>merge sort</b>: split the pile in two, sort each half, then merge them. For 1,000 gifts: only about <b>10,000 operations</b>.</p>
-<p>Counting how many operations an algorithm needs is called studying its <b>complexity</b>. It's one of the big questions in computer science.</p>
+  lecon: `<p>You've just used <b>bubble sort</b>: the heavy parcels “rise” to the right like bubbles in lemonade.</p>
+<p>The minimum possible was <b>8 swaps</b>: there were 8 pairs of parcels in the wrong order (for example 4 kg placed before 1 kg), and each swap between neighbors only fixes one of them.</p>
+<p>The problem: for 1,000 gifts, bubble sort can take nearly <b>500,000 swaps</b>. Computer scientists have invented much smarter sorts, like <b>merge sort</b>: cut the pile in two, sort each half, then merge them. For 1,000 gifts: only about <b>10,000 operations</b>.</p>
 <h4>🌍 In real life</h4>
 <ul>
 <li>Sorting is everywhere: search engine results, your news feed, your playlist, your contacts…</li>
-<li>Sorting algorithms are so important that they are taught in every computer science school in the world.</li>
+<li>Sorting algorithms are so important that they're taught in every computer science school in the world.</li>
 </ul>`,
   fragment: [23, '01010100'],
 },
@@ -296,7 +299,7 @@ const JOURS = [
   emoji: '🏠',
   concept: 'Binary search',
   givrin: {
-    ricane: "A million houses, one waiting chimney, and the sun rising soon. I adore races that are lost in advance.",
+    ricane: "A hundred houses, one waiting chimney, and the sun rising soon. I adore races that are lost in advance.",
     piques: [
       "Wrong! The gift will end up at a dentist who hates Christmas.",
       "Guessing at random? Me too: I throw icicles at the reindeer.",
@@ -304,28 +307,26 @@ const JOURS = [
     ],
     fuite: "Found it in so few tries?! You cut everything in half… I'm off before you cut me too!",
   },
-  chrono: 900,
-  histoire: `<p>In the Observatory, the radio is crackling: the Ker has breathed on the sleigh's GPS! Santa is flying over the longest street in the world, Chimney Avenue: <b>a million houses</b>, numbered from 1 to 1,000,000. Only one is waiting for its gift tonight. The radio can only tell you whether the right house has a <b>higher</b> or <b>lower</b> number than the one you suggest.</p>`,
+  histoire: `<p>In the Observatory, the radio crackles: the Ker has breathed on the sleigh's GPS! Santa is flying over Chimney Avenue: <b>100 houses</b>, numbered from 1 to 100. Only one is waiting for its gift tonight. The radio can only tell you whether the right house has a <b>higher</b> or <b>lower</b> number than the one you suggest.</p>`,
   cours: `<p>You probably know the “higher or lower” game: someone thinks of a number, you suggest one, and they answer “higher” or “lower”.</p>
-<p>The simplest method is to try the numbers one by one: 1, 2, 3… It always works in the end, but with a million houses it could take up to <b>a million tries</b>!</p>
-<p>With only 20 tries, you have to be much smarter: every answer should let you <b>rule out as many houses as possible</b> in one go. Before each try, ask yourself: “Which number will rule out the most houses, whatever the answer?”</p>
-<p>Example with 100 houses: if you suggest 10 and the answer is “higher”, you've only ruled out 10 houses. If the answer is “lower”, you've ruled out 90… but you can't count on luck!</p>`,
-  enigme: `<p>Find the right house in <b>20 tries at most</b>, before sunrise. The house changes every game: luck won't be enough, you need a <b>method</b>… and precision. 20 tries is just barely enough, as long as you don't waste a single one!</p>`,
-  widget: W.dichotomie(1000000, 20),
+<p>The simplest method is to try the numbers one by one: 1, 2, 3… It always works in the end, but with 100 houses, it could take up to <b>100 tries</b>!</p>
+<p>The clever method: always suggest the number <b>in the middle</b>. Whatever the answer, you get rid of <b>half</b> of the possibilities in one go!</p>
+<p>Example with 20 houses: you suggest 10, the answer is “higher”. Houses 11 to 20 are left: you suggest the middle, 15. And so on…</p>`,
+  enigme: `<p>Find the right house in <b>10 tries at most</b>, before sunrise. The house changes every game: use the middle method, and watch the golden zone shrink!</p>`,
+  widget: W.dichotomie(100, 10),
   indices: [
-    'Start with house 500,000: whatever the answer, you rule out half the houses in one go.',
-    'Always aim for the EXACT middle of the houses still possible (the golden zone): (lowest + highest) ÷ 2. For example, if houses 500,001 to 1,000,000 are left, try 750,000. A try that is only “roughly in the middle” can cost you the game!',
+    'Start with house 50: whatever the answer, you get rid of half the houses in one go.',
+    'Always aim for the middle of the houses still possible (the golden zone). For example, if houses 51 to 100 are left, try 75.',
   ],
   lecon: `<p>By always aiming for the middle, you get rid of <b>half the houses</b> with every try:</p>
-<div class="schema"><code>1,000,000 → 500,000 → 250,000 → 125,000 → 62,500 → 31,250 → 15,625 → 7,813 → 3,907 → 1,954 → 977 → 489 → 245 → 123 → 62 → 31 → 16 → 8 → 4 → 2 → 1</code></div>
-<p>20 tries are always enough, because 2<sup>20</sup> = 1,048,576, which is just over a million. There was almost no margin: one badly placed try, and the sun came up! That's <b>binary search</b> (“cut in two”).</p>
-<p>The crazy part: for <b>a billion</b> houses, you'd only need <b>30 tries</b>. Checking them one by one could take up to a billion…</p>
+<div class="schema"><code>100 → 50 → 25 → 13 → 7 → 4 → 2 → 1</code></div>
+<p><b>7 tries</b> are always enough for 100 houses! It's called <b>binary search</b> (“cutting in two”).</p>
+<p>The craziest part: for <b>a million</b> houses, you'd only need <b>20 tries</b>, and for a billion, <b>30</b>. Trying them one by one, you could need up to a billion…</p>
 <p>⚠️ But careful: it only works if the houses are <b>in order</b>. That's why sorting (day 6) is so important!</p>
 <h4>🌍 In real life</h4>
 <ul>
 <li>It's the natural way to look up a word in a paper dictionary.</li>
 <li>Databases find one piece of information among billions in a few milliseconds thanks to this idea.</li>
-<li>Developers use the <code>git bisect</code> tool to find, by binary search, the change that introduced a bug.</li>
 </ul>`,
   fragment: [20, '01001110'],
 },
@@ -345,38 +346,34 @@ const JOURS = [
     ],
     fuite: "The shortest path? I'm taking it… to run away!",
   },
-  chrono: 900,
-  histoire: `<p>In the Map Room, the big map of the delivery round is pinned to the wall. Santa has to deliver an urgent gift to <b>Lea's House</b>. On the map, each road shows its flying time in minutes. The reindeer are exhausted: you absolutely need the <b>fastest</b> route… and the Ker has stretched a red thread across the map to whisper a “shortcut” to you.</p>`,
-  cours: `<p>A map like this one, with places connected by roads, is what computer scientists call a <b>graph</b>. Santa can <b>only fly along the roads drawn</b>, and each road shows its flying time in minutes.</p>
-<p>The length of a trip is the <b>sum</b> of the times of all the roads you take. For example, if a 3-min road goes from the Farm to the Bridge, then a 4-min road from the Bridge to the Church, the trip Farm → Bridge → Church takes 3 + 4 = <b>7 minutes</b>.</p>
-<p>To find the fastest route, you have to compare the different possible paths… without forgetting any!</p>`,
-  enigme: `<p>Click the places, one by one, to draw the route from the <b>North Pole</b> to <b>Lea's House</b>. Santa will only accept the shortest route in time. Don't trust the number of steps, nor the Ker's advice!</p>`,
+  histoire: `<p>In the Map Room, the big map of Santa's round is pinned to the wall. Santa has to deliver an urgent gift to <b>Lea's House</b>. On the map, each road shows its flying time in minutes. The reindeer are tired: you need the <b>fastest</b> route… and the Ker has stretched a red thread across the map to suggest a “shortcut”.</p>`,
+  cours: `<p>A map like this one, with places linked by roads, is what computer scientists call a <b>graph</b>. Santa can only fly <b>along the roads drawn</b>, and each road shows its flying time in minutes.</p>
+<p>The length of a trip is the <b>sum</b> of the times of all the roads taken. For example, if a 3-minute road goes from the Farm to the Bridge, then a 4-minute road from the Bridge to the Church, the trip Farm → Bridge → Church takes 3 + 4 = <b>7 minutes</b>.</p>
+<p>To find the fastest route, just compare the different possible paths. Careful: a path with few steps isn't always the shortest!</p>`,
+  enigme: `<p>Click the places, one by one, to draw the route from the <b>North Pole</b> to <b>Lea's House</b>. Santa will only accept the fastest route. The total time is shown under the map: compare the routes!</p>`,
   widget: W.graphe(
     {
       A: { nom: 'North Pole', emoji: '🎅', x: 60, y: 190, dxNom: 6 },
-      B: { nom: 'Frozen Lake', emoji: '🧊', x: 170, y: 70 },
-      C: { nom: 'Forest', emoji: '🌲', x: 170, y: 310 },
-      D: { nom: 'Trapper\'s Hut', emoji: '🛖', x: 290, y: 190 },
-      E: { nom: 'Reindeer Village', emoji: '🦌', x: 400, y: 335 },
-      F: { nom: 'Windmill', emoji: '🌬️', x: 330, y: 60 },
-      G: { nom: 'Frosty Peak', emoji: '🏔️', x: 470, y: 70 },
-      H: { nom: 'Ice Bridge', emoji: '🌉', x: 455, y: 220, dxNom: -38 },
-      I: { nom: 'Lea\'s House', emoji: '🏡', x: 560, y: 170, dxNom: -10 },
+      B: { nom: 'Frozen Lake', emoji: '🧊', x: 220, y: 80 },
+      C: { nom: 'Forest', emoji: '🌲', x: 220, y: 310 },
+      D: { nom: "Trapper's Hut", emoji: '🛖', x: 360, y: 200 },
+      E: { nom: 'Frosty Peak', emoji: '🏔️', x: 430, y: 70 },
+      I: { nom: "Lea's House", emoji: '🏡', x: 550, y: 200, dxNom: -10 },
     },
-    [['A', 'B', 3], ['A', 'C', 4], ['A', 'D', 7], ['B', 'D', 3], ['B', 'F', 6], ['C', 'D', 4], ['C', 'E', 5], ['D', 'F', 2], ['D', 'H', 6], ['D', 'E', 2], ['E', 'H', 2], ['F', 'G', 3], ['G', 'I', 6], ['G', 'H', 2], ['H', 'I', 4], ['E', 'I', 9]],
+    [['A', 'B', 3], ['A', 'C', 2], ['B', 'D', 2], ['C', 'D', 5], ['B', 'E', 6], ['E', 'I', 2], ['D', 'I', 3], ['C', 'I', 9]],
     'A', 'I'
   ),
   indices: [
-    'The route with the fewest steps isn\'t necessarily the fastest… and neither is the shortest first road! You have to compare complete routes.',
-    'Work out, for each place, the minimum time from the North Pole, starting with the closest places. Example: the Trapper\'s Hut is 7 min away directly… but only 3 + 3 = 6 min via the Frozen Lake. Do the same for the Village, then the Bridge, then Lea\'s House.',
+    'Add up the minutes of each route and compare. Watch out: the shortest road at the start (towards the Forest) doesn\'t necessarily lead to the fastest route!',
+    "Compare these three routes: Frozen Lake → Trapper's Hut → House, Forest → Trapper's Hut → House, and the Ker's red thread, the direct road Forest → House.",
   ],
-  lecon: `<p>The fastest route was <b>North Pole → Frozen Lake → Trapper's Hut → Reindeer Village → Ice Bridge → Lea's House</b>: 3 + 3 + 2 + 2 + 4 = <b>14 minutes</b>, in 5 steps. The traps were all a minute longer or more: straight to the Hut (7 + 2 + 2 + 4 = 15), via the Forest and the Bridge (4 + 5 + 2 + 4 = 15)… and the Ker's red thread, via the Forest and the direct road from the Village: 4 + 5 + 9 = <b>18 minutes</b>!</p>
-<p>To a computer scientist, this map is a <b>graph</b>: <b>vertices</b> (the places) connected by <b>edges</b> (the roads), each with a <b>weight</b> (the time).</p>
-<p>To find the shortest path, we use <b>Dijkstra's algorithm</b>. The idea: start from the departure point and work out, step by step, the minimum time to reach each place, always dealing with the closest place first. Edsger Dijkstra came up with it in 1956… in 20 minutes, on a café terrace in Amsterdam!</p>
+  lecon: `<p>The fastest route was <b>North Pole → Frozen Lake → Trapper's Hut → Lea's House</b>: 3 + 2 + 3 = <b>8 minutes</b>. Through the Forest, the first road is shorter (2 min)… but the rest is costly: 2 + 5 + 3 = 10 minutes. And the Ker's red thread (Forest then the direct road): 2 + 9 = <b>11 minutes</b>!</p>
+<p>To a computer scientist, this map is a <b>graph</b>: <b>vertices</b> (the places) linked by <b>edges</b> (the roads), each with a <b>weight</b> (the time).</p>
+<p>To find the shortest path on a really big map, we use <b>Dijkstra's algorithm</b>. The idea: start from the departure point and work out, step by step, the minimum time to reach each place. Edsger Dijkstra came up with it in 1956… in 20 minutes, on a café terrace in Amsterdam!</p>
 <h4>🌍 In real life</h4>
 <ul>
-<li>Your GPS does exactly this, on a graph of millions of roads.</li>
-<li>On the Internet, “routers” choose the path of your data with similar algorithms.</li>
+<li>Your GPS does exactly that, on a graph of millions of roads.</li>
+<li>On the Internet, “routers” choose the path your data takes with similar algorithms.</li>
 <li>In video games, characters find their way with a variant called A* (“A star”).</li>
 </ul>`,
   fragment: [17, '01001101'],
@@ -391,34 +388,33 @@ const JOURS = [
   givrin: {
     ricane: "A snowflake in a snowflake in a snowflake… Your brain will freeze by step 2.",
     piques: [
-      "Wrong! You've just measured your failure: it's infinite.",
+      "Wrong! Did you count with your mittens on?",
       "Start again. And again. And again… See? That's recursion.",
       "Even my reflection in my reflection in my reflection is laughing at you.",
     ],
     fuite: "You found the way out of my loop?! Impossible… impossi… impo…",
   },
-  chrono: 900,
-  histoire: `<p>Deep in the Ice Cellar, the Snowflake Master makes every snowflake with a single magic rule, which he repeats over and over…</p>`,
+  histoire: `<p>Deep in the Ice Cellar, the Snowflake Master makes every snowflake with a single magic rule, which he repeats again and again…</p>`,
   cours: `<p>A <b>segment</b> is simply a <b>straight line</b> joining two points. A triangle, for example, is made of 3 segments.</p>
-<p>The Master's rule isn't applied just once: at each new step, it's applied to <b>every</b> segment of the drawing, including the ones that were just created. The drawing gets more and more detailed… always with the same rule.</p>
+<p>The Master's rule turns <b>each segment into 4</b> smaller segments (with a point in the middle). And it isn't applied just once: at each new step, it's applied to <b>all</b> the segments of the drawing, including the ones that have just been created.</p>
 <p>A rule that applies to its own result, again and again, is called a <b>recursive</b> rule. It's like two mirrors facing each other: the image contains an image, which contains an image…</p>
-<p>The Master measures his snowflakes too. When you cut a segment into 3 equal parts, each piece is <b>3 times shorter</b>: a 30 cm segment gives 10 cm pieces. And the total length of an outline is simply the <b>number of segments × the length of one segment</b> (if they are all the same).</p>
-<p>To answer, there's no need to draw the next steps (there would be far too many lines!): instead, watch how the <b>number</b> of segments and their <b>length</b> change from one step to the next.</p>`,
+<p>Example with another rule: “each branch grows 2 new branches”. 1 branch → 2 branches → 4 → 8… At each step, you <b>multiply by 2</b>. No need to draw: just repeat the multiplication!</p>`,
   enigme: `<div class="note">
 <p>❄️ <b>The Master's rule</b></p>
 <p>“Take each segment. Cut it into 3 equal parts. Replace the middle part with a point made of two segments.”</p>
-<p>At step 0, the snowflake is just a simple triangle, and each side is <b>243 cm</b> long.</p>
+<p>So each segment becomes <b>4 segments</b>.</p>
 </div>
-<p>Watch the first steps with the slider. To decorate the tree, the Master wants to lay a golden ribbon all along the outline of the <b>step 4</b> snowflake. <b>How much ribbon does he need, in centimeters?</b></p>`,
-  widget: W.koch(4),
-  reponses: ['6bf63f09896f65dab16105d6aff12f2a947c79bcd76082f32c16b6dda9abea79', 'ea874bb366254527ecc224b6c403e162cc188ec2abb96190b144db621393cdb7', 'd1ae83fef8653cd5fef25d76fb891d28576ed57a6015ef8db24f9ce0228cd0b2', '3053505e2ed70bb1cdbcc45def22bcaecbcfd02795466b8183d0a6708d132eb7', '0377f8c2cf2d27f3f993bf83411fa650bbbee66ce2b689d3337a5dd6929271b5'],
-  placeholder: 'Length in cm',
+<p>At step 0, the snowflake is a triangle: <b>3 segments</b>. At step 1, it has <b>12 segments</b>. Watch the steps with the slider.</p>
+<p>To decorate the tree, the Master wants to sew an ice bead in the middle of <b>every segment</b> of the <b>step 3</b> snowflake. <b>How many beads does he need?</b></p>
+<div class="rappel">📌 <b>Reminder</b>: at each step, the number of segments is <b>multiplied by 4</b>.</div>`,
+  widget: W.koch(3),
+  reponses: ['36186cbd223297452539e6957db32c6be1d13e472abddac62f6ec1563a77fc69', 'a1ad0dd4a07291049d63ecfceec8aa608bcda77ede50fc55e50f4dd650922d46', 'bbb938f4ab252e849db3ed79efc88513b314c3730f8c10918b4ed12cc6d9adf7'],
+  placeholder: 'Number of beads',
   indices: [
-    'Two things change at each step: the number of segments (each one is replaced by 4) and the length of each segment (3 times shorter). Work out both for step 4.',
-    'Step 4: 3 × 4 × 4 × 4 × 4 = 768 segments. Each segment is 243 ÷ 3 ÷ 3 ÷ 3 ÷ 3 = 3 cm long. Only one multiplication left!',
+    'Step 0: 3 segments. Step 1: 3 × 4 = 12 segments. Keep multiplying by 4 for step 2, then step 3.',
+    'Step 2: 12 × 4 = 48 segments. Just one multiplication left for step 3!',
   ],
-  lecon: `<p>At step 4, the snowflake has 3 × 4 × 4 × 4 × 4 = <b>768 segments</b>, and each one is 243 ÷ 81 = <b>3 cm</b> long. So you need 768 × 3 = <b>2,304 cm</b> of ribbon: more than 23 meters! The starting triangle only needed 3 × 243 = 729 cm.</p>
-<p>At each step, the number of segments is multiplied by 4 and their length divided by 3: so the outline is multiplied by 4/3, a third more each time (729 → 972 → 1,296 → 1,728 → 2,304).</p>
+  lecon: `<p>At each step, every segment becomes 4 segments: 3 → 12 → 48 → <b>192</b>. So he needed <b>192 beads</b>! At step 10, he'd need more than 3 million…</p>
 <p>This snowflake is called the <b>Koch snowflake</b> (1904). Its rule applies to itself: that's <b>recursion</b>. In programming, a recursive function is a function that <b>calls itself</b> on a smaller problem:</p>
 <pre class="code">function drawSegment(segment, step):
     if step == 0:
@@ -428,11 +424,11 @@ const JOURS = [
         for each small segment:
             drawSegment(small, step − 1)</pre>
 <p>The <b>stopping condition</b> is essential: without it, the function would call itself forever and the program would crash.</p>
-<p>Amazing fact: if you kept going forever, the snowflake would have an <b>infinite perimeter</b>… but an area that fits on a sheet of paper!</p>
+<p>Amazing fact: if you kept going forever, the snowflake's outline would become <b>infinitely long</b>… while the snowflake still fits on a sheet of paper!</p>
 <h4>🌍 In real life</h4>
 <ul>
-<li>The mountains, clouds and trees in animated films and video games are often generated with recursive fractals.</li>
-<li>To find a file on your computer, the program explores a folder, then its subfolders, then their subfolders… recursively!</li>
+<li>The mountains, clouds and trees in animated films and video games are often generated by recursive fractals.</li>
+<li>To search for a file on your computer, the program explores a folder, then its subfolders, then their subfolders… recursively!</li>
 </ul>`,
   fragment: [4, '01000001'],
 },
@@ -444,82 +440,69 @@ const JOURS = [
   emoji: '🍪',
   concept: 'Variables, loops and conditions',
   givrin: {
-    ricane: "I've reprogrammed the robot chef. It bakes biscuits… and throws some away whenever I feel like it.",
+    ricane: "I've reprogrammed the robot chef. It bakes cookies… and saves some for me whenever there are too many.",
     piques: [
       "Wrong! The robot burnt the batch. And your pride with it.",
       "You skipped a line. Robots never skip lines. That's why people prefer them.",
-      "Missed again. I'm eating a biscuit to your health. It tastes delicious… it tastes of your failure.",
+      "Missed again. I'm eating a cookie to your health. It tastes delicious… it tastes of your failure.",
     ],
-    fuite: "I can smell warm biscuits… I'm meeeelting!",
+    fuite: "I can smell warm cookies… I'm meeeelting!",
   },
-  chrono: 1200,
-  histoire: `<p>In Mrs. Claus's Kitchen, the robot chef bakes cookies by following a <b>program</b>. But the Ker slipped into its circuits and rewrote it… making sure to help itself along the way.</p>`,
-  cours: `<p>A <b>program</b> is a list of instructions that the computer follows to the letter, from top to bottom, without ever thinking for you. To read the robot's program, you need to know 4 things.</p>
-<p><b>1. The arrow <code>←</code></b> means “put this value in the box”. <code>cookies</code> is a box (called a <b>variable</b>) holding a number. Example:</p>
+  histoire: `<p>In Mrs. Claus's Kitchen, the robot chef bakes the cookies by following a <b>program</b>. But the Ker slipped into its circuits and rewrote it… making sure to help itself along the way.</p>`,
+  cours: `<p>A <b>program</b> is a list of instructions that the computer follows to the letter, from top to bottom, without ever thinking for you. To read the robot's program, you need to know 3 things.</p>
+<p><b>1. The arrow <code>←</code></b> means “put this value in the box”. <code>cookies</code> is a box (called a <b>variable</b>) that holds a number. Example:</p>
 <pre class="code">sweets ← 10
 sweets ← sweets + 5</pre>
-<p>The <code>sweets</code> box first holds 10, then 10 + 5 = <b>15</b>.</p>
-<p><b>2. <code>WHILE</code></b> means “repeat the <b>indented</b> lines just below, as long as it's true”. The condition is checked <b>before each round</b>: as soon as it's false, you stop repeating and move on. Example:</p>
-<pre class="code">sweets ← 1
-WHILE sweets &lt; 10:
+<p>The box <code>sweets</code> first holds 10, then 10 + 5 = <b>15</b>.</p>
+<p><b>2. <code>REPEAT 3 TIMES</code></b> means “do the <b>indented</b> lines just below 3 times in a row”. Each pass is called a <b>round</b> (this is called a <b>loop</b>).</p>
+<p><b>3. <code>IF</code></b> means “do the indented lines below <b>only if</b> it's true”. Otherwise, skip them.</p>
+<p>A full example:</p>
+<pre class="code">sweets ← 2
+REPEAT 3 TIMES:
     sweets ← sweets × 3
+    IF sweets > 10:
+        sweets ← sweets − 4
 DISPLAY sweets</pre>
-<p>1 → 3 → 9 → 27. After 27, the condition “27 &lt; 10” is false: the loop stops and the program displays <b>27</b> (not 9!).</p>
-<p><b>3. <code>IF</code> … <code>ELSE</code></b> means “if it's true, do the indented lines under IF; otherwise, do the ones under ELSE”. Only one of the two is done, never both. An <code>IF</code> on its own, without <code>ELSE</code>, does nothing when it's false.</p>
-<p><b>4. Quick reminders</b>: an <b>even</b> number splits into two with nothing left over (2, 4, 6…), an <b>odd</b> number doesn't (1, 3, 5…). A <b>multiple of 4</b> is a number in the 4 times table: 4, 8, 12, 16, 20…</p>`,
+<p>Round 1: 2 × 3 = 6 (not more than 10). Round 2: 6 × 3 = 18, more than 10 → 18 − 4 = 14. Round 3: 14 × 3 = 42 → 42 − 4 = 38. The program displays <b>38</b>.</p>`,
   enigme: `<p>Here is the robot chef's new program:</p>
 <pre class="code">cookies ← 3
-round ← 0
-WHILE cookies &lt; 60:
-    round ← round + 1
-    IF round is odd:
-        cookies ← cookies × 2
-    ELSE:
-        cookies ← cookies + round
-    IF cookies multiple of 4:
-        cookies ← cookies − 5
+REPEAT 5 TIMES:
+    cookies ← cookies × 2
+    IF cookies > 20:
+        cookies ← cookies − 10
 DISPLAY cookies</pre>
-<p class="petit">(That “− 5” is the Ker pinching 5 cookies every time the count lands in the 4 times table.)</p>
+<p class="petit">(That “− 10” is the Ker gobbling 10 cookies every time there are more than 20.)</p>
 <p><b>Which number will the robot display at the end?</b></p>
 <p class="petit">You can fill in this tracking table to help you (it's your rough work, it isn't marked).</p>`,
-  widget: W.tableauSuivi(['round', 'cookies after × 2 or + round', 'multiple of 4? (− 5)', 'cookies at end of round'], 10),
-  reponses: ['579f9b6fccd619b99dcfcc21f07e9388776a9860e45a7802f41d766051f9b582'],
+  widget: W.tableauSuivi(['round', 'cookies × 2', 'more than 20? (− 10)', 'cookies at end of round'], 5),
+  reponses: ['0f682726d71182328e89841c9fbec9494109b9162e63d576966243ab215dcb99', 'bd179ce9cc07d99a40ee2de2544808f34f1d16efa9c5d279c728a37da8cd29aa'],
   placeholder: 'Number displayed',
   indices: [
-    'Go line by line, exactly like the robot, and write down round and cookies each time. At the start: cookies = 3 and round = 0. Check the condition “cookies < 60” before each new round, never in the middle.',
-    'Round 1 (odd): 3 × 2 = 6, not in the 4 times table → 6. Round 2 (even): 6 + 2 = 8, a multiple of 4 → 8 − 5 = 3. Round 3: 3 × 2 = 6. Round 4: 6 + 4 = 10… Keep going until cookies reaches 60 or more at the end of a round!',
+    "Go round by round, like the robot. Round 1: 3 × 2 = 6, that's not more than 20, so the Ker leaves it alone: 6 cookies.",
+    'Round 2: 6 × 2 = 12. Round 3: 12 × 2 = 24, that\'s more than 20 → 24 − 10 = 14. Keep going for rounds 4 and 5!',
   ],
-  lecon: `<p>The robot displays <b>95</b>, after 9 rounds:</p>
-<div class="defilement"><table class="tableau"><tr><th>round</th><th>× 2 or + round</th><th>4 times table?</th><th>cookies</th></tr>
-<tr><td>1</td><td>6</td><td>no</td><td>6</td></tr><tr><td>2</td><td>8</td><td>yes (− 5)</td><td>3</td></tr>
-<tr><td>3</td><td>6</td><td>no</td><td>6</td></tr><tr><td>4</td><td>10</td><td>no</td><td>10</td></tr>
-<tr><td>5</td><td>20</td><td>yes (− 5)</td><td>15</td></tr><tr><td>6</td><td>21</td><td>no</td><td>21</td></tr>
-<tr><td>7</td><td>42</td><td>no</td><td>42</td></tr><tr><td>8</td><td>50</td><td>no</td><td>50</td></tr>
-<tr><td>9</td><td>100</td><td>yes (− 5)</td><td>95</td></tr></table></div>
-<p>The trap: in round 9 you go past 60… but the loop only stops when the condition is <b>checked again</b>, after finishing the whole round (including the Ker's theft).</p>
+  lecon: `<p>The robot displays <b>26</b>:</p>
+<div class="defilement"><table class="tableau"><tr><th>round</th><th>× 2</th><th>more than 20?</th><th>cookies</th></tr>
+<tr><td>1</td><td>6</td><td>no</td><td>6</td></tr><tr><td>2</td><td>12</td><td>no</td><td>12</td></tr>
+<tr><td>3</td><td>24</td><td>yes (− 10)</td><td>14</td></tr><tr><td>4</td><td>28</td><td>yes (− 10)</td><td>18</td></tr>
+<tr><td>5</td><td>36</td><td>yes (− 10)</td><td>26</td></tr></table></div>
 <p>You've just used the basic building blocks of <b>every</b> program:</p>
 <ul>
-<li><b>variables</b> (<code>cookies</code>, <code>round</code>): labelled boxes whose contents change;</li>
-<li>a <b>loop</b> (<code>WHILE</code>): repeating instructions as long as a condition is true;</li>
-<li><b>conditions</b> (<code>IF</code>, <code>ELSE</code>): making choices.</li>
+<li>a <b>variable</b> (<code>cookies</code>): a labelled box whose content changes;</li>
+<li>a <b>loop</b> (<code>REPEAT</code>): repeating instructions;</li>
+<li>a <b>condition</b> (<code>IF</code>): making choices.</li>
 </ul>
-<p>And you did what developers do to understand a program: you <b>traced</b> it by hand, step by step. Here is the same program in <b>Python</b>, a real programming language:</p>
+<p>And you did what developers do to understand a program: follow it by hand, step by step. Here is the same program in <b>Python</b>, a real programming language:</p>
 <pre class="code">cookies = 3
-rnd = 0
-while cookies &lt; 60:
-    rnd = rnd + 1
-    if rnd % 2 == 1:
-        cookies = cookies * 2
-    else:
-        cookies = cookies + rnd
-    if cookies % 4 == 0:
-        cookies = cookies - 5
+for round in range(5):
+    cookies = cookies * 2
+    if cookies &gt; 20:
+        cookies = cookies - 10
 print(cookies)</pre>
-<p class="petit"><code>%</code> gives the remainder of a division: <code>rnd % 2 == 1</code> means “the remainder of rnd ÷ 2 is 1”, so “the round is odd”.</p>
 <h4>🌍 In real life</h4>
 <ul>
-<li>A cooking recipe is already an algorithm: steps, repetitions (“stir while it's sticky”), conditions (“if the dough is too dry, add milk, otherwise…”).</li>
-<li>A video game runs inside a big “while the game isn't over” loop, repeated about 60 times a second: read the keys, move the characters, draw the picture.</li>
+<li>A recipe is already an algorithm: steps, repetitions (“stir for 5 minutes”), conditions (“if the dough is too dry, add milk”).</li>
+<li>A video game runs in one big loop, repeated about 60 times per second: read the keys, move the characters, draw the picture.</li>
 </ul>`,
   fragment: [3, '01011000'],
 },
@@ -533,36 +516,34 @@ print(cookies)</pre>
   givrin: {
     ricane: "I steal the pancakes, I mix up the plates, and I only leave the crumbs. Enjoy your meal!",
     piques: [
-      "Wrong! You're mixing up the stack and the queue. Like your jumper: inside out.",
+      "Wrong! You ate the stack from the wrong end. Like your jumper: inside out.",
       "No. The guests ate your mistakes: now they've got indigestion.",
       "Wrong! I'm keeping the last pancake for myself. And yours too.",
     ],
     fuite: "Last pancake down, first one eaten… and me, first one out!",
   },
-  chrono: 1200,
-  histoire: `<p>In the Dining Room, it's snack time, and the service runs like a factory: on each pancake, a chocolate letter. But the Ker, ever greedy, is prowling around the plate…</p>`,
+  histoire: `<p>In the Dining Room, it's snack time: on each pancake, a chocolate letter. But the Ker, ever greedy, is prowling around the plate…</p>`,
   cours: `<p>Computers spend their time putting information aside until they need it. There are two main ways to store it… and the order in which it comes back out changes everything!</p>
-<p>🥞 The <b>stack</b>, like a pile of plates: you can <b>only touch the one on top</b>. The last one put down is the first one out.</p>
-<p>🚶 The <b>queue</b>, like the line at the bakery: you join <b>at the back</b>, you're served <b>at the front</b>. First come, first served.</p>
-<p>Example: you put down <b>A</b>, then <b>B</b> on a stack, then move the pancakes one by one, always the top one, onto a conveyor belt (a queue). The belt gets <b>B</b> first, then <b>A</b>: so <b>B</b> will reach the end of the belt first.</p>`,
-  enigme: `<p>The cook puts the pancakes down on a <b>plate</b> (a stack). To <b>serve</b>, the cook takes the pancake on top of the plate and puts it at the back of a little <b>conveyor belt</b> (a queue). The guests always <b>eat</b> the pancake at the front of the belt. Here is what happened, in order:</p>
+<p>🥞 The <b>stack</b>, like a stack of plates: you can only touch <b>the one on top</b>. So the last one put down is the first one taken out.</p>
+<p>🚶 The <b>queue</b>, like the queue at the bakery: you join <b>at the back</b>, you're served <b>at the front</b>. First come, first served.</p>
+<p>Example: you stack pancakes <b>A</b>, then <b>B</b>, then <b>C</b>. C is right on top: if you eat them always taking the top one, you eat <b>C</b>, then <b>B</b>, then <b>A</b>. The order is reversed!</p>`,
+  enigme: `<p>The cook stacks the pancakes on the plate. Here is what happened, in order:</p>
 <ol class="operations">
-<li>Put down <b>P</b></li><li>Put down <b>N</b></li><li>Put down <b>A</b></li><li>Put down <b>C</b></li><li>➡️ Serve</li><li>➡️ Serve</li><li>Put down <b>T</b></li><li>😈 The Ker steals the pancake on top of the plate</li><li>➡️ Serve</li><li>🍴 Eat</li><li>Put down <b>E</b></li><li>Put down <b>L</b></li><li>Put down <b>D</b></li><li>➡️ Serve</li><li>➡️ Serve</li><li>🍴 Eat</li><li>🍴 Eat</li><li>➡️ Serve</li><li>🍴 Eat</li><li>🍴 Eat</li><li>🍴 Eat</li>
+<li>Put down <b>A</b> (at the very bottom of the plate)</li><li>Put down <b>T</b></li><li>Put down <b>N</b></li><li>Put down <b>A</b></li><li>Put down <b>S</b></li><li>Put down <b>K</b></li><li>😈 The Ker steals the pancake on top of the stack</li>
 </ol>
-<p>The letters on the pancakes <b>eaten by the guests</b>, in the order they were eaten, spell the password. What is it?</p>`,
-  reponses: ['b66dbce58287f61c2dfb1bfbf29a418009ed20c1445e00116ea68d14edf2af58'],
+<p>Then the guests eat all the pancakes that are left, always taking <b>the one on top</b>. The letters, in the order they are eaten, spell the password. <b>What is it?</b></p>`,
+  reponses: ['72f4c64b7489e5c520ae6c8ef5f4ac819eb2a2caea1015287af84ec7d461f19a'],
   placeholder: 'The word…',
   indices: [
-    'Draw two things on paper: the plate (a column, from bottom to top) and the belt (a row, from left to right). Update them after every operation, without skipping any.',
-    'After the first 4 pancakes are put down, the plate holds (from bottom to top) P, N, A, C. “Serve” sends C to the back of the belt, then A behind it. So the guests will eat C before A.',
+    'The Ker takes the pancake on top: it\'s the last one put down, the K. A, T, N, A, S are left, with S right on top.',
+    'The guests eat the top pancake first (S), then the one below it (A)… down to the last one, at the very bottom (A).',
   ],
-  lecon: `<p>The guests ate <b>C, A, N, D, L, E</b>. Pancake <b>T</b> ended up in the Ker's belly, and pancake <b>P</b> was left alone at the bottom of the plate.</p>
-<p>You made the two main ways of storing things work together: the <b>stack</b>, <b>last in, first out</b> (LIFO); and the <b>queue</b>, <b>first in, first served</b> (FIFO). The plate shuffles the order (it reverses it), the belt keeps it.</p>
+  lecon: `<p>The Ker pinched the <b>K</b>, the last pancake put down. Then the guests ate <b>S, A, N, T, A</b>: <b>SANTA</b>! In a <b>stack</b>, it's <b>last in, first out</b>: the order is reversed.</p>
+<p>In a <b>queue</b>, on the other hand, it's <b>first in, first out</b>: if the pancakes had waited on a conveyor belt, they would have been eaten in the order they were put down.</p>
 <h4>🌍 In real life</h4>
 <ul>
 <li><b>Ctrl+Z</b> (undo) uses a stack: the last action you did is the first one undone.</li>
-<li>Your browser's “Back” button is a stack of the pages you visited.</li>
-<li>When a function calls another one (like the recursive snowflake on day 9!), the computer stores the calls in a stack: the <b>call stack</b>.</li>
+<li>Your browser's “Back” button is a stack of the pages you've visited.</li>
 <li>Documents sent to a printer wait patiently in a <b>queue</b>.</li>
 </ul>`,
   fragment: [16, '01000101'],
@@ -575,42 +556,40 @@ print(cookies)</pre>
   emoji: '📸',
   concept: 'Images and compression',
   givrin: {
-    ricane: "I've erased the colours from the code. Only numbers are left. Good luck guessing where the red starts…",
+    ricane: "I've erased the colours from the code. Only numbers are left. Good luck guessing where the green starts…",
     piques: [
       "Wrong! Your masterpiece looks like a snowflake squashed under a boot.",
-      "White, red, white, red… Lost count? I haven't: I'm counting your mistakes.",
+      "White, green, white, green… Lost count? I haven't: I'm counting your mistakes.",
       "Wrong. Even a screen smashed with a hammer would display it better.",
     ],
     fuite: "The picture is coming back?! I'm vanishing… into the white…",
   },
-  chrono: 1200,
-  histoire: `<p>In the Photo Studio, the photographer had compressed a secret picture so it would travel faster. Then the Ker came along, eraser in hand: it rubbed out <b>every letter</b> of the code. Only numbers are left…</p>`,
+  histoire: `<p>In the Photo Studio, the photographer had compressed a secret drawing so it would travel faster. The Ker came by with an eraser: it rubbed out <b>all the letters</b> of the code. Only numbers are left…</p>`,
   cours: `<p>A digital picture is a <b>grid of little colored squares</b>: the <b>pixels</b> (remember day 4). To save it, the computer writes down the color of each pixel, line by line.</p>
-<p>The problem: a photo has millions of pixels, and the file quickly gets very heavy. So we <b>compress</b> it: we write the same information <b>in a shorter way</b>, so it takes up less space and travels faster.</p>
-<p>The photographer's trick: instead of saying “white, white, white, white, red, red”, he says “<b>4 whites, 2 reds</b>”, which he writes <code>4B2R</code> (B for blank, meaning white). To get the picture back, you do the opposite: <code>4B2R</code> → ⬜⬜⬜⬜🟥🟥</p>
-<p>You can make it even shorter! If the picture only has two colors that always <b>alternate</b> (after whites come reds, after reds come whites…) and every line starts with white, the letters become useless: <code>4B2R1B</code> is simply written <code>4 2 1</code> (4 whites, 2 reds, 1 white).</p>`,
+<p>The problem: a photo has millions of pixels, and the file quickly gets very heavy. So we <b>compress</b> it: we write the same information <b>more briefly</b>, so it takes up less space and travels faster.</p>
+<p>The photographer's trick: instead of saying “white, white, white, green, green”, he says “<b>3 whites, 2 greens</b>”. To get the picture back, you do the opposite: <code>3 whites, 2 greens</code> → ⬜⬜⬜🟩🟩</p>
+<p>You can make it even shorter! The picture only has two colors, which <b>have to alternate</b>: every line starts with white, then comes green, then white… No need to write the colors anymore: <code>3 2 1</code> means 3 whites, 2 greens, 1 white → ⬜⬜⬜🟩🟩⬜</p>`,
   enigme: `<div class="note">
 <p>📸 <b>The code, after the Ker's visit</b></p>
-<p>Every line starts with <b>white</b> pixels, then the numbers alternate: whites, reds, whites, reds… <code>1 2 3</code> = 1 white, 2 reds, 3 whites.</p>
-<p>The picture is <b>21 pixels</b> wide and 7 high. Each line of code is one line of the picture.</p>
+<p>Every line starts with <b>white</b> pixels, then the numbers alternate: whites, greens, whites, greens… <code>5 1 5</code> = 5 whites, 1 green, 5 whites.</p>
+<p>The picture is <b>11 pixels</b> wide and 9 high. Each line of code is one line of the picture.</p>
 </div>
-<p>Paint the grid (click or drag over the squares) to reveal the secret message. <b>What does it say?</b></p>`,
-  widget: W.pixels(['21', '2 3 1 4 2 2 2 3 2', '1 1 5 2 2 1 2 1 1 1 2 1 1', '2 2 3 2 2 4 1 3 2', '4 1 2 2 2 1 2 1 1 1 1 1 2', '1 3 3 2 2 1 2 1 1 1 2 1 1', '21'], 21),
-  reponses: ['c1cb4f0fb65482c87672d2e9de3e9507150a6b23e6f8aa7fa63d06000927e6ab'],
-  placeholder: 'The message…',
+<p>Paint the grid (click or drag over the squares) to reveal the secret drawing. <b>What does it show?</b></p>`,
+  widget: W.pixels(['5 1 5', '4 3 4', '3 5 3', '4 3 4', '3 5 3', '2 7 2', '1 9 1', '5 1 5', '5 1 5'], 11, 'vert'),
+  reponses: ['df15f460dd0e108de2985c48b7fc352e6237495f510f9678ce3bf0da9b372902', '1dcb5501e76b80e22cb30520ade3931443e98a57d69adcd1964b5ef42e362ca9', '8d0082f16f6c1fcf1901dc6d83a65afd2a3f2aa52b447cf2909c1ebd6c8f2f9a', '032d8dad2c847dc3f62d7b5d1aeeafceb55c0d34226c7142b528c81cb87c0f0f', '4a7ef9426a7b0db5bb43abd2c97714bcc73a87a7fbfa5b0318e68f2fd52a6bfe', 'd2a83b1b5f803f6042157d6a506210aacbd01377b247afa3a0d1025aa9d19a93', '76f2a4fe56bb088424f3c5dfb9ae14fc224c5c1e29a3c4162ef8686d91c155ef', 'fd8fbf2b640d174b13257af4a0847526848e22382d0fbd87be5de5e00e56314a', 'daee0dec5e78d2debccabf9a7f03974415be6af0ccea1da0bb848b9bf99fb231', '545d30e6015ea42472240e3f6578bbed869b83719a2090570c2da45f4376486e'],
+  placeholder: 'The drawing…',
   indices: [
-    'Every line starts with white: the 1st number counts white squares, the 2nd red ones, the 3rd white ones, and so on. Check that each line adds up to 21 squares.',
-    'Line 2: 2 whites, 3 reds, 1 white, 4 reds, 2 whites… The message has 4 letters. Once the whole grid is painted, step back a little!',
+    'Line 1: 5 whites, 1 green, 5 whites. Line 2: 4 whites, 3 greens, 4 whites. Each line has exactly 11 squares in total.',
+    "The drawing is pointy at the top, gets wider towards the bottom, and has a little trunk… It's the star of Christmas!",
   ],
-  lecon: `<p>The message was <b>STAR</b> ⭐!</p>
-<p>A digital image is a <b>grid of pixels</b>. This code is called <b>RLE</b> (<i>Run-Length Encoding</i>): instead of writing “white” 21 times, you write <code>21</code>.</p>
-<p>By erasing the letters, the Ker actually made the code <b>shorter</b>: 61 digits in all, against 147 squares for the raw picture (21 × 7). <b>Fax machines</b> used exactly this trick: a page of text is mostly white, with alternating runs of black.</p>
-<p>Lesson: <b>no compression works on everything</b>. RLE is excellent for big plain areas (a sky, a blank page) and bad for detailed pictures, where the colors change at every pixel.</p>
-<p>RLE is <b>lossless</b> compression: you get back the exact picture. The <b>JPEG</b> format, on the other hand, is <b>lossy</b>: it throws away details the eye barely notices, to make files about 10 times lighter.</p>
+  lecon: `<p>It was a Christmas <b>tree</b> 🎄!</p>
+<p>This encoding is called <b>RLE</b> (<i>Run-Length Encoding</i>): instead of writing “white” 5 times, you write <code>5</code>.</p>
+<p>The code fit in 27 numbers, while the raw picture has 99 squares (11 × 9): almost <b>4 times shorter</b>! <b>Fax machines</b> used exactly this trick: a page of text is mostly white, with runs of black that alternate.</p>
+<p>RLE is excellent for big plain areas (a sky, a blank page), but bad for detailed photos, where the colors change at every pixel. It's a <b>lossless</b> compression: you get the exact picture back. The <b>JPEG</b> format, on the other hand, is a <b>lossy</b> compression: it throws away details the eye barely notices, to get files about 10 times lighter.</p>
 <h4>🌍 In real life</h4>
 <ul>
-<li><b>.zip</b> files and <b>.png</b> images use lossless compression, smarter than RLE.</li>
-<li>Photos (<b>.jpg</b>), music (<b>.mp3</b>) and streaming videos use lossy compression.</li>
+<li><b>.zip</b> files and <b>.png</b> images use lossless compressions that are smarter than RLE.</li>
+<li>Photos (<b>.jpg</b>), music (<b>.mp3</b>) and streaming videos use lossy compressions.</li>
 </ul>`,
   fragment: [19, '01001001'],
 },
@@ -630,47 +609,34 @@ print(cookies)</pre>
     ],
     fuite: "Unmasked by a simple sum?! I'm giving back the change and running!",
   },
-  chrono: 1200,
-  histoire: `<p>At the Chalet Shop, three gifts are waiting to be wrapped. But the Ker came by with a marker pen: it <b>tampered with the barcodes</b> on two labels out of three. On one, it changed a digit. On another, more sneakily, it <b>swapped two neighboring digits</b>. Only one label is still genuine.</p>`,
-  cours: `<p>A barcode is simply <b>13 digits</b> (written under the bars), also drawn as bars so the till can read them in a flash.</p>
-<p>But a scanner can make mistakes, and a label can get damaged. To catch errors, the <b>last digit</b> says nothing about the product: it's a <b>check digit</b>, calculated from the others. It's like counting your change again: if the total isn't right, you know there's a mistake somewhere.</p>
-<p>The rule uses two simple ideas:</p>
-<ul>
-<li><b>Multiplying alternately by 1 and by 3</b>: the 1st digit × 1, the 2nd × 3, the 3rd × 1, the 4th × 3… For example, for the digits <code>5 2 7</code>: 5 × 1 + 2 × 3 + 7 × 1 = 5 + 6 + 7 = <b>18</b>.</li>
-<li>A <b>multiple of 10</b> is a number that ends in 0: 10, 20, 30… 100, 110, 120…</li>
-</ul>
-<p>For a <b>valid</b> barcode, when you add up all the digits multiplied alternately by 1 and by 3 (the last one included), you always land on a multiple of 10. If not, a digit was misread… or tampered with!</p>`,
-  enigme: `<div class="note">
-<p>🧾 <b>The barcode rule (EAN-13)</b></p>
-<ol>
-<li>Multiply the digits <b>alternately by 1 and by 3</b>: the 1st × 1, the 2nd × 3, the 3rd × 1, etc.</li>
-<li>Add up all the results (check digit included).</li>
-<li>For a valid barcode, the total is always a <b>multiple of 10</b>.</li>
-</ol>
-</div>
-<p>Check the three labels. <b>Which gift has the only genuine barcode?</b></p>`,
+  histoire: `<p>At the Chalet Shop, three gifts are waiting to be wrapped. But the Ker came by with a felt-tip pen: it <b>changed one digit</b> on two labels out of three. Only one label is still genuine… and the till can check it!</p>`,
+  cours: `<p>A scanner can make mistakes, and a label can get damaged. To spot errors, a special digit is added at the end of the code: the <b>check digit</b>. It says nothing about the product: it's <b>calculated</b> from the other digits.</p>
+<p>At the Chalet Shop, the rule is simple:</p>
+<div class="schema">The check digit = the <b>last digit</b> of the sum of the other digits</div>
+<p>Example with the code <code>2 3 4 | 9</code>: 2 + 3 + 4 = 9, so the check digit must be <b>9</b> ✅.</p>
+<p>Another example, <code>5 6 7 | 8</code>: 5 + 6 + 7 = 1<b>8</b>, keep the last digit: the check digit must be <b>8</b> ✅.</p>
+<p>If a digit was misread or tampered with, the sum changes and the check digit no longer matches: the till goes “BEEP ✗”!</p>`,
+  enigme: `<div class="rappel">📌 <b>The rule</b>: add up the first 4 digits. The <b>last digit</b> of that sum must be equal to the check digit (the 5th digit, in gold).</div>
+<p>Check the three labels. <b>Which gift has the only genuine code?</b></p>`,
   widget: W.codesBarres([
-    { code: '3760147582399', nom: '🛷 Sled' },
-    { code: '3760127528399', nom: '🧩 Puzzle' },
-    { code: '3760147528399', nom: '⛸️ Skates' },
-  ]),
-  reponses: ['46f059b0523128e8a82242509950eaf2c8ddb6408783d5b76ded1555f584b96b', '5ac07a7ba038304006a74e955e7e4bca4e0cd78e56c076f24492a3a275f72895', '33f3339c77c3e371d0d9aa5ee99df2c4e325d9e7f95a39b86931a487cdac4d50'],
+    { code: '52714', nom: '🛷 Sled' },
+    { code: '36246', nom: '🧩 Puzzle' },
+    { code: '43816', nom: '⛸️ Skates' },
+  ], true),
+  reponses: ['46f059b0523128e8a82242509950eaf2c8ddb6408783d5b76ded1555f584b96b', '33f3339c77c3e371d0d9aa5ee99df2c4e325d9e7f95a39b86931a487cdac4d50', '5ac07a7ba038304006a74e955e7e4bca4e0cd78e56c076f24492a3a275f72895', '2cee097e584af5f2430199ca42d00b311ad4d45ddf1fd6296dcd41e19624d9a2'],
   placeholder: 'The genuine gift…',
   indices: [
-    'Do the full calculation for each label: digits in odd positions × 1, digits in even positions × 3, then add up the 13 products. Only one label gives a multiple of 10.',
-    'Careful, the three codes look very alike! The first two labels give 118 and 124. And if you just add up the digits, without the × 3, the Sled looks as good as the real one… that\'s the Ker\'s trap.',
+    'Sled: 5 + 2 + 7 + 1 = 15. The last digit of 15 is 5… but the Sled\'s check digit is 4. Not the Sled! Do the same for the other two.',
+    'Puzzle: 3 + 6 + 2 + 4 = 15, the check digit should be 5, but it\'s 6. Only one label left to check…',
   ],
-  lecon: `<p>The only genuine code was on the <b>Skates</b>: its total is <b>130</b>, a multiple of 10 ✅. The Sled gives 118 and the Puzzle 124 ❌.</p>
-<div class="schema">Puzzle: one digit changed (the 6th: 4 → 2)<br>Sled: two neighboring digits swapped (… 2 8 … → … 8 2 …)</div>
-<p>The check digit is used to <b>detect errors</b>. If the scanner misreads a single digit, the total no longer lands on a multiple of 10: the till rejects the code.</p>
-<p>And why multiply every other digit by 3? To catch the most common mistake when copying a code by hand: <b>swapping two neighboring digits</b>. With a simple sum of the digits, the Sled and the Skates give the same total (64): the swap would go unnoticed! With weights 1 and 3, the two swapped digits no longer “weigh” the same, and the total changes.</p>
-<p>Little secret: the first 3 digits, <code>376</code>, show the country of the organization that issued the code. From 300 to 379, it's… <b>France</b>!</p>
+  lecon: `<p>The only genuine code was the <b>Skates</b>: 4 + 3 + 8 + 1 = 1<b>6</b>, and the check digit is indeed <b>6</b> ✅. The Sled (15 → check digit 4 instead of 5) and the Puzzle (15 → check digit 6 instead of 5) were tampered with ❌.</p>
+<p>The check digit is there to <b>detect errors</b>: if a single digit changes, the sum changes, and the check digit no longer matches.</p>
+<p>Real barcodes (13 digits, called <b>EAN-13</b>) use a slightly cleverer rule: they multiply every other digit by 3 before adding. Why? To also catch the most common mistake when copying a code by hand: <b>swapping two neighboring digits</b> (with a simple sum, 2 + 8 and 8 + 2 are the same!).</p>
 <h4>🌍 In real life</h4>
 <ul>
-<li>Your <b>bank card</b> number has a final check digit (the Luhn algorithm): a website spots a typo immediately.</li>
-<li>Bank account numbers (<b>IBAN</b>) and book numbers (<b>ISBN</b>) also have check digits.</li>
-<li><b>QR codes</b> go even further: they can <b>correct</b> errors. You can damage up to 30% of a QR code and it still works!</li>
-<li>On the Internet, every packet of data carries a “checksum” to make sure it wasn't damaged on the way.</li>
+<li>Your <b>bank card</b> number has a last check digit: a website spots a typo straight away.</li>
+<li>Social security numbers, <b>IBANs</b> and book numbers (<b>ISBN</b>) also have a check digit.</li>
+<li><b>QR codes</b> go even further: they can <b>correct</b> errors. You can damage up to 30% of a QR code and it stays readable!</li>
 </ul>`,
   fragment: [9, '01001110'],
 },
@@ -682,50 +648,45 @@ print(cookies)</pre>
   emoji: '📦',
   concept: 'The Internet and packets',
   givrin: {
-    ricane: "I've dropped the packets into a snowstorm. Duplicates, crumbs, damaged packets… Happy puzzling!",
+    ricane: "I've dropped the packets into a snowstorm. They're all mixed up… Happy puzzling!",
     piques: [
-      "Wrong! The South Pole has just received “THE REINDEER ARE GOATS”.",
-      "You've glued a damaged packet back in. The penguins are rolling on the floor.",
-      "Another duplicate! Are you repeating yourself too?",
+      "Wrong! The South Pole has just received “MIDNIGHT SLEIGH AT”. The penguins didn't get it.",
+      "Wrong! You put the packets back in the order they fell. I can do that too.",
+      "Missed again! Read the numbers: in binary, 011 isn't eleven, silly.",
     ],
     fuite: "Message sent?! I'm cutting myself into little packets and vanishing!",
   },
-  chrono: 1200,
-  histoire: `<p>Santa is sending a message to the South Pole. But on the Internet, a message never travels in one piece: it's cut into small <b>packets</b>, each taking its own route! The Ker dropped them into a storm: they reached the Sorting Center <b>out of order</b>, one of them <b>twice</b>… and another one <b>damaged</b>, before a brand-new copy arrived.</p>`,
-  cours: `<p>On the Internet, a message is never sent in one block: it's cut into small pieces, the <b>packets</b>. Each packet travels alone, along whichever path is least busy at that moment… so they don't necessarily arrive in order, or in good shape.</p>
-<p>Each packet carries a little <b>label</b> (called a <b>header</b>) with:</p>
-<ul>
-<li>a <b>number</b>, like the pages of a book, to put the pieces back in order;</li>
-<li>its <b>size</b>: the number of characters it carries (spaces count!). If the contents don't match the announced size, the packet was damaged on the way: you throw it away.</li>
-</ul>
-<p>Here, these numbers are written in <b>binary</b> with 4 places. Remember day 1: just add up the places that have a 1.</p>
+  histoire: `<p>Santa is sending a message to the South Pole. But on the Internet, a message never travels in one piece: it's cut into little <b>packets</b>, which each take their own route! The Ker dropped them into a storm: they arrived at the Sorting Center <b>all mixed up</b>.</p>`,
+  cours: `<p>On the Internet, a message is never sent in one block: it's cut into little pieces, the <b>packets</b>. Each packet travels on its own, by the least crowded path at that moment… so they don't necessarily arrive in order!</p>
+<p>To sort it out, each packet carries a <b>number</b>, like the pages of a book. On arrival, the packets are put back in the order of their numbers, and the message reappears.</p>
+<p>Here, the numbers are written in <b>binary</b> with 3 places. Remember day 1: the places are worth 4, 2 and 1, and you just add up the places that have a 1.</p>
 <div class="defilement"><table class="tableau compact">
-<tr><th>8</th><th>4</th><th>2</th><th>1</th><th>Number</th></tr>
-<tr><td class="allume">1</td><td>0</td><td class="allume">1</td><td>0</td><td>8 + 2 = <b>10</b></td></tr>
+<tr><th>4</th><th>2</th><th>1</th><th>Number</th></tr>
+<tr><td>0</td><td>0</td><td class="allume">1</td><td><b>1</b></td></tr>
+<tr><td>0</td><td class="allume">1</td><td>0</td><td><b>2</b></td></tr>
+<tr><td class="allume">1</td><td>0</td><td class="allume">1</td><td>4 + 1 = <b>5</b></td></tr>
 </table></div>`,
-  enigme: `<p>Each packet carries a <b>sequence number</b> and a <b>size</b>, written in binary. Click the right packets <b>in the right order</b> to rebuild the message, then send it. The ␣ symbol stands for a space.</p>`,
+  enigme: `<p>Each packet carries its <b>number</b>, written in binary. Click the packets <b>in number order</b> (1, 2, 3…) to rebuild the message, then send it. The ␣ symbol stands for a space.</p>
+<div class="rappel">📌 <b>Reminder</b>: in binary with 3 places, the places are worth <code>4 · 2 · 1</code>. Example: <code>110</code> = 4 + 2 = 6.</div>`,
   widget: W.paquets([
-    { seq: '0110', taille: '0011', data: 'KE ' }, { seq: '0010', taille: '0011', data: ' RE' }, { seq: '1010', taille: '0011', data: 'DI' },
-    { seq: '1000', taille: '0011', data: ' AT' }, { seq: '0001', taille: '0011', data: 'THE' }, { seq: '1011', taille: '0011', data: 'GHT' },
-    { seq: '0100', taille: '0011', data: 'EER' }, { seq: '0111', taille: '0011', data: 'OFF' }, { seq: '0011', taille: '0011', data: 'IND' },
-    { seq: '0100', taille: '0011', data: 'EER' }, { seq: '1001', taille: '0011', data: ' MI' }, { seq: '0101', taille: '0011', data: ' TA' },
-    { seq: '1010', taille: '0011', data: 'DNI' },
+    { seq: '011', data: ' AT' }, { seq: '101', data: 'DNI' }, { seq: '001', data: 'SLE' },
+    { seq: '110', data: 'GHT' }, { seq: '010', data: 'IGH' }, { seq: '100', data: ' MI' },
   ]),
   indices: [
-    'First convert all the numbers: 0001 = 1, 0010 = 2, 0011 = 3… up to 1011 = 11. Two numbers appear twice: for one, both packets are identical (keep just one); for the other, they are different.',
-    'When two packets have the same number but different contents, count the characters in each (spaces included) and compare with its announced size (0011 = 3). The damaged packet isn\'t the right size.',
+    'First convert each number: 001 = 1, 010 = 2, 011 = 2 + 1 = 3, 100 = 4… Packet no. 1 is the one marked 001.',
+    'In order: 001, 010, 011, 100, 101, 110. The message starts with “SLE”…',
   ],
-  lecon: `<p>The message was: <b>“THE REINDEER TAKE OFF AT MIDNIGHT”</b> 🦌. You had to keep just one of the two packets no. 4, and throw away the damaged packet no. 10 (“DI”: 2 characters instead of the 3 announced), replaced by its intact copy “DNI”.</p>
+  lecon: `<p>The message was: <b>“SLEIGH AT MIDNIGHT”</b> 🦌🛷.</p>
 <p>On the Internet, all data (messages, photos, videos) is cut into <b>packets</b> of about 1,500 bytes. Each packet carries:</p>
 <ul>
-<li>the <b>IP address</b> of the sender and of the recipient (like on an envelope);</li>
+<li>the sender's and the recipient's <b>IP address</b> (like on an envelope);</li>
 <li>a <b>sequence number</b>, to put the pieces back in order.</li>
 </ul>
-<p>Packets go through dozens of <b>routers</b> and can take different paths: so they sometimes arrive out of order, twice, or get lost. The <b>TCP</b> protocol does exactly what you just did: it puts the packets back in order, throws away duplicates… and asks again for lost packets.</p>
+<p>Packets go through dozens of <b>routers</b> and can take different paths: they sometimes arrive out of order, twice, or get lost. The <b>TCP</b> protocol does exactly what you just did: it puts the packets back in order… and asks again for the ones that got lost.</p>
 <h4>🌍 In real life</h4>
 <ul>
 <li>A streaming video is thousands of packets per second.</li>
-<li>Online games and video calls often use another protocol, <b>UDP</b>, which doesn't ask again for lost packets: better a picture that skips than a conversation that waits! That's where some “lag” comes from.</li>
+<li>Online games and video calls often use another protocol, <b>UDP</b>, which doesn't ask for lost packets again: a picture that skips is better than a conversation that waits! That's where some “lag” comes from.</li>
 </ul>`,
   fragment: [8, '01010010'],
 },
@@ -741,61 +702,51 @@ print(cookies)</pre>
     piques: [
       "Wrong! Error 404: intelligence not found.",
       "No, no. Error 403: access to victory forbidden.",
-      "Wrong! Error 429: too many mistakes, calm down a bit.",
+      "Wrong! Error 500: your brain crashed.",
     ],
     fuite: "You understand the codes?! Error 503: Ker unavailable, I'm off!",
   },
-  chrono: 1200,
-  histoire: `<p>In the Server Room, the North Pole website (<code>www.north-pole.xmas</code>) answers with funny <b>3-digit codes</b>. Each code has a precise meaning, understood by every website in the world… and the Ker is having fun triggering all of them.</p>`,
-  cours: `<p>When you open a website, your <b>browser</b> (Chrome, Firefox, Safari…) sends a <b>request</b> to a computer that's switched on day and night somewhere in the world: the <b>server</b>. It's the one that keeps the website's pages.</p>
-<p>The server answers with the page… and with a <b>3-digit code</b> that says how things went: all good, the page has moved, you're not allowed in, the server has a problem… You've probably already come across the most famous one: “<b>Error 404</b>”.</p>
-<p>These codes are the same for every website in the world: that's what lets any browser understand any server. The <b>first digit</b> gives the family: <b>2</b>xx = it worked, <b>3</b>xx = look elsewhere, <b>4</b>xx = it's the visitor's fault, <b>5</b>xx = it's the server's fault.</p>
-<p>Two tricky nuances: being <b>authenticated</b> means you've proved <b>who</b> you are (by logging in); being <b>authorized</b> means you have the <b>right</b> to go in. And an address can move <b>for good</b>… or only <b>for a while</b>.</p>`,
-  enigme: `<p>Match each situation with the right server response code. Careful: some codes look very alike, and two codes in the list are no use at all.</p>`,
+  histoire: `<p>In the Server Room, the North Pole website (<code>www.north-pole.xmas</code>) answers with funny <b>3-digit codes</b>. Each code has a precise meaning, understood by every website in the world… and the Ker is having fun triggering them.</p>`,
+  cours: `<p>When you open a website, your <b>browser</b> (Chrome, Firefox, Safari…) sends a <b>request</b> to a computer that runs day and night somewhere in the world: the <b>server</b>. That's where the site's pages are kept.</p>
+<p>The server answers with the page… and with a <b>3-digit code</b> saying how it went. You've probably already come across the most famous one: “<b>Error 404</b>” (page not found).</p>
+<p>These codes are the same for every website in the world. The <b>first digit</b> gives the family:</p>
+<div class="defilement"><table class="tableau compact">
+<tr><th>Family</th><th>It means…</th></tr>
+<tr><td><b>2</b>xx</td><td>✅ it worked</td></tr>
+<tr><td><b>3</b>xx</td><td>↪️ the page has moved: look elsewhere</td></tr>
+<tr><td><b>4</b>xx</td><td>🙋 it's the visitor's fault (unknown page, access forbidden…)</td></tr>
+<tr><td><b>5</b>xx</td><td>🔥 it's the server's fault (it crashed)</td></tr>
+</table></div>`,
+  enigme: `<p>Match each situation with the right server response code. Read the meaning of each code carefully! (One of them is a real computer scientists' joke: it's no use here.)</p>`,
   widget: W.http(
     [
-      "A child sends a letter to Santa: the server creates a new record in their name.",
-      "The old page <code>/letters</code> has moved for good to the address <code>/mail</code>.",
-      "During stocktaking, the page <code>/shop</code> sends visitors to <code>/closed-for-stocktaking</code> for a few hours.",
-      "The Ker, who hasn't logged in, asks for the page <code>/my-account</code>.",
-      "The Ker has logged in with an apprentice's account, and tries to open <code>/santas-safe</code>.",
-      "Someone types <code>/gifts-of-the-year-3000</code>: this page has never existed.",
-      "The Ker sends 10,000 requests per second to bring the site down: the server tells it to slow down.",
-      "A mistake in the server's program makes it crash.",
-      "On Christmas Eve, millions of children connect at the same time: the server is overwhelmed.",
+      'A child opens the page <code>/gift-list</code>: everything works, the page is displayed.',
+      'The old page <code>/letters</code> has moved for good to the address <code>/mail</code>.',
+      'The Ker tries to open <code>/santas-vault</code>, which is for Santa only: no way!',
+      'Someone types <code>/gifts-from-the-year-3000</code>: that page has never existed.',
+      'A mistake in the server\'s program makes it crash.',
     ],
     [
       { code: 200, sens: '“OK”: all good, here is the page' },
-      { code: 201, sens: '“Created”: done, something new has just been created' },
       { code: 301, sens: '“Moved Permanently”: the page has changed address for good' },
-      { code: 302, sens: '“Found”: the page is at another address, for now' },
-      { code: 401, sens: '“Unauthorized”: who are you? Log in first' },
-      { code: 403, sens: '“Forbidden”: I know who you are, but you\'re not allowed in' },
+      { code: 403, sens: '“Forbidden”: you\'re not allowed in' },
       { code: 404, sens: '“Not Found”: this page doesn\'t exist' },
       { code: 418, sens: '“I\'m a teapot” ☕ (yes, it really exists!)' },
-      { code: 429, sens: '“Too Many Requests”: easy, you\'re asking too much' },
       { code: 500, sens: '“Internal Server Error”: the server crashed' },
-      { code: 503, sens: '“Service Unavailable”: the server is overloaded' },
     ]
   ),
   indices: [
-    'First put each situation in its family: success (2xx), moving (3xx), visitor\'s fault (4xx) or server\'s fault (5xx). Then only 2 or 3 codes are left each time.',
-    '401 = the server doesn\'t know who you are; 403 = it does, but the answer is no. 301 = moved for good; 302 = for a while. 500 = the server has a bug; 503 = it\'s overwhelmed. 201 = something new was created.',
+    'Read the meaning of each code in the list, then find the matching situation. The 418 (the teapot) doesn\'t go with any situation!',
+    'The page that displays normally → 200. The move → 301. Only the forbidden page, the page that doesn\'t exist and the crashing server are left.',
   ],
-  lecon: `<p>When you visit a website, your browser (the <b>client</b>) sends a <b>request</b> to a distant computer (the <b>server</b>): “give me the page <code>/good-children-list</code>”. The server answers with the page… and a <b>code</b>.</p>
-<table class="tableau"><tr><th>Family</th><th>Meaning</th></tr>
-<tr><td><b>2xx</b></td><td>✅ Success</td></tr>
-<tr><td><b>3xx</b></td><td>↪️ Redirection: look elsewhere</td></tr>
-<tr><td><b>4xx</b></td><td>🙋 Client error (wrong address, access forbidden…)</td></tr>
-<tr><td><b>5xx</b></td><td>🔥 Server error</td></tr></table>
-<p>The answers: 201, 301, 302, 401, 403, 404, 429, 500, 503. Codes 200 (all good) and 418 were no use here.</p>
-<p>This language is called <b>HTTP</b> (the “http” at the start of web addresses). And code <b>418 “I'm a teapot”</b> comes from an April Fools' joke in 1998… which was kept, for the love of the joke.</p>
-<p>Code <b>429</b> protects websites against attacks like the Ker's: when someone sends too many requests, the server makes them wait instead of collapsing.</p>
-<p>Even before the request, your computer asks a <b>DNS server</b> for the IP address of <code>www.north-pole.xmas</code>: DNS is the Internet's phone book, turning names into numbers.</p>
+  lecon: `<p>The answers: <b>200</b> (all good), <b>301</b> (moved), <b>403</b> (forbidden), <b>404</b> (not found) and <b>500</b> (the server crashed).</p>
+<p>When you visit a website, your browser (the <b>client</b>) sends a <b>request</b> to a remote computer (the <b>server</b>): “give me the page <code>/gift-list</code>”. The server answers with the page… and a <b>code</b>. This language is called <b>HTTP</b> (the “http” at the start of web addresses).</p>
+<p>And code <b>418 “I'm a teapot”</b>? It comes from an April Fool's joke in 1998… which was kept, for the love of the joke!</p>
+<p>Even before the request, your computer asks a <b>DNS server</b> for the address of <code>www.north-pole.xmas</code>: DNS is the Internet's phone book, which translates names into numbers.</p>
 <h4>🌍 In real life</h4>
 <ul>
 <li>Some websites' “404” pages are little works of art: go and look for a few!</li>
-<li>On sale days or when concert tickets go on sale, many websites return 503 errors: too many people at once.</li>
+<li>On sale days or when concert tickets go on sale, lots of websites show errors: too many people at once.</li>
 </ul>`,
   fragment: [12, '01001100'],
 },
@@ -815,44 +766,45 @@ print(cookies)</pre>
     ],
     fuite: "You can read regular expressions?! Nobody reads those! I'm running away!",
   },
-  chrono: 1200,
-  histoire: `<p>In the Wrapping Workshop, a robot sorts the gift tags. The Ker has set its <b>pattern</b> so that it rejects almost everything: the tag must carry a name of the right length and a <b>December day before Christmas</b>, from 01 to 24. The pattern is written in a strange language: a <b>regular expression</b>.</p>`,
-  cours: `<p>A <b>regular expression</b> is like a <b>police sketch</b> of a text: it doesn't say exactly which text is expected, but what it must <b>look like</b>.</p>
-<p>For example, the sketch “exactly 3 digits” accepts <code>007</code> and <code>123</code>, but rejects <code>12</code> (too short), <code>1234</code> (too long) and <code>abc</code> (not digits).</p>
-<p>To check a tag, you move <b>at the same time</b> through the pattern and through the tag, piece by piece, from left to right. If a single piece doesn't match, the tag is rejected. The table under the pattern explains what each piece means.</p>
-<p>Two extra tools: <code>{2,5}</code> means “between 2 and 5 times” (<code>[0-9]{2,5}</code> accepts <code>12</code> and <code>12345</code>, but not <code>1</code> nor <code>123456</code>). And <code>(cat|dog)</code> means “a choice: cat or dog”: the piece must match one of the options.</p>`,
-  enigme: `<div class="motif"><code>^[A-Z][a-z]{2,5}-(0[1-9]|1[0-9]|2[0-4])$</code></div>
+  histoire: `<p>In the Wrapping Room, a robot sorts the gift tags. The Ker has given it a very strict <b>pattern</b>: tags that don't match it go into the shredder! The pattern is written in a strange language: a <b>regular expression</b>.</p>`,
+  cours: `<p>A <b>regular expression</b> is a <b>photofit</b> of a piece of text: it doesn't say which exact text is expected, but what it must <b>look like</b>.</p>
+<p>For example, the photofit <code>[0-9][0-9][0-9]</code> means “3 digits”. It accepts <code>007</code> and <code>123</code>, but rejects <code>12</code> (too short) and <code>abc</code> (not digits).</p>
+<p>A few pieces to know:</p>
+<ul>
+<li><code>[A-Z]</code> = one capital letter, <code>[a-z]</code> = one lowercase letter, <code>[0-9]</code> = one digit;</li>
+<li><code>+</code> = “the piece before, once or more”: <code>[a-z]+</code> accepts <code>a</code>, <code>snow</code> or <code>sleigh</code>;</li>
+<li><code>^</code> = the start and <code>$</code> = the end: nothing may stick out!</li>
+</ul>
+<p>To check a tag, you move through the pattern and the tag <b>at the same time</b>, piece by piece, from left to right. If a single piece doesn't match, the tag is rejected.</p>`,
+  enigme: `<div class="motif"><code>^[A-Z][a-z]+-[0-9][0-9]$</code></div>
 <table class="tableau legende-regex">
 <tr><td><code>^</code></td><td>start of the tag</td></tr>
-<tr><td><code>[A-Z]</code></td><td>one capital letter (A to Z)</td></tr>
-<tr><td><code>[a-z]{2,5}</code></td><td>2 to 5 lowercase letters (a to z, no accents)</td></tr>
+<tr><td><code>[A-Z]</code></td><td>one capital letter</td></tr>
+<tr><td><code>[a-z]+</code></td><td>one or more lowercase letters</td></tr>
 <tr><td><code>-</code></td><td>a hyphen</td></tr>
-<tr><td><code>( … | … | … )</code></td><td>a choice: one of the pieces separated by <code>|</code></td></tr>
-<tr><td><code>0[1-9]</code></td><td>a 0 followed by a digit from 1 to 9 (01 to 09)</td></tr>
-<tr><td><code>1[0-9]</code></td><td>a 1 followed by a digit from 0 to 9 (10 to 19)</td></tr>
-<tr><td><code>2[0-4]</code></td><td>a 2 followed by a digit from 0 to 4 (20 to 24)</td></tr>
+<tr><td><code>[0-9][0-9]</code></td><td>two digits</td></tr>
 <tr><td><code>$</code></td><td>end of the tag (nothing after it!)</td></tr>
 </table>
-<p>Here are the tags, in the order they arrived:</p>
-<div class="etiquettes"><span>Felix-25</span><span>Finn-06</span><span>Ed-10</span><span>Ruth-7</span><span>Rosa-21</span><span>Zoé-14</span><span>Oliviero-11</span><span>Omar-15</span><span>AMY-09</span><span>Sky-00</span><span>Sven-02</span><span>Tom_13</span><span>Ted-32</span><span>Tia-24</span></div>
+<p>In plain words: <b>a first name starting with a capital letter</b> (and only the first letter), a hyphen, then <b>exactly two digits</b>. Here are the tags, in the order they arrived:</p>
+<div class="etiquettes"><span>Finn-06</span><span>amy-09</span><span>Rosa-21</span><span>TED-11</span><span>Omar-15</span><span>Sky-4</span><span>Sven-02</span><span>Tia-24</span></div>
 <p>The <b>first letters</b> of the tags accepted by the robot, in order, spell the password.</p>`,
   reponses: ['c228874eced9b802bd4af2bae64dc7b23108d6b874a3865bad13d3fffd45df28'],
   placeholder: 'The word…',
   indices: [
-    'Check each tag piece by piece: 1 capital letter, then 2 to 5 lowercase letters with no accent (so a name of 3 to 6 letters in all), then a hyphen, then a number from 01 to 24 written with 2 digits, then nothing else.',
-    'Traps: a name too short (Ed) or too long (Oliviero), an accent (Zoé), an impossible day (00, 25, 32), a single digit (7), an underscore instead of a hyphen (Tom_13), extra capital letters (AMY). 5 tags are accepted.',
+    'Three tags have a flaw: one starts with a lowercase letter, one is all in capitals, and one has only one digit.',
+    'amy-09 (no capital), TED-11 (too many capitals) and Sky-4 (only one digit) go into the shredder. Read the first letters of the other 5!',
   ],
   lecon: `<p>The accepted tags were <b>F</b>inn-06, <b>R</b>osa-21, <b>O</b>mar-15, <b>S</b>ven-02 and <b>T</b>ia-24 → <b>FROST</b> ❄️</p>
-<p>The rejected ones: <code>Felix-25</code> and <code>Ted-32</code> (days after 24), <code>Ed-10</code> (only one lowercase letter), <code>Ruth-7</code> (only one digit), <code>Zoé-14</code> (“é” is not between a and z!), <code>Oliviero-11</code> (too many lowercase letters: 7), <code>AMY-09</code> (capital letters after the A), <code>Sky-00</code> (00 matches none of the three choices), <code>Tom_13</code> (an underscore instead of a hyphen).</p>
+<p>The rejected ones: <code>amy-09</code> (no capital at the start), <code>TED-11</code> (capitals where the pattern expects lowercase letters) and <code>Sky-4</code> (only one digit instead of two).</p>
 <p><b>Regular expressions</b> (or <i>regex</i>) are a mini-language for describing text patterns. They exist in almost every programming language.</p>
 <h4>🌍 In real life</h4>
 <ul>
-<li>When a form tells you “invalid email address”, a regex often did the checking.</li>
-<li>A US ZIP code is <code>^[0-9]{5}$</code>.</li>
-<li>Developers use them to search and replace text across thousands of files at once.</li>
+<li>When a form tells you “invalid email address”, it's often a regex that checked it.</li>
+<li>A US ZIP code is written <code>^[0-9]{5}$</code> (“exactly 5 digits”).</li>
+<li>Developers use them to search and replace text in thousands of files at once.</li>
 </ul>
 <h4>🧪 Try it yourself</h4>`,
-  apresReussite: W.terrainRegex('^[A-Z][a-z]{2,5}-(0[1-9]|1[0-9]|2[0-4])$', ['Felix-25', 'Finn-06', 'Ed-10', 'Ruth-7', 'Rosa-21', 'Zoé-14', 'Oliviero-11', 'Omar-15', 'AMY-09', 'Sky-00', 'Sven-02', 'Tom_13', 'Ted-32', 'Tia-24']),
+  apresReussite: W.terrainRegex('^[A-Z][a-z]+-[0-9][0-9]$', ['Finn-06', 'amy-09', 'Rosa-21', 'TED-11', 'Omar-15', 'Sky-4', 'Sven-02', 'Tia-24']),
   fragment: [13, '01000001'],
 },
 
@@ -863,75 +815,54 @@ print(cookies)</pre>
   emoji: '📚',
   concept: 'Databases (SQL)',
   givrin: {
-    ricane: "I've cut the register in two: the children on one side, their gifts on the other. Good luck gluing the pieces back together.",
+    ricane: "I've mixed up the whole list of good and naughty children. Good luck finding your way through it.",
     piques: [
       "Wrong! You've just given marbles to a little horror. I'm starting to like you.",
-      "Query error! Your join looks like a tangled string of fairy lights.",
+      "Query error! You read the list upside down, like an elf who's had too much hot chocolate.",
       "No. The database just sighed. Yes it did, I heard it.",
     ],
     fuite: "SELECT exit FROM chalet… I'm vanishing from the database!",
   },
-  chrono: 1200,
-  histoire: `<p>In the Library, the register of children is no longer an old spellbook: it's a <b>database</b>. But the Ker has cut it into <b>two tables</b>: the children on one side, the gifts on the other. To find the password, you need to glue them back together… using the query it left on the screen.</p>`,
-  cours: `<p>A <b>database</b> is a set of big, well-organized tables: each <b>row</b> describes one thing (a child, a gift) and each <b>column</b> one piece of information about it (a name, a price…).</p>
+  histoire: `<p>In the Library, the list of children is no longer an old spellbook: it's a <b>database</b>. The Ker has hidden the password in it… and left on the screen the <b>query</b> that finds it.</p>`,
+  cours: `<p>A <b>database</b> is a big, tidy table: each <b>row</b> describes one thing (here, a gift) and each <b>column</b> one piece of information about it (a name, a price…).</p>
 <p>To ask it a question, you write a <b>query</b> in <b>SQL</b>. Its keywords are plain English:</p>
 <div class="defilement"><table class="tableau compact">
-<tr><td><code>SELECT</code></td><td class="gauche">pick (the column to show)</td></tr>
-<tr><td><code>FROM</code></td><td class="gauche">from (which table)</td></tr>
-<tr><td><code>JOIN … ON …</code></td><td class="gauche">glue on a second table: each row is matched with the rows of the other table that meet the condition after ON</td></tr>
+<tr><td><code>SELECT</code></td><td class="gauche">choose (the column to show)</td></tr>
+<tr><td><code>FROM</code></td><td class="gauche">in (which table)</td></tr>
 <tr><td><code>WHERE</code></td><td class="gauche">only the rows where…</td></tr>
-<tr><td><code>AND</code></td><td class="gauche">and (both conditions must be true)</td></tr>
-<tr><td><code>ORDER BY … DESC</code></td><td class="gauche">sort the result by… in descending order (from biggest to smallest)</td></tr>
+<tr><td><code>ORDER BY … DESC</code></td><td class="gauche">sort the result by… from biggest to smallest</td></tr>
 </table></div>
-<p>With two tables, each one is often given a <b>nickname</b> (an <i>alias</i>): <code>FROM kids k</code> means “the kids table, which I'll call k”. Then <code>k.good</code> means the good column of the kids table.</p>
-<p>A join example: if a gift has <code>kid_id = 4</code>, it's meant for the child whose <code>id</code> is 4.</p>`,
+<p>Example: <code>SELECT name FROM pupils WHERE class = 'Year 6' ORDER BY age DESC</code> means “give me the names of the Year 6 pupils, from oldest to youngest”.</p>`,
   enigme: `<p>Here is the query the Ker left behind:</p>
-<pre class="code sql"><span class="mot">SELECT</span> g.gift
-<span class="mot">FROM</span> kids k
-<span class="mot">JOIN</span> gifts g <span class="mot">ON</span> g.kid_id = k.id
-<span class="mot">WHERE</span> k.good = 'yes'
-  <span class="mot">AND</span> g.price &lt; 30
-<span class="mot">ORDER BY</span> g.price <span class="mot">DESC</span>;</pre>
-<p class="petit">Translation: “Glue each gift to the child it's meant for. Keep only the gifts of good children that cost less than 30, and sort them from most to least expensive. Show the names of the gifts.”</p>
-<div class="deux-tables">
-<div><p>Table <code>kids</code> (alias <code>k</code>):</p>
+<pre class="code sql"><span class="mot">SELECT</span> gift
+<span class="mot">FROM</span> list
+<span class="mot">WHERE</span> good = 'yes'
+<span class="mot">ORDER BY</span> price <span class="mot">DESC</span>;</pre>
+<p class="petit">Translation: “In the list table, keep only the gifts of good children, sort them from most to least expensive, and show the names of the gifts.”</p>
+<p>Table <code>list</code>:</p>
 <div class="defilement"><table class="tableau table-sql">
-<tr><th>id</th><th>name</th><th>city</th><th>good</th></tr>
-<tr><td>1</td><td>Zoe</td><td>York</td><td>yes</td></tr>
-<tr><td>2</td><td>Hugo</td><td>London</td><td>no</td></tr>
-<tr><td>3</td><td>Adam</td><td>Leeds</td><td>yes</td></tr>
-<tr><td>4</td><td>Ines</td><td>Bristol</td><td>yes</td></tr>
-<tr><td>5</td><td>Malo</td><td>York</td><td>no</td></tr>
-<tr><td>6</td><td>Rose</td><td>London</td><td>yes</td></tr>
-</table></div></div>
-<div><p>Table <code>gifts</code> (alias <code>g</code>):</p>
-<div class="defilement"><table class="tableau table-sql">
-<tr><th>id</th><th>kid_id</th><th>gift</th><th>price</th></tr>
-<tr><td>1</td><td>3</td><td>Gloves</td><td>18</td></tr>
-<tr><td>2</td><td>2</td><td>Marbles</td><td>26</td></tr>
-<tr><td>3</td><td>1</td><td>Crayons</td><td>8</td></tr>
-<tr><td>4</td><td>6</td><td>Console</td><td>250</td></tr>
-<tr><td>5</td><td>4</td><td>Atlas</td><td>24</td></tr>
-<tr><td>6</td><td>5</td><td>Ice skates</td><td>12</td></tr>
-<tr><td>7</td><td>6</td><td>Magic set</td><td>27</td></tr>
-<tr><td>8</td><td>1</td><td>Igloo tent</td><td>15</td></tr>
-<tr><td>9</td><td>3</td><td>Robot</td><td>45</td></tr>
-</table></div></div>
-</div>
-<p>The <b>initials of the gifts</b> in the result, in order, spell the password.</p>`,
+<tr><th>child</th><th>gift</th><th>price</th><th>good</th></tr>
+<tr><td>Zoe</td><td>Crayons</td><td>8</td><td>yes</td></tr>
+<tr><td>Hugo</td><td>Marbles</td><td>26</td><td>no</td></tr>
+<tr><td>Adam</td><td>Gloves</td><td>18</td><td>yes</td></tr>
+<tr><td>Ines</td><td>Atlas</td><td>24</td><td>yes</td></tr>
+<tr><td>Malo</td><td>Robot kit</td><td>12</td><td>no</td></tr>
+<tr><td>Rose</td><td>Magic set</td><td>27</td><td>yes</td></tr>
+<tr><td>Leo</td><td>Igloo tent</td><td>15</td><td>yes</td></tr>
+</table></div>
+<p>The <b>initials of the gifts</b> you get, in the order of the result, spell the password.</p>`,
   reponses: ['39c71eda91518913a57768c7920995c89eeb8baa2a5c70d6a5103c8fe866b796'],
   placeholder: 'The word…',
   indices: [
-    'For each gift, find its child using kid_id (it\'s the child\'s id). Cross out the gifts of children who aren\'t good, then the ones that cost 30 or more.',
-    '5 gifts are left. Sort them from most to least expensive (DESC), then read their initials. Watch out for the Marbles and the Ice skates: they\'re meant for children who aren\'t good.',
+    "First cross out the rows of naughty children (good = 'no'): Hugo's Marbles and Malo's Robot kit. 5 gifts are left.",
+    'Sort the 5 remaining gifts from most to least expensive: the Magic set (27) first, the Crayons (8) last. Read their initials!',
   ],
-  lecon: `<p>The query returns 5 rows: <b>M</b>agic set (27, Rose), <b>A</b>tlas (24, Ines), <b>G</b>loves (18, Adam), <b>I</b>gloo tent (15, Zoe) and <b>C</b>rayons (8, Zoe) → <b>MAGIC</b> ✨</p>
-<p>Left out: the Marbles and the Ice skates (meant for Hugo and Malo, who aren't good), the Console and the Robot (30 or more).</p>
-<p>A <b>database</b> stores information in <b>tables</b>. Rather than writing everything in one huge table (and copying Zoe's city next to each of her gifts), the information is split up and linked by a number: that's a <b>relational</b> database, and the <b>join</b> (<code>JOIN</code>) glues the pieces back together when you ask the question.</p>
-<p><b>SQL</b> was invented in the 1970s… and it's still used everywhere today. With 10 rows, you can do it by hand. A real database can hold <b>billions</b> of rows: the computer still answers in a fraction of a second.</p>
+  lecon: `<p>The query returns 5 rows: <b>M</b>agic set (27), <b>A</b>tlas (24), <b>G</b>loves (18), <b>I</b>gloo tent (15) and <b>C</b>rayons (8) → <b>MAGIC</b> ✨</p>
+<p>A <b>database</b> stores information in <b>tables</b>, and <b>SQL</b> lets you ask them questions: filter (<code>WHERE</code>), sort (<code>ORDER BY</code>), choose the columns (<code>SELECT</code>)… It was invented in the 1970s and is still used everywhere today.</p>
+<p>With 7 rows, you can do it by hand. A real database can hold <b>billions</b> of rows: the computer still answers in a fraction of a second.</p>
 <h4>🌍 In real life</h4>
 <ul>
-<li>Your social media account, your school grades, your online orders, your bank account: everything is stored in databases.</li>
+<li>Your social media account, your school grades, your online shopping, your bank account: everything is stored in databases.</li>
 <li>A famous attack, <b>SQL injection</b>, consists of slipping SQL code into a form to trick the database. Developers must always protect against it!</li>
 </ul>`,
   fragment: [6, '01010100'],
@@ -952,7 +883,6 @@ print(cookies)</pre>
     ],
     fuite: "Debugged! I've been debugged! Aaaaah!",
   },
-  chrono: 1200,
   histoire: `<p>On <b>September 9, 1947</b>, computer scientist <b>Grace Hopper</b>'s team found a real moth stuck inside the Mark II computer. They taped it into their logbook with the note: “first actual case of bug being found”. Today, in the Toy Hospital, the sleigh-loading robot has a bug… and the Ker is hiding inside it!</p>`,
   cours: `<p>A <b>bug</b> is a mistake in a program: the computer does exactly what was written… but it's not what we wanted! To find it, you need to be able to read the program. Here's what you need:</p>
 <ul>
@@ -1000,45 +930,43 @@ for i from 0 to 4:
   emoji: '🔐',
   concept: 'Passwords and brute force',
   givrin: {
-    ricane: "My ice computer tests 10 trillion passwords per second. Your little secret will last… about as long as a sneeze.",
+    ricane: "My ice computer tests 10 billion passwords per second. Your little secret will last… about as long as a sneeze.",
     piques: [
       "Cracked! Even my granny, frozen since the year 1000, would have guessed it.",
       "Ha! I found that password before you'd finished typing it.",
       "Longer, come on! Your password is as short as your victory will be.",
     ],
-    fuite: "A million years?! I don't have time to wait, I've got other Christmases to ruin!",
+    fuite: "A thousand years?! I don't have time to wait, I've got other Christmases to ruin!",
   },
-  chrono: 1200,
-  histoire: `<p>In the Vault Room, the vaults' <b>Ker</b> has plugged in an ice computer a thousand times more powerful than an ordinary hacker's: it tests <b>10 trillion passwords per second</b>! The gift vault needs a new password to protect it.</p>`,
-  cours: `<p>A hacker who doesn't know your password can ask a computer to <b>try them all</b>, one by one, until it hits the right one: that's a <b>brute-force attack</b> (you already used one against the Caesar cipher on day 3!).</p>
-<p>To resist it, the number of <b>possible combinations</b> has to be gigantic. Think of a combination padlock:</p>
+  histoire: `<p>In the Vault, the vault's <b>Ker</b> has plugged in an ice computer that tests <b>10 billion passwords per second</b>! You need to protect the gift vault with a new, really strong password.</p>`,
+  cours: `<p>A hacker who doesn't know your password can ask a computer to <b>try them all</b>, one by one, until it hits the right one: that's a <b>brute-force attack</b>.</p>
+<p>To resist it, the number of <b>possible combinations</b> must be gigantic. Think of a combination padlock:</p>
 <ul>
 <li>with 3 wheels of 10 digits: 10 × 10 × 10 = <b>1,000</b> combinations;</li>
 <li>with 4 wheels: 10 × 10 × 10 × 10 = <b>10,000</b> combinations.</li>
 </ul>
-<p>Every extra wheel multiplies the number of combinations. A password works the same way: each character is a “wheel”, and the number of possible symbols (lowercase, capitals, digits, signs…) is the number of notches on each wheel. Now find out what matters most!</p>`,
-  enigme: `<p>Invent a password that the Ker's ice computer would need <b>at least a million years</b> to find by trying every combination. Watch carefully what makes the time climb fastest!</p>
+<p>Every extra wheel <b>multiplies</b> the number of combinations. A password works the same way: each character is a “wheel”. Conclusion: <b>length is what matters most!</b></p>`,
+  enigme: `<p>Invent a password that the Ker's ice computer would need <b>at least a thousand years</b> to find by trying every combination. The gauge shows you live how long it would hold out!</p>
 <p class="alerte">🚫 Never type one of your real passwords here: invent a new one!</p>`,
-  widget: W.motDePasse(1e13, 1e6, ['123456', '123456789', '12345678', 'password', 'qwerty', 'azerty', 'letmein', 'iloveyou', 'admin', 'welcome', 'monkey', 'dragon', 'football', 'christmas', 'merrychristmas', 'santa', 'santaclaus', 'noel', 'joyeuxnoel', 'motdepasse', '000000', '111111', 'abc123', 'chocolate', 'sunshine']),
+  widget: W.motDePasse(1e10, 1e3, ['123456', '123456789', '12345678', 'password', 'qwerty', 'azerty', 'letmein', 'iloveyou', 'admin', 'welcome', 'monkey', 'dragon', 'football', 'christmas', 'merrychristmas', 'santa', 'santaclaus', 'noel', 'joyeuxnoel', 'motdepasse', '000000', '111111', 'abc123', 'chocolate', 'sunshine']),
   indices: [
-    'Compare: what increases the time the most? Adding a type of character… or adding characters? You\'ll need well over 12 characters!',
-    'A sentence of 4 or 5 unrelated words, separated by spaces, quickly becomes uncrackable, even all in lowercase. But the Ker rejects passwords that are too repetitive (“aaaa”).',
+    'Make your password longer: every extra character multiplies the time! About fifteen letters is enough.',
+    'Pro tip: a little phrase of 3 or 4 unrelated words, separated by spaces (“penguin volcano sock”). Strong and easy to remember!',
   ],
-  lecon: `<p>The number of combinations of a password = <b>(number of possible characters)<sup>length</sup></b>. At 10 trillion tries per second:</p>
+  lecon: `<p>The number of combinations of a password = <b>(number of possible characters)<sup>length</sup></b>. At 10 billion guesses per second:</p>
 <ul>
-<li>8 lowercase letters: 26<sup>8</sup> ≈ 200 billion → cracked in <b>2 hundredths of a second</b>;</li>
-<li>8 characters of any kind: 95<sup>8</sup> ≈ 6.6 million billion → about <b>11 minutes</b>;</li>
-<li>20 lowercase letters: 26<sup>20</sup> → about <b>63 million years</b>!</li>
+<li>8 lowercase letters → cracked in <b>21 seconds</b>;</li>
+<li>8 characters of every kind (capitals, digits, symbols…) → about <b>8 days</b>;</li>
+<li>15 lowercase letters → about <b>5,000 years</b>!</li>
 </ul>
-<p>To last a million years, you need about <b>19 lowercase letters</b>… or <b>14 characters</b> of any kind. Each extra character multiplies the time, whereas a new type of character only increases it a little.</p>
-<p><b>Length</b> matters much more than complicated symbols. A <b>passphrase</b> made of several random words (“sock-volcano-penguin-trumpet”) is both very strong and easy to remember.</p>
-<p>⚠️ Our calculation is simplified: hackers don't try combinations in just any order. They first test the most common passwords (<code>123456</code>, <code>password</code>…), dictionary words, and passwords that have already leaked on the Internet.</p>
-<h4>🌍 In real life: 4 good habits</h4>
+<p><b>Length</b> matters far more than complicated symbols. A <b>passphrase</b> of several randomly chosen words (“sock-volcano-penguin-trumpet”) is both very strong and easy to remember.</p>
+<p>⚠️ Our calculation is simplified: hackers don't try combinations in just any order. They first test the most common passwords (<code>123456</code>, <code>qwerty</code>…), dictionary words and passwords that have already leaked on the Internet.</p>
+<h4>🌍 In real life: the 4 good habits</h4>
 <ul>
-<li>A <b>different password for every site</b> (otherwise a single leak opens everything).</li>
+<li>A <b>different password for every site</b> (otherwise, a single leak is enough to open everything).</li>
 <li>A <b>password manager</b> to remember them for you.</li>
-<li><b>Two-factor authentication</b>: a code sent to your phone on top of your password.</li>
-<li>Never give your password away, not even to a “friend” or a so-called “tech support”.</li>
+<li><b>Two-factor authentication</b>: a code sent to your phone on top of the password.</li>
+<li>Never give out your password, not even to a “friend” or a so-called “technical support”.</li>
 </ul>`,
   fragment: [14, '01000011'],
 },
@@ -1052,49 +980,41 @@ for i from 0 to 4:
   givrin: {
     ricane: "I've slipped fake orders in among the real ones. Your silly seal won't notice a thing.",
     piques: [
-      "Wrong! Tom will get a steak. Not even cooked.",
+      "Wrong! Tom will get a doll. He wanted a dinosaur, but hey.",
       "Wrong. Did you count with your mittens on?",
       "Wrong again! I'm starting to think you wrote my fake orders yourself.",
     ],
     fuite: "Unmasked by a mere number?! I'm puffing… I'm running out of puff…",
   },
-  chrono: 1200,
-  histoire: `<p>In Santa's Office, every order is protected by a <b>magic seal</b>: a number calculated from the text. It used to be a simple sum of the letters… until the day the Ker found out how to fool that seal. So Santa came up with a smarter recipe.</p>`,
+  histoire: `<p>In Santa's Study, every order is protected by a <b>magic seal</b>: a number calculated from the name of the gift. The Ker intercepted Tom's order and buried it among fake orders. Luckily, the seal hasn't moved!</p>`,
   cours: `<p>How can you be sure a message hasn't been changed on the way? You can add a <b>fingerprint</b> to it: a small number calculated from the text, a bit like a real fingerprint.</p>
 <p>The recipient does the same calculation on the text they received. If they get the same fingerprint, the text is intact. If not, someone has changed it!</p>
-<p>For the calculation, you'll need each letter's <b>position</b> in the alphabet (A is the 1st letter, B the 2nd…) and the <b>remainder of a division</b>: what's left when you've taken a number away as many times as you can. For example, the remainder of 130 divided by 50: 130 − 50 − 50 = <b>30</b> (you can't take 50 away any more).</p>
-<p>A trap: two words with exactly the same letters in a different order (<b>anagrams</b>, like LISTEN and SILENT) give the same total if you just add up the letters. To tell them apart, you can multiply each letter by its <b>position</b> in the word: in LISTEN, the L is 1st (× 1); in SILENT, it's 3rd (× 3).</p>`,
-  enigme: `<div class="note">
-<p>🕯️ <b>The new seal recipe</b></p>
-<ol>
-<li>Replace each letter with its position in the alphabet: A = 1, B = 2, … Z = 26.</li>
-<li>Multiply each of these numbers by the <b>position</b> of the letter in the word: the 1st letter × 1, the 2nd × 2, the 3rd × 3…</li>
-<li>Add everything up, then keep only the <b>remainder of the division by 100</b> (take away 100 as many times as possible).</li>
-</ol>
-<p>Example: <code>SANTA</code> → 19 × 1 + 1 × 2 + 14 × 3 + 20 × 4 + 1 × 5 = 19 + 2 + 42 + 80 + 5 = 148 → 148 − 100 = <b>48</b>.</p>
-</div>
-<p>Tom's original order had <b>seal 49</b>. The Ker intercepted it and sent several fake versions, one of which looks terribly like the real one. <b>Which gift did Tom really order?</b></p>
-<div class="etiquettes"><span>ROBOT</span><span>STEAK</span><span>TRAIN</span><span>SKATE</span><span>PUPPY</span><span>SLED</span></div>`,
-  reponses: ['86782888cd3cf1005b00935870fbbefc91d257d282794f2d3c590c916d416c38', '3a9c74f483b2438be4fff532928cc1a3903ee6d309f3d0bd301b77b0aee5137b'],
+<p>Santa's seal recipe is very simple: replace each letter with its <b>position in the alphabet</b> (A = 1, B = 2, C = 3… Z = 26), then <b>add</b> everything up.</p>
+<p>Example: <code>SNOW</code> → S = 19, N = 14, O = 15, W = 23 → 19 + 14 + 15 + 23 = <b>71</b>.</p>`,
+  enigme: `<p>Tom's original order had <b>seal 56</b>. Here are the orders found on the desk: only one is the real one!</p>
+<div class="etiquettes"><span>ROBOT</span><span>TRAIN</span><span>SKATE</span><span>DOLL</span><span>SLED</span><span>BALL</span></div>
+<p><b>Which gift did Tom really order?</b></p>
+<div class="rappel">📌 <b>Reminder</b>: add up the positions of the letters in the alphabet.</div>
+${tableAlphabet()}`,
+  reponses: ['86782888cd3cf1005b00935870fbbefc91d257d282794f2d3c590c916d416c38', '3a9c74f483b2438be4fff532928cc1a3903ee6d309f3d0bd301b77b0aee5137b', '1e7066f87048fda51daac423dac34ed4ab0d1ff0c44baf7071709575c9094ab4'],
   placeholder: 'The real gift…',
   indices: [
-    'Work out the seal of each gift, like in the SANTA example. Don\'t forget to multiply each letter by its position!',
-    'Reminder: A = 1, B = 2, D = 4, E = 5, I = 9, K = 11, L = 12, N = 14, O = 15, P = 16, R = 18, S = 19, T = 20, U = 21, Y = 25. SKATE and STEAK have the same letters… but not in the same places.',
+    'Work out the seal of each gift, like in the SNOW example. For example, SLED = 19 + 12 + 5 + 4 = 40: that\'s not 56, so it isn\'t the sled.',
+    'ROBOT = 70, TRAIN = 62, DOLL = 43, BALL = 27… Only one gift left to check!',
   ],
-  lecon: `<p>The real gift was the <b>SKATE</b> ⛸️: 19 × 1 + 11 × 2 + 1 × 3 + 20 × 4 + 5 × 5 = 19 + 22 + 3 + 80 + 25 = 149 → <b>49</b> ✅. The Ker's STEAK gives 33.</p>
-<p>With the old recipe (a simple sum), SKATE and STEAK had the same total (56): the Ker could have swapped the skate for a steak without anyone noticing! By taking the <b>position</b> of the letters into account, you spot the swapped letters.</p>
-<p>This seal is a <b>hash function</b>: it turns any text into a <b>fingerprint</b> of fixed size. But ours is still weak: <code>BOAT</code> and <code>FROG</code> both have seal 15! Two different texts with the same fingerprint is called a <b>collision</b>.</p>
+  lecon: `<p>The real gift was the <b>SKATE</b> ⛸️: S + K + A + T + E = 19 + 11 + 1 + 20 + 5 = <b>56</b> ✅.</p>
+<p>This seal is a <b>hash function</b>: it turns a text into a <b>fingerprint</b>. But ours has a big flaw… Work out the seal of <code>STEAK</code>: 19 + 20 + 5 + 1 + 11 = <b>56</b> too! With the same letters in a different order, you get the same total. The Ker could have swapped the skate for a steak without anyone noticing! Two different texts with the same fingerprint is called a <b>collision</b>.</p>
 <p>Real hash functions, like <b>SHA-256</b>, produce a 256-bit fingerprint and are designed so that:</p>
 <ul>
-<li>the smallest change to the text <b>completely</b> changes the fingerprint;</li>
+<li>the slightest change to the text <b>completely</b> changes the fingerprint;</li>
 <li>it's impossible to get the text back from the fingerprint;</li>
 <li>nobody can find two texts with the same fingerprint.</li>
 </ul>
-<p>🤫 <b>This calendar's secret</b>: the answers are never sent to your browser. They stay on the North Pole server… and even there, they aren't written in plain text: the server only keeps their <b>SHA-256 fingerprints</b>. When you suggest an answer, it calculates its fingerprint and compares. Even someone who stole the server couldn't read the answers!</p>
+<p>🤫 <b>This calendar's secret</b>: the answers are never sent to your browser. They stay on the North Pole server… and even there, they aren't written in plain text: the server only keeps their <b>SHA-256 fingerprints</b>. When you suggest an answer, it computes its fingerprint and compares. Even someone who stole the server couldn't read the answers!</p>
 <h4>🌍 In real life</h4>
 <ul>
-<li>Serious websites never store your password: only its fingerprint (with a “salt” added for extra security).</li>
-<li>When you download software, you can compare its fingerprint with the one on the official website to check a hacker hasn't tampered with it.</li>
+<li>Serious websites never store your password: only its fingerprint (with some added “salt” for extra security).</li>
+<li>When you download software, you can compare its fingerprint with the one on the official website to check that a hacker hasn't tampered with it.</li>
 <li>Cryptocurrencies like Bitcoin use SHA-256 all the time.</li>
 </ul>
 <h4>🧪 Try it yourself</h4>`,
@@ -1117,7 +1037,6 @@ for i from 0 to 4:
     ],
     fuite: "You spotted my traps?! Nobody takes the bait any more… I'm packing up my fishing rod.",
   },
-  chrono: 1200,
   histoire: `<p>In the Elves' Lounge, 5 messages have just arrived on the mail computer. But the lounge's <b>Ker</b> has sent <b>fake messages</b> to steal passwords! And it's crafty: its fakes aren't all urgent or full of mistakes… Santa's only real website is <code>santa-claus.xmas</code>.</p>`,
   cours: `<p><b>Phishing</b> is a fake message pretending to come from someone you trust (your bank, a game, your school…) to make you click a link and steal your password or credit card.</p>
 <p>The best way to unmask it: <b>read the link's address</b>. A web address breaks down like this:</p>
@@ -1172,7 +1091,6 @@ for i from 0 to 4:
     ],
     fuite: "cd /exit… rm ker… Nooo, not the rm command!",
   },
-  chrono: 1200,
   histoire: `<p>In the Hacker Elf's Den, under the chalet's roof, there's no mouse, no windows, no icons: just a black screen and green text. It's a <b>terminal</b>! You give the computer orders by typing <b>commands</b>. The <b>Ker</b> lurking under the roof stole today's password, <b>cut it in two</b>… and hid each half in a different corner of the disk.</p>`,
   cours: `<p>In a computer, files (texts, photos…) are stored in <b>folders</b>, which are themselves stored in other folders, like boxes inside boxes.</p>
 <p>Usually, you open these folders with the mouse, by double-clicking. In a <b>terminal</b>, there's no mouse: you type <b>commands</b> on the keyboard, then press <b>Enter</b> to run them. The computer answers in writing, just below.</p>
@@ -1254,65 +1172,55 @@ for i from 0 to 4:
     piques: [
       "Wrong! The reindeer are sulking. Sulking very hard. They bite, too.",
       "Wrong. Even a toaster would learn faster than you.",
-      "No! Your rule works for half the examples. I'm nice half the time too. Meaning never.",
+      "No! Your rule doesn't work for every example. Look harder!",
     ],
     fuite: "It's learning… it's learning all by itself! It even figured me out! I'm off!",
   },
-  chrono: 1200,
-  histoire: `<p>In the Lab, a <b>smart robot</b> has to guess which toys the reindeer like. Nobody gave it a rule: it was only shown <b>examples</b>. The Ker is sniggering: this time, the rule isn't so simple… Do what the robot does: find the hidden rule!</p>`,
-  cours: `<p>Usually, to make a computer do something, a human writes precise <b>rules</b> for it. But some rules are almost impossible to write: how do you explain to a machine what makes a photo show a cat?</p>
-<p>With <b>machine learning</b>, we do it differently: we show the machine lots of <b>examples with the right answer</b> (“this is a cat”, “this is not a cat”), and it looks for a rule that works for all those examples by itself. Just like a toddler who learns to recognize dogs after seeing lots of them.</p>
-<p>To find a hidden rule, compare the examples: what do the ones with the same answer have in common? And what makes them different from the others?</p>
-<p>Sometimes one question isn't enough, and the rule looks like a little chain of questions: “Is it raining? If yes, do I have an umbrella? If no, is it cold?” The second question <b>depends</b> on the answer to the first. A tip: split the examples into two groups according to one feature, then look for a rule <b>in each group</b>.</p>`,
+  histoire: `<p>In the Lab, a <b>smart robot</b> has to guess which toys the reindeer like. Nobody gave it a rule: it was only shown <b>examples</b>. Your turn to do what the robot does: find the hidden rule!</p>`,
+  cours: `<p>Usually, to get a computer to do something, a human writes precise <b>rules</b> for it. But some rules are almost impossible to write: how do you explain to a machine what makes a photo show a cat?</p>
+<p>With <b>machine learning</b>, you do it differently: you show the machine lots of <b>examples with the right answer</b> (“this is a cat”, “this is not a cat”), and the machine itself looks for a rule that works for all those examples. Just like a toddler who learns to recognize dogs after seeing lots of them.</p>
+<p>To find a hidden rule, compare the examples: what do <b>all</b> the ones with the same answer have in common? A rule is only good if it works for <b>every</b> example, without exception.</p>`,
   enigme: `<p><b>The examples shown to the robot:</b></p>
 <div class="defilement"><table class="tableau table-ia">
 <tr><th>Toy</th><th>Color</th><th>Makes noise?</th><th>Size</th><th>The reindeer…</th></tr>
 <tr><td>🔔 Little bell</td><td>red</td><td>yes</td><td>small</td><td>❤️ love it</td></tr>
-<tr><td>🥁 Drum</td><td>blue</td><td>yes</td><td>big</td><td>😐 meh</td></tr>
-<tr><td>🧸 Teddy bear</td><td>red</td><td>no</td><td>big</td><td>❤️ love it</td></tr>
-<tr><td>🛎️ Jingle bell</td><td>green</td><td>yes</td><td>small</td><td>❤️ love it</td></tr>
+<tr><td>🧸 Teddy bear</td><td>red</td><td>no</td><td>big</td><td>😐 meh</td></tr>
+<tr><td>🥁 Drum</td><td>blue</td><td>yes</td><td>big</td><td>❤️ love it</td></tr>
 <tr><td>⚽ Ball</td><td>green</td><td>no</td><td>small</td><td>😐 meh</td></tr>
-<tr><td>🎺 Trumpet</td><td>red</td><td>yes</td><td>big</td><td>😐 meh</td></tr>
-<tr><td>🎹 Little piano</td><td>blue</td><td>yes</td><td>small</td><td>❤️ love it</td></tr>
+<tr><td>🎺 Trumpet</td><td>green</td><td>yes</td><td>big</td><td>❤️ love it</td></tr>
 <tr><td>🧊 Cube</td><td>blue</td><td>no</td><td>small</td><td>😐 meh</td></tr>
-<tr><td>🍎 Wooden apple</td><td>red</td><td>no</td><td>small</td><td>❤️ love it</td></tr>
-<tr><td>📯 Big horn</td><td>green</td><td>yes</td><td>big</td><td>😐 meh</td></tr>
+<tr><td>🍎 Wooden apple</td><td>red</td><td>no</td><td>small</td><td>😐 meh</td></tr>
+<tr><td>🛎️ Jingle bell</td><td>green</td><td>yes</td><td>small</td><td>❤️ love it</td></tr>
 </table></div>
 <p><b>The new toys</b> (each one has a letter):</p>
 <div class="defilement"><table class="tableau table-ia">
 <tr><th>Letter</th><th>Toy</th><th>Color</th><th>Makes noise?</th><th>Size</th></tr>
 <tr><td><b>S</b></td><td>🎷 Saxophone</td><td>blue</td><td>yes</td><td>small</td></tr>
-<tr><td><b>K</b></td><td>🔔 Big bell</td><td>green</td><td>yes</td><td>big</td></tr>
-<tr><td><b>L</b></td><td>🪀 Yoyo</td><td>red</td><td>no</td><td>small</td></tr>
+<tr><td><b>K</b></td><td>🧣 Scarf</td><td>red</td><td>no</td><td>big</td></tr>
+<tr><td><b>L</b></td><td>🔔 Big bell</td><td>green</td><td>yes</td><td>big</td></tr>
 <tr><td><b>O</b></td><td>📕 Book</td><td>blue</td><td>no</td><td>big</td></tr>
-<tr><td><b>E</b></td><td>🎻 Violin</td><td>red</td><td>yes</td><td>small</td></tr>
-<tr><td><b>T</b></td><td>🎸 Guitar</td><td>red</td><td>yes</td><td>big</td></tr>
-<tr><td><b>D</b></td><td>🧣 Scarf</td><td>red</td><td>no</td><td>big</td></tr>
+<tr><td><b>E</b></td><td>🎸 Guitar</td><td>red</td><td>yes</td><td>big</td></tr>
+<tr><td><b>T</b></td><td>🪀 Yoyo</td><td>red</td><td>no</td><td>small</td></tr>
+<tr><td><b>D</b></td><td>📯 Little horn</td><td>green</td><td>yes</td><td>small</td></tr>
 </table></div>
 <p>Which new toys will the reindeer love? <b>Their letters, in order, spell the password.</b></p>`,
   reponses: ['04c1e076788df781810dc8ce83e92ff675fe47e95c691b2537323addac0a5af2'],
   placeholder: 'The word…',
   indices: [
-    'Split the examples into two groups: the ones that make noise and the ones that don\'t. In each of the two groups, look for what separates the ❤️ from the 😐 (it\'s not the same thing in both groups!).',
-    'Among the noisy toys, only the small ones are loved. Among the quiet ones, only the red ones are loved. Apply this double rule to the new toys.',
+    'Color? Some red toys are loved and others are “meh”. Size? Same thing. Look at the column that\'s left…',
+    'Every loved toy makes noise, and no quiet toy is loved: the reindeer love toys that make noise! Apply that rule to the new toys.',
   ],
-  lecon: `<p>The hidden rule was a little <b>decision tree</b>:</p>
-<pre class="code">Does it make noise?
-├── yes → loved if it's SMALL
-└── no  → loved if it's RED</pre>
-<p>So the loved toys are S (saxophone, noisy and small), L (yoyo, quiet and red), E (violin, noisy and small) and D (scarf, quiet and red) → <b>SLED</b> 🛷. The traps: the guitar is red… but noisy and big; the saxophone is blue… but that doesn't matter for a noisy toy!</p>
+  lecon: `<p>The hidden rule: <b>the reindeer love toys that make noise</b> 🔔 (it reminds them of the bells on their harness!). Neither color nor size mattered.</p>
+<p>So the loved toys are S (saxophone), L (big bell), E (guitar) and D (little horn) → <b>SLED</b> 🛷.</p>
 <p>You've just done what an <b>artificial intelligence</b> does: <b>machine learning</b>. Instead of writing the rule by hand, you show the machine <b>labelled examples</b> (“love it” / “meh”), and it finds a rule that explains them by itself. Then it applies it to cases it has never seen.</p>
-<ul>
-<li>The pieces of information about each toy (color, noise, size) are called <b>features</b>.</li>
-<li><b>Decision trees</b> like this one are among the most widely used learning methods: you can read them and understand why the machine decided what it did.</li>
-</ul>
+<p>The pieces of information about each toy (color, noise, size) are called <b>features</b>. The machine's job is to work out which ones really matter.</p>
 <h4>⚠️ The danger of bias</h4>
-<p>If the robot had only been shown blue, silent toys, it could never have known whether the reindeer dislike blue or silence. An AI is never better than its examples: if they are incomplete or unfair, it will learn a wrong or unfair rule. That's called <b>bias</b>.</p>
+<p>If the robot had only been shown red, noisy toys, it could never have known whether the reindeer like red or noise. An AI is never better than its examples: if they're incomplete or unfair, it will learn a wrong or unfair rule. That's called <b>bias</b>.</p>
 <h4>🌍 In real life</h4>
 <ul>
-<li>Your mailbox's spam filter learned from millions of emails marked “spam” or “not spam”.</li>
-<li>Video and music recommendations learn from what you liked.</li>
-<li>Chat assistants learned from huge amounts of text, thanks to “neural networks” with billions of parameters.</li>
+<li>Your email's spam filter learned from millions of emails marked “spam” or “not spam”.</li>
+<li>Video and music recommendations learn from what you've liked.</li>
+<li>Chatbots learned from huge amounts of text, thanks to “neural networks” with billions of parameters.</li>
 </ul>`,
   fragment: [1, '01001100'],
 },
@@ -1341,7 +1249,8 @@ for i from 0 to 4:
 <tr><td class="allume">1</td><td>0</td><td class="allume">1</td><td>0</td><td>0</td><td>16 + 4 = <b>20</b></td></tr>
 </table></div>
 <p>Then put each letter in the box with that number. The boxes only hold letters, with no spaces: once everything is in place, it's up to you to spot the words!</p>`,
-  enigme: `<p>Each fragment is a letter with its <b>position</b> in the secret spell… written in <b>binary</b> (thanks, day 1!). Put the letters back in order to rebuild the spell, then light up the star.</p>`,
+  enigme: `<p>Each fragment is a letter with its <b>position</b> in the secret spell… written in <b>binary</b> (thanks, day 1!). Put the letters back in order to rebuild the spell, then light up the star.</p>
+<div class="rappel">📌 <b>Reminder</b>: the positions are written with 5 places, worth <code>16 · 8 · 4 · 2 · 1</code>. Example: <code>00110</code> = 4 + 2 = 6.</div>`,
   widget: W.finale(23),
   reponses: ['22cbd35071bff0460b8fdd2c952cf7f9d3e2d7ca2fbc10d1dde07b318b647124'],
   sansChamp: true,

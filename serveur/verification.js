@@ -22,8 +22,8 @@ const M = {
   fr: {
     tropEchanges: '⛽ Trop d\'échanges : recommence !',
     trajet: (t) => `🦌 Arrivé en <b>${t} minutes</b>… Le Père Noël a calculé qu'il existe un trajet plus rapide. Recommence !`,
-    message14: 'LES RENNES DÉCOLLENT À MINUIT',
-    paquets: '📭 Le message reconstitué ne veut rien dire… Vérifie l\'ordre des numéros, méfie-toi des doublons… et compare la taille annoncée de chaque paquet à ce qu\'il contient vraiment !',
+    message14: 'DÉCOLLAGE À MINUIT',
+    paquets: '📭 Le message reconstitué ne veut rien dire… Convertis chaque numéro binaire (4 · 2 · 1) et clique sur les paquets dans l\'ordre : 1, 2, 3…',
     codesManquants: 'Choisis un code pour chaque situation.',
     codes: (b, n) => `🔥 Le serveur affiche : <b>${b} / ${n}</b> bonnes réponses. Encore un effort !`,
     explications: [
@@ -51,8 +51,8 @@ const M = {
   en: {
     tropEchanges: '⛽ Too many swaps: start again!',
     trajet: (t) => `🦌 You arrived in <b>${t} minutes</b>… Santa worked out that there's a faster route. Try again!`,
-    message14: 'THE REINDEER TAKE OFF AT MIDNIGHT',
-    paquets: "📭 The rebuilt message doesn't make sense… Check the order of the numbers, watch out for duplicates… and compare each packet's announced size with what it really contains!",
+    message14: 'SLEIGH AT MIDNIGHT',
+    paquets: "📭 The rebuilt message doesn't make sense… Convert each binary number (4 · 2 · 1) and click the packets in order: 1, 2, 3…",
     codesManquants: 'Pick a code for each situation.',
     codes: (b, n) => `🔥 The server says: <b>${b} / ${n}</b> correct answers. Keep going!`,
     explications: [
@@ -96,19 +96,18 @@ function plusCourt(aretes, depart, arrivee) {
 }
 
 const MINI_JEUX = {
-  // Guirlande binaire : les ampoules allumées doivent valoir 41
-  // (17 bonshommes de neige, gravés en binaire sur la porte, + les 24 cases du calendrier).
+  // Guirlande binaire : les ampoules allumées doivent valoir 25 (le jour de Noël).
   1(r) {
     if (!estObjet(r) || !Array.isArray(r.bits) || r.bits.length !== 8) return { ok: false };
-    return { ok: r.bits.reduce((s, b, i) => s + (b === true ? 128 >> i : 0), 0) === 41 };
+    return { ok: r.bits.reduce((s, b, i) => s + (b === true ? 128 >> i : 0), 0) === 25 };
   },
 
-  // Circuit logique (le même que dans public/js/widgets.js) : seule A=0 B=0 C=1 D=0 E=1 allume l'étoile.
+  // Circuit logique (le même que dans public/js/widgets.js) : seule A=1 B=1 C=0 allume l'étoile.
   5(r) {
     if (!estObjet(r)) return { ok: false };
-    const { A, B, C, D, E } = r;
-    if (![A, B, C, D, E].every(v => typeof v === 'boolean')) return { ok: false };
-    return { ok: !(A && B) && (A || C) && !D && (B !== C) && ((C && D) || E) && !(E && A) };
+    const { A, B, C } = r;
+    if (![A, B, C].every(v => typeof v === 'boolean')) return { ok: false };
+    return { ok: (A && B) && !C && (B || C) };
   },
 
   // Tri : on rejoue les échanges sur le serveur.
@@ -149,7 +148,7 @@ const MINI_JEUX = {
 
   // Codes HTTP.
   15(r, J, m) {
-    const attendu = [201, 301, 302, 401, 403, 404, 429, 500, 503];
+    const attendu = [200, 301, 403, 404, 500];
     const c = estObjet(r) ? r.codes : null;
     if (!Array.isArray(c) || c.length !== attendu.length) return { ok: false, message: m.codesManquants };
     const bons = c.filter((x, i) => Number(x) === attendu[i]).length;
@@ -194,7 +193,7 @@ function verifier(n, reponse, J, langue = 'fr') {
 }
 
 /* ---------- Jour 7 : la maison mystère est tirée par le serveur ---------- */
-const MAISONS = 1000000, ESSAIS = 20; // (les mêmes que W.dichotomie dans serveur/jours.js)
+const MAISONS = 100, ESSAIS = 10; // (les mêmes que W.dichotomie dans serveur/jours.js)
 const parties = new Map();
 setInterval(() => {
   const limite = Date.now() - 2 * 3600 * 1000;

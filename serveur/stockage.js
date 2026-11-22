@@ -58,9 +58,12 @@ function creerMysql() {
       const lignes = await q('SELECT jour, tentatives, indices, resolu_le FROM progression WHERE joueur_id = ?', [joueur]);
       return new Map(lignes.map(l => [l.jour, { tentatives: l.tentatives, indices: l.indices, resolu: !!l.resolu_le }]));
     },
+    // (renvoie le nouveau nombre de tentatives, affiché dans le défi)
     async tentative(joueur, jour) {
       await this.ouvrir(joueur, jour);
       await q('UPDATE progression SET tentatives = tentatives + 1 WHERE joueur_id = ? AND jour = ?', [joueur, jour]);
+      const [l] = await q('SELECT tentatives FROM progression WHERE joueur_id = ? AND jour = ?', [joueur, jour]);
+      return l ? l.tentatives : 0;
     },
     async indice(joueur, jour, max) {
       await this.ouvrir(joueur, jour);
@@ -131,7 +134,7 @@ function creerMemoire() {
     async toucher(id) { const j = joueurs.get(id); if (j) j.vu = Date.now(); },
     async ouvrir(j, n) { ligne(j, n); },
     async progression(j) { return new Map(prog.get(j) || []); },
-    async tentative(j, n) { ligne(j, n).tentatives++; },
+    async tentative(j, n) { return ++ligne(j, n).tentatives; },
     async indice(j, n, max) { const l = ligne(j, n); l.indices = Math.min(l.indices + 1, max); return l.indices; },
     async resoudre(j, n) { const l = ligne(j, n); if (l.resolu) return false; l.resolu = true; return true; },
     async reinitialiser(j) { prog.delete(j); },

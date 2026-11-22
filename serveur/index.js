@@ -91,7 +91,7 @@ function resultat(J, jours) {
   return { lecon: J.lecon.replace('{{RECAP}}', recap), apres: J.apresReussite || null, fragment: fragment(J) };
 }
 
-const PUBLIC = ['jour', 'univers', 'emoji', 'couleurs', 'concept', 'piece', 'particules', 'givrin', 'histoire', 'cours', 'enigme', 'widget', 'placeholder', 'chrono'];
+const PUBLIC = ['jour', 'univers', 'emoji', 'couleurs', 'concept', 'piece', 'particules', 'givrin', 'histoire', 'cours', 'enigme', 'widget', 'placeholder'];
 function versionPublique(J) {
   const o = {};
   for (const k of PUBLIC) if (J[k] !== undefined) o[k] = J[k];
@@ -172,10 +172,11 @@ app.get('/api/jours/:n', async (req, res) => {
   const c = await chargerJour(req, res);
   if (!c) return;
   await stockage.ouvrir(req.joueur, c.n);
-  const p = c.prog.get(c.n) || { indices: 0 };
+  const p = c.prog.get(c.n) || { indices: 0, tentatives: 0 };
   res.json({
     ...versionPublique(c.J),
     indicesVus: c.J.indices.slice(0, p.indices),
+    tentatives: p.tentatives || 0,
     resolu: c.etat === 'resolu',
     resultat: c.etat === 'resolu' ? resultat(c.J, req.jours) : null,
   });
@@ -188,18 +189,18 @@ app.post('/api/jours/:n/indice', limiteIP, limiteJoueur, async (req, res) => {
   res.json({ indices: c.J.indices.slice(0, vus) });
 });
 
-async function reussite(req, c) {
+async function reussite(req, c, tentatives) {
   const premiereFois = await stockage.resoudre(req.joueur, c.n);
-  return { ok: true, premiereFois, resultat: resultat(c.J, req.jours) };
+  return { ok: true, premiereFois, tentatives, resultat: resultat(c.J, req.jours) };
 }
 
 app.post('/api/jours/:n/reponse', limiteIP, limiteJoueur, async (req, res) => {
   const c = await chargerJour(req, res);
   if (!c) return;
-  await stockage.tentative(req.joueur, c.n);
+  const tentatives = await stockage.tentative(req.joueur, c.n);
   const v = verifier(c.n, req.body && req.body.reponse, c.J, req.langue);
-  if (!v.ok) return res.json({ ...v, ok: false });
-  res.json(await reussite(req, c));
+  if (!v.ok) return res.json({ ...v, ok: false, tentatives });
+  res.json(await reussite(req, c, tentatives));
 });
 
 app.post('/api/jours/:n/action', limiteIP, limiteJoueur, async (req, res) => {
@@ -207,9 +208,10 @@ app.post('/api/jours/:n/action', limiteIP, limiteJoueur, async (req, res) => {
   if (!c) return;
   if (c.n !== 7) return res.status(404).json({ erreur: 'introuvable' });
   const r = dichotomie(req.joueur, req.body, req.langue);
-  if (r.indication) await stockage.tentative(req.joueur, c.n);
-  if (r.gagne) return res.json({ ...r, ...(await reussite(req, c)) });
-  res.json(r);
+  // Une partie (gagnée ou perdue) compte pour une tentative, pas chaque maison essayée
+  const tentatives = r.gagne || r.perdu ? await stockage.tentative(req.joueur, c.n) : undefined;
+  if (r.gagne) return res.json({ ...r, ...(await reussite(req, c, tentatives)) });
+  res.json({ ...r, tentatives });
 });
 
 app.post('/api/reinitialiser', async (req, res) => {

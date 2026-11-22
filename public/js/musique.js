@@ -277,8 +277,6 @@
     // Vrai si un morceau lancé maintenant s'entendrait (sinon, on garde les bruitages à la place).
     audible: () => !!ctx && actif && reglage > 0,
     figer,
-    // Les 30 dernières secondes du compte à rebours : le tic-tac accélère (true), puis revient (false).
-    presser(oui) { const L = lecteurs.tictac; if (L && L.vitesse) L.vitesse(oui ? 1.3 : 1); },
     activer(oui) {
       if (actif === !!oui) return;
       actif = !!oui;

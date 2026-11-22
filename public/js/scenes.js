@@ -610,8 +610,8 @@
       objet: `<rect x="16" y="24" width="64" height="40" rx="4" fill="#fff" transform="rotate(-12 48 44)"/><rect x="24" y="34" width="40" height="6" fill="#999" transform="rotate(-12 48 44)"/><rect x="24" y="46" width="28" height="6" fill="#999" transform="rotate(-12 48 44)"/>` },
   };
 
-  /* ---- Jour 17 : la Bibliothèque ; deux gros registres (ENFANTS et CADEAUX) reliés par un fil rouge,
-     l'ordinateur et sa requête ; la Kère fait voler les fiches du fichier. ---- */
+  /* ---- Jour 17 : la Bibliothèque ; le gros registre de la LISTE et celui des CADEAUX, l'ordinateur et
+     sa requête ; la Kère fait voler les fiches du fichier. ---- */
   SC[17] = {
     piece: { mur: '#3e2723', motif: 'bois', sol: 'tapis', elements: ['etageres:livres', null, 'etageres:livres'] },
     dessin() {
@@ -619,12 +619,11 @@
       // Le bureau et l'ordinateur
       f += `<rect x="330" y="150" width="240" height="10" rx="3" fill="#5a3418"/><rect x="342" y="160" width="12" height="${SOL - 160}" fill="#3a2010"/><rect x="546" y="160" width="12" height="${SOL - 160}" fill="#3a2010"/>`;
       f += `<rect x="404" y="58" width="92" height="66" rx="6" fill="#1a1f26" stroke="#3a4250" stroke-width="3"/><rect x="410" y="64" width="80" height="54" rx="2" fill="#03140a"/>`;
-      [['SELECT c.cadeau', '#4aa3ff'], ['FROM enfants e', '#4aa3ff'], ['JOIN cadeaux c', '#ffd23f'], ['WHERE e.sage…', '#4aa3ff'], ['ORDER BY … DESC', '#4aa3ff']].forEach(([l, c], i) => { f += texte(414, 74 + i * 9.5, tr(l), { taille: 6, couleur: c, police: MONO, ancre: 'start' }); });
+      [['SELECT cadeau', '#4aa3ff'], ['FROM liste', '#4aa3ff'], ["WHERE sage = 'oui'", '#ffd23f'], ['ORDER BY prix', '#4aa3ff'], ['  DESC;', '#4aa3ff']].forEach(([l, c], i) => { f += texte(414, 74 + i * 9.5, tr(l), { taille: 6, couleur: c, police: MONO, ancre: 'start' }); });
       f += `<rect x="440" y="124" width="20" height="18" fill="#3a4250"/><rect x="420" y="142" width="60" height="8" rx="3" fill="#3a4250"/>`;
-      // Les deux registres, reliés par un fil rouge
+      // Les deux registres
       const registre = (x, c, titre) => `<rect x="${x}" y="106" width="46" height="44" rx="3" fill="${c}"/><rect x="${x + 4}" y="110" width="38" height="36" rx="2" fill="none" stroke="#f5c542" stroke-width="1.2"/>` + texte(x + 23, 131, titre, { taille: 6, couleur: '#ffe9b0', police: MONO, gras: true });
-      f += registre(340, '#1d4f86', tr('ENFANTS')) + registre(514, '#9b1b30', tr('CADEAUX'));
-      f += `<path d="M386 118 Q450 92 514 118" stroke="#d62839" stroke-width="2" stroke-dasharray="4 3" fill="none"/>`;
+      f += registre(340, '#1d4f86', tr('LISTE')) + registre(514, '#9b1b30', tr('CADEAUX'));
       // Le meuble à fiches, ouvert
       f += `<rect x="590" y="132" width="50" height="${SOL - 132}" fill="#6e4120"/><rect x="596" y="138" width="38" height="14" rx="2" fill="#8a5a30"/><rect x="596" y="158" width="38" height="14" rx="2" fill="#8a5a30"/><circle cx="615" cy="145" r="2" fill="#c9a35a"/><circle cx="615" cy="165" r="2" fill="#c9a35a"/>`;
       let a = '';
@@ -679,7 +678,7 @@
       f += `<rect x="520" y="140" width="110" height="${SOL - 140}" rx="4" fill="#bfe6ff" opacity=".85"/><path d="M526 150 l30 0 M580 166 l40 0" stroke="#fff" stroke-width="3" opacity=".7"/>`;
       f += `<rect x="524" y="58" width="102" height="72" rx="6" fill="#a9dcff" opacity=".9"/><rect x="532" y="66" width="86" height="56" rx="3" fill="#06121c"/>`;
       f += `<rect x="560" y="130" width="30" height="10" fill="#a9dcff"/><rect x="534" y="132" width="82" height="8" rx="3" fill="#d6f1ff"/>`;
-      f += texte(575, 54, tr('10 000 milliards / s'), { taille: 6.5, couleur: '#cfefff', police: MONO, gras: true });
+      f += texte(575, 54, tr('10 milliards / s'), { taille: 6.5, couleur: '#cfefff', police: MONO, gras: true });
       let a = '';
       const essais = ['aaaaaa', 'aaaaab', 'azerty', '123456', 'noel24', 'sapin!', 'Rudolf9', 'mdp2026', 'motdepasse', 'hohoho', 'qwerty'];
       const bloc = (dy) => essais.map((e, i) => texte(538, 76 + dy + i * 7, e + ' ✗', { taille: 5.6, couleur: '#ff6b6b', police: MONO, ancre: 'start' })).join('');
