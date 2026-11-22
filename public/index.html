@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NOËL-OS · Opération Dégel, le calendrier de l'Avent de l'informatique</title>
+  <meta name="description" content="Le calendrier de l'Avent de l'informatique : 24 pièces du chalet du Père Noël, 24 énigmes pour comprendre l'informatique en s'amusant.">
+  <meta name="theme-color" content="#0b1a2e">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎄</text></svg>">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- Le ciel du Pôle Nord -->
+  <div class="ciel" aria-hidden="true">
+    <div class="etoiles"></div>
+    <div class="aurore"><span></span><span></span><span></span></div>
+    <div class="lune"></div>
+    <div id="traineau" class="traineau">🦌🦌🦌🛷</div>
+  </div>
+  <div id="paysage" class="paysage-fond" aria-hidden="true"></div>
+  <canvas id="neige" aria-hidden="true"></canvas>
+
+  <!-- Écran titre (avant de se connecter) -->
+  <section id="ecran-titre" class="ecran-titre" aria-labelledby="titre-jeu" hidden>
+    <button type="button" class="btn btn-discret btn-langue btn-langue-titre"></button>
+    <div class="titre-contenu">
+      <!-- Juste le nom du jeu, le chalet (et ce qui se cache derrière, dans le brouillard) et les deux boutons :
+           rien n'est dit de Kryos avant la lettre du Père Noël. -->
+      <p class="logo">❄️ NOËL-OS</p>
+      <h1 id="titre-jeu" class="titre-neige"><span data-t="Opération Dégel">Opération Dégel</span></h1>
+      <div id="illustration-titre" class="illustration-titre"></div>
+      <div class="boutons-titre">
+        <button type="button" class="btn btn-principal btn-geant" id="btn-commencer" data-t="🎅 Commencer l'aventure">🎅 Commencer l'aventure</button>
+        <button type="button" class="btn btn-discret" id="btn-reprendre" data-t="🔑 J'ai déjà un compte">🔑 J'ai déjà un compte</button>
+      </div>
+      <p id="rebours-titre" class="rebours-titre" hidden></p>
+    </div>
+  </section>
+
+  <!-- Le jeu (une fois connecté) -->
+  <div id="jeu" class="jeu" hidden>
+    <header class="hud">
+      <div class="hud-titre"><span aria-hidden="true">❄️</span> <b data-t="Opération Dégel">Opération Dégel</b></div>
+      <div class="hud-progression" title="Pièces réparées" data-t-title="Pièces réparées">
+        <div class="barre sucre-orge" role="presentation"><div class="remplissage" id="barre"></div></div>
+        <span id="progression-texte">0 / 24</span>
+      </div>
+      <nav class="hud-actions" aria-label="Menu">
+        <button type="button" class="btn-hud" id="btn-fragments" title="Mes fragments" data-t-title="Mes fragments">🧩 <span class="nb">0</span><span class="sur">/23</span></button>
+        <button type="button" class="btn-hud" id="btn-histoire" title="La mission" aria-label="La mission" data-t-title="La mission" data-t-aria-label="La mission">📜</button>
+        <button type="button" class="btn-hud btn-son" id="btn-son" aria-haspopup="dialog" aria-controls="panneau-son">🔊</button>
+        <button type="button" class="btn-hud btn-langue"></button>
+        <span id="salut" class="salut"></span>
+      </nav>
+    </header>
+    <div class="infos-jeu">
+      <p id="statut-noelos" class="statut gele" data-t="🔴 NOËL-OS : connexion au Pôle Nord…">🔴 NOËL-OS : connexion au Pôle Nord…</p>
+      <p id="compte-rebours" class="compte-rebours" hidden></p>
+    </div>
+
+    <!-- Le chalet comme un grand calendrier de l'Avent : une case par jour ; cliquer sur un numéro fait
+         entrer dans le chalet, jusqu'à la pièce. (L'ancienne visite par les couloirs, js/visite.js, n'est plus chargée.) -->
+    <main class="scene">
+      <section class="bloc-chalet" aria-label="Le chalet du Père Noël : une pièce par jour">
+        <div id="chalet" class="chalet"></div>
+        <p class="legende-sapin" data-t="Chaque jour, une nouvelle pièce s'allume : clique dessus pour y entrer.">Chaque jour, une nouvelle pièce s'allume : clique dessus pour y entrer.</p>
+      </section>
+      <section class="bloc-sapin" aria-label="Le sapin du jardin : une boule par énigme">
+        <svg id="sapin" viewBox="0 -26 400 586" role="img" aria-label="Sapin de Noël"></svg>
+        <p class="legende-sapin" data-t="🎄 Le sapin du jardin : une boule se rallume pour chaque pièce réparée.">🎄 Le sapin du jardin : une boule se rallume pour chaque pièce réparée.</p>
+        <button type="button" class="btn btn-discret btn-admirer" id="btn-admirer" data-t="✨ Admirer le sapin en grand">✨ Admirer le sapin en grand</button>
+      </section>
+    </main>
+
+    <footer class="pied">
+      <p><span data-t="Fait avec ❤️ et beaucoup de flocons · Ta progression est enregistrée sur ton compte : reprends ta partie sur n'importe quel appareil">Fait avec ❤️ et beaucoup de flocons · Ta progression est enregistrée sur ton compte : reprends ta partie sur n'importe quel appareil</span>
+        <button type="button" class="lien" id="btn-reinitialiser" data-t="· Réinitialiser (mode test)" hidden>· Réinitialiser (mode test)</button></p>
+    </footer>
+  </div>
+
+  <div id="modale" class="modale" hidden>
+    <div class="fenetre" role="dialog" aria-modal="true" aria-labelledby="titre-modale">
+      <button type="button" class="fermer" aria-label="Fermer" data-t-aria-label="Fermer">✕</button>
+      <div id="contenu-modale"></div>
+    </div>
+  </div>
+
+  <!-- Le son : ce bouton-là sert sur l'écran titre et dans les fenêtres (la barre du jeu a le sien) -->
+  <button type="button" class="btn-son btn-son-flottant" id="btn-son-flottant" aria-haspopup="dialog" aria-controls="panneau-son">🔊</button>
+  <div id="panneau-son" class="panneau-son" role="dialog" aria-labelledby="titre-panneau-son" hidden>
+    <p class="titre-panneau-son" id="titre-panneau-son" data-t="🔊 Le son">🔊 Le son</p>
+    <label class="curseur-son"><span data-t="🎵 Musique">🎵 Musique</span><input type="range" min="0" max="100" step="5" data-reglage="volMusique"><output></output></label>
+    <label class="curseur-son"><span data-t="🔔 Bruitages">🔔 Bruitages</span><input type="range" min="0" max="100" step="5" data-reglage="volSons"><output></output></label>
+    <button type="button" class="btn btn-discret btn-silence" data-t="🔇 Tout couper">🔇 Tout couper</button>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="js/i18n.js"></script>
+  <script src="js/musique.js"></script>
+  <script src="js/sha256.js"></script>
+  <script src="js/widgets.js"></script>
+  <script src="js/decors.js"></script>
+  <script src="js/pieces.js"></script>
+  <script src="js/scenes.js"></script>
+  <script src="js/cinema.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
