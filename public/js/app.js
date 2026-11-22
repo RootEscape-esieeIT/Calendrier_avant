@@ -1596,8 +1596,10 @@
     }
 
     const blocDe = (s) => s.closest('p, .regles > div');
-    const pauseApres = (c) => (/[.!?…]/.test(c) ? 280 : /[,;:]/.test(c) ? 130 : 0);
-    const VITESSE = 1000 / 30; // 30 caractères par seconde : on lit au rythme de la plume
+    // 20 caractères par seconde, avec un vrai souffle à chaque phrase : à 30, on n'avait pas le temps
+    // de lire (≈ 2 min 30 pour la lettre d'intro, à peu près la durée des vidéos du décor).
+    const pauseApres = (c) => (/[.!?…]/.test(c) ? 600 : /[,;:]/.test(c) ? 250 : 0);
+    const VITESSE = 1000 / 20;
 
     // Les positions des caractères sont mesurées en une seule fois (et de nouveau si la fenêtre
     // change de taille) : les relire à chaque caractère forçait le navigateur à refaire toute
@@ -1635,7 +1637,7 @@
         let delai = 0;
         // La phrase interrompue s'écrit lentement, en tremblant : quelque chose approche…
         if (k > 0) delai = interrompu ? VITESSE * 3.2 + Math.random() * 90 + (nouveauBloc ? 900 : 0)
-          : VITESSE + pauseApres(avant.textContent) + (nouveauBloc ? 420 : 0);
+          : VITESSE + pauseApres(avant.textContent) + (nouveauBloc ? 900 : 0);
         const marqueScene = s.closest('[data-scene]'), marqueEvt = s.closest('[data-evt]');
         return {
           delai, interrompu, regle: s.closest('.regles > div'), visible: !!s.textContent.trim(),
@@ -1727,7 +1729,7 @@
         const s = caracteres[k++];
         s.classList.add('ecrit');
         const finDeLigne = s.nextSibling && s.nextSibling.nodeName === 'BR';
-        plusTard(suivant, /[.,]/.test(s.textContent) || finDeLigne ? 420 : 75);
+        plusTard(suivant, /[.,…]/.test(s.textContent) || finDeLigne ? 650 : 110);
       };
       suivant();
     }

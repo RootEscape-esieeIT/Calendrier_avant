@@ -371,10 +371,9 @@
 
   const SCENES = { cachot, glacier, keres, chalet, hiver, prophetie, mission, cours, menace, gel };
   /* Une vidéo qui vient d'apparaître reste au moins VUE_MIN (ms) à l'écran avant qu'une autre ne la
-     remplace ; la plume, elle, continue d'écrire. À 30 caractères/s, les moments les plus serrés
-     (« Cette nuit, le glacier s'est fendu… et il est revenu », « il a éteint l'étoile ») arrivent à
-     1,5 s d'écart : le décor prend alors un peu de retard et le rattrape dans les scènes plus longues
-     (l'hiver, le petit cours). Mesuré (minutage.js) : retard maximal ≈ 1,1 s. Les moments sans vidéo
+     remplace ; la plume, elle, continue d'écrire. (Mesuré à 30 caractères/s, minutage.js : les
+     moments les plus serrés arrivaient à 1,5 s d'écart et le décor avait au plus ≈ 1,1 s de retard ;
+     depuis le passage à 20 caractères/s avec de vraies pauses, ils sont plus espacés.) Les moments sans vidéo
      (la fissure, la lueur, les guirlandes) passent tout de suite, par-dessus la vidéo en cours. */
   const VUE_MIN = 2000;
   // Les scènes qui chargent des vidéos ou de grandes images : préparées dès le début de la lettre

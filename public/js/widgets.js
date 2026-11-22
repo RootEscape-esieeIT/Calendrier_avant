@@ -134,7 +134,7 @@
     }
     if (api.champ) api.champ.addEventListener('input', maj);
     maj();
-    zone.append(h('p', { class: 'petit centre' }, t('Quelques couleurs de base, pour t'inspirer :')), nuancier, h('div', { class: 'atelier-peinture' }, boule, detail));
+    zone.append(h('p', { class: 'petit centre' }, t("Quelques couleurs de base, pour t'inspirer :")), nuancier, h('div', { class: 'atelier-peinture' }, boule, detail));
   };
 
   /* ---------- Jour 5 : les portes logiques (3 interrupteurs, 3 portes) ---------- */
@@ -836,11 +836,33 @@
         h('b', {}, f.lettre || '❓'))));
     const cases = [];
     const rangee = h('div', { class: 'cases-finales' });
+    // Seules les lettres comptent (un espace entre deux mots ne doit pas décaler toute la formule) ;
+    // une case déjà remplie prend la nouvelle lettre (avec maxlength=1, on ne pouvait plus corriger
+    // une faute : la frappe était ignorée) ; un texte collé remplit les cases suivantes.
+    const lettresDe = (s) => Array.from(String(s || '').toUpperCase()).filter(ch => /\p{L}/u.test(ch));
+    function remplir(i, texte) {
+      const lettres = lettresDe(texte).slice(0, longueur - i);
+      if (!lettres.length) { cases[i].value = cases[i].dataset.v || ''; return; }
+      lettres.forEach((l, k) => { cases[i + k].value = cases[i + k].dataset.v = l; });
+      const suivante = cases[Math.min(i + lettres.length, longueur - 1)];
+      suivante.focus();
+      suivante.select();
+    }
     for (let i = 0; i < longueur; i++) {
-      const c = h('input', { type: 'text', maxlength: '1', class: 'case-finale', 'aria-label': t('Lettre {n}', { n: i + 1 }), autocomplete: 'off', autocapitalize: 'characters' });
+      const c = h('input', { type: 'text', class: 'case-finale', 'aria-label': t('Lettre {n}', { n: i + 1 }), autocomplete: 'off', autocapitalize: 'characters', spellcheck: 'false' });
+      c.addEventListener('focus', () => c.select());
+      c.addEventListener('beforeinput', (e) => {
+        if (!e.cancelable || !/^insert(Text|FromPaste|FromDrop|ReplacementText)$/.test(e.inputType)) return;
+        e.preventDefault();
+        remplir(i, e.data ?? (e.dataTransfer ? e.dataTransfer.getData('text/plain') : ''));
+      });
+      // Claviers de téléphone : la saisie passe par une composition qu'on ne peut pas annuler, on
+      // garde alors seulement ce qui vient d'être ajouté.
       c.addEventListener('input', () => {
-        c.value = c.value.toUpperCase();
-        if (c.value && i < longueur - 1) cases[i + 1].focus();
+        const avant = c.dataset.v || '', apres = c.value;
+        if (!apres) { c.dataset.v = ''; return; }
+        const ajout = apres.startsWith(avant) ? apres.slice(avant.length) : apres.endsWith(avant) ? apres.slice(0, apres.length - avant.length) : apres;
+        remplir(i, ajout || apres);
       });
       c.addEventListener('keydown', (e) => {
         if (e.key === 'Backspace' && !c.value && i > 0) { cases[i - 1].focus(); }
