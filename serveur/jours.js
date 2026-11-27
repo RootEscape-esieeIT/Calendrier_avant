@@ -19,6 +19,7 @@
 // W.nom(…) décrit un mini-jeu du navigateur (public/js/widgets.js)
 // sous la forme { type: 'nom', params: [...] }.
 const W = new Proxy({}, { get: (_, type) => (...params) => ({ type, params }) });
+const { enBinaire, tableAlarme, empreinteCourte } = require('./aides-jours');
 // Le tableau ASCII des majuscules (lettre + code binaire), affiché au mur du Bureau du Courrier (jour 2).
 const tableAscii = () => '<div class="table-ascii">' + [...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'].map(l => `<span><b>${l}</b><code>${l.charCodeAt(0).toString(2).padStart(8, '0')}</code></span>`).join('') + '</div>';
 // L'alphabet numéroté (A = 1 … Z = 26), en rappel sous l'énigme du sceau (jour 20).
@@ -86,48 +87,49 @@ const JOURS = [
   couleurs: ['#1e3a5f', '#3b6ea5'],
   concept: "L'encodage des caractères (ASCII)",
   givrin: {
-    ricane: "J'ai transformé tout le courrier en 0 et en 1. Cette année, les enfants recevront des factures d'électricité.",
+    ricane: "J'ai gelé l'imprimante à étiquettes et j'ai arraché le tableau du mur. Débrouille-toi avec des 0 et des 1, hi hi.",
     piques: [
       "Non. Même le facteur congelé dans la cour aurait trouvé.",
       "Faux ! Je renvoie ta réponse à l'expéditeur. C'est-à-dire toi.",
       "Tu lis le binaire comme je lis les cartes de vœux : en les déchirant.",
     ],
-    fuite: "Mon beau courrier binaire… lu par un humain ?! Je me colle un timbre et je m'expédie très, très loin !",
+    fuite: "Tu as fait parler mon imprimante ?! Je me colle un timbre et je m'expédie très, très loin !",
   },
-  histoire: `<p>Au Bureau du Courrier du chalet, la Kère a soufflé sur l'imprimante à étiquettes. Gelée jusqu'aux circuits, elle n'imprime plus de lettres… seulement des <b>0</b> et des <b>1</b> !</p>`,
-  cours: `<p>Tu l'as vu au jour 1 : un ordinateur ne sait garder que des <b>nombres</b>, écrits en binaire. Alors comment fait-il pour retenir des lettres, comme ton prénom ?</p>
-<p>Le monde entier s'est mis d'accord sur un grand tableau de correspondance, le <b>tableau ASCII</b> : chaque lettre y reçoit un code de 8 chiffres binaires (un <b>octet</b>). C'est comme un code secret de cour de récré, partagé par tous les ordinateurs de la planète !</p>
+  histoire: `<p>Au Bureau du Courrier, la Kère a soufflé sur l'imprimante à étiquettes : gelée jusqu'aux circuits, elle n'imprime plus que des <b>0</b> et des <b>1</b>. Et pour corser le tout, elle a arraché le tableau des codes qui était punaisé au mur !</p>
+<p>Heureusement, l'imprimante a gardé son <b>mode test</b> : tape n'importe quel texte, elle te montre comment elle l'écrit en binaire.</p>`,
+  cours: `<p>Un ordinateur ne garde que des <b>nombres</b> (en binaire, comme au jour 1). Pour écrire du texte, le monde entier s'est mis d'accord sur un tableau : l'<b>ASCII</b>. Chaque caractère y reçoit un numéro, écrit avec 8 chiffres binaires (un <b>octet</b>).</p>
 <div class="defilement"><table class="tableau compact">
-<tr><th>Lettre</th><th>Numéro</th><th>Code binaire</th></tr>
-<tr><td><b>A</b></td><td>65</td><td><code>01000001</code></td></tr>
-<tr><td><b>B</b></td><td>66</td><td><code>01000010</code></td></tr>
-<tr><td><b>C</b></td><td>67</td><td><code>01000011</code></td></tr>
-<tr><td colspan="3">… et ainsi de suite, dans l'ordre de l'alphabet, jusqu'à Z</td></tr>
+<tr><th>Caractère</th><th>Numéro</th><th>Code binaire</th></tr>
+<tr><td><b>A</b></td><td>65</td><td><code>010 00001</code></td></tr>
+<tr><td><b>B</b></td><td>66</td><td><code>010 00010</code></td></tr>
+<tr><td><b>a</b></td><td>97</td><td><code>011 00001</code></td></tr>
+<tr><td><b>b</b></td><td>98</td><td><code>011 00010</code></td></tr>
+<tr><td><b>espace</b></td><td>32</td><td><code>001 00000</code></td></tr>
 </table></div>
-<p>Pour lire un mot écrit en binaire, on le découpe en groupes de 8 chiffres : <b>un groupe = une lettre</b>. Puis on cherche chaque groupe dans le tableau.</p>
-<p>Exemple : <code>01000010 · 01000001 · 01000011</code> → B, A, C → <b>BAC</b>.</p>`,
-  enigme: `<p>Il faut absolument savoir quel cadeau se cache dans ce colis. Voici son étiquette : <b>5 groupes de 8 chiffres, donc 5 lettres</b>.</p>
-<div class="etiquette-colis binaire">01010010 · 01001111 · 01000010 · 01001111 · 01010100</div>
-<p>Heureusement, le tableau ASCII des lutins est affiché au mur du bureau :</p>
-${tableAscii()}
-<p>Cherche chaque groupe de l'étiquette dans le tableau. <b>Quel est le cadeau ?</b></p>`,
-  reponses: ['1746b0affbe4a8883e44fede0b5d3f7c691c0f93de62516a959119a7466583e2', '363f0118362bc2065d10f66edfd019c3308903b9e1f9330ad9ab2bd14d8499e6'],
+<p>Regarde bien : le code est en deux morceaux.</p>
+<ul>
+<li>les <b>3 premiers chiffres</b> disent quel genre de caractère c'est : <code>010</code> = une <b>majuscule</b>, <code>011</code> = une <b>minuscule</b>, <code>001</code> = un espace ou un signe ;</li>
+<li>les <b>5 derniers</b> donnent la <b>place de la lettre dans l'alphabet</b>, en binaire (16 · 8 · 4 · 2 · 1) : <code>00001</code> = 1 = A, <code>00010</code> = 2 = B…</li>
+</ul>
+<p>Exemple : <code>011 00011</code> → minuscule, place 2 + 1 = 3 → <b>c</b>.</p>`,
+  enigme: `<p>Un colis est arrivé avec cette étiquette, imprimée en binaire. <b>Quel cadeau contient-il ?</b></p>
+<p>Lis les groupes un par un grâce au petit cours… ou fais des essais avec l'imprimante : quand une lettre tapée donne exactement le même code que l'étiquette, à la même place, elle devient verte.</p>`,
+  widget: W.imprimante(enBinaire('Pull moche')),
+  reponses: ['2fb3991dc14d6fbce1298e4a15ab2116462bf45f60f2b4a5fa2606c3997299d6', 'e8d47d4e5b8496fede40f2df9262fdca7756ad2a984920db69b3304da643139d'],
   placeholder: 'Le cadeau…',
   indices: [
-    "Le premier groupe de l'étiquette, 01010010, est dans le tableau à côté de la lettre R. Fais pareil avec les 4 autres groupes.",
-    "R, O, B, O… Il ne manque que la dernière lettre : cherche 01010100 dans le tableau. C'est un jouet qui marche tout seul !",
+    "Premier groupe : 010 10000 → une majuscule (010), à la place 16 de l'alphabet (10000) : P. Le 5e groupe, 001 00000, est un espace : le cadeau tient en deux mots.",
+    "P, u, l, l, espace, m, o… C'est un vêtement de Noël, souvent avec un renne qui clignote dessus 😄",
   ],
-  lecon: `<p>Il suffisait de chercher chaque groupe dans le tableau : <code>01010010</code> = R, <code>01001111</code> = O, <code>01000010</code> = B, <code>01001111</code> = O, <code>01010100</code> = T → <b>ROBOT</b> !</p>
-<p>As-tu remarqué que tous les groupes commencent par <code>010</code> ? Pour les majuscules, les 5 derniers chiffres donnent directement la place de la lettre dans l'alphabet : R = <code>10010</code> = 16 + 2 = 18, la 18ᵉ lettre. Les inventeurs du tableau l'ont fait exprès !</p>
-<p>Ce tableau qui donne un <b>numéro à chaque caractère</b> s'appelle un <b>encodage</b>. Le plus célèbre, l'<b>ASCII</b> (1963), contient 128 caractères : <code>A</code> = 65, <code>a</code> = 97, l'espace = 32, le chiffre <code>0</code> = 48…</p>
+  lecon: `<p>L'étiquette disait <b>Pull moche</b> 🦌 : <code>01010000</code> = P (majuscule, 16ᵉ lettre), <code>01110101</code> = u (minuscule, 21ᵉ lettre)… et <code>00100000</code>, c'était l'espace entre les deux mots !</p>
+<p>Ce tableau qui donne un <b>numéro à chaque caractère</b> s'appelle un <b>encodage</b>. L'<b>ASCII</b> (1963) contient 128 caractères. Ses inventeurs l'ont rangé exprès pour que les 5 derniers chiffres donnent la place de la lettre, et qu'il suffise de changer <b>un seul chiffre</b> pour passer de « A » à « a ».</p>
 <p>Problème : l'ASCII a été inventé pour l'anglais. Pas de « é », pas de « ç », et encore moins d'emojis ! Aujourd'hui, on utilise <b>Unicode</b>, qui numérote près de <b>160 000 caractères</b> de toutes les langues du monde. Le sapin 🎄 porte le numéro <code>U+1F384</code>.</p>
 <h4>🌍 Dans la vraie vie</h4>
 <ul>
 <li>Si tu vois « NoÃ«l » au lieu de « Noël » sur un site, c'est un bug d'encodage : l'ordinateur a lu les numéros avec le mauvais tableau !</li>
 <li>Quand tu envoies un emoji, ton téléphone n'envoie qu'un numéro : c'est le téléphone de ton ami qui dessine l'image. C'est pour ça qu'un même emoji n'a pas le même look sur iPhone et sur Android.</li>
-</ul>
-<h4>🧪 Essaie toi-même</h4>`,
-  apresReussite: W.terrainAscii(),
+<li>Passer d'une majuscule à une minuscule, c'est ajouter 32 : un seul chiffre change (<code>010</code> → <code>011</code>). Les vieux programmes utilisaient cette astuce pour mettre un texte en MAJUSCULES en un clin d'œil.</li>
+</ul>`,
   fragment: [22, '01001001'],
 },
 
@@ -241,36 +243,52 @@ ${tableAscii()}
   couleurs: ['#22292f', '#5a6872'],
   concept: 'La logique et les portes logiques',
   givrin: {
-    ricane: "Trois interrupteurs, un circuit, et moi au milieu. Touche le mauvais fil, et on rira. Surtout moi.",
+    ricane: "J'ai recâblé l'alarme de la Réserve. Maintenant, elle sonne quand un lutin entre avec son badge… et elle se tait quand j'entre, moi. Pratique, non ?",
     piques: [
       "Bzzzt ! Raté. Tu sens cette odeur de grillé ? C'est ton raisonnement.",
       "NON, NON et encore NON. C'est ma porte logique préférée.",
-      "Continue d'essayer au hasard. Un singe y arriverait aussi… un jour.",
+      "Continue de brancher au hasard. Un singe y arriverait aussi… un jour.",
     ],
-    fuite: "Le courant passe ?! Arrête, ça chatouille… ça grésille… je disjoncte !",
+    fuite: "L'alarme sonne pile quand il faut ?! Arrête, ça chatouille… ça grésille… je disjoncte !",
   },
-  histoire: `<p>Au sous-sol, la porte blindée de la Réserve aux Jouets est protégée par un <b>circuit électronique</b>. La Kère l'a recâblé : <b>trois interrupteurs</b> (A, B et C) envoient du courant dans <b>trois portes logiques</b>. Il faut que les trois s'allument en même temps pour que l'étoile s'éclaire et que la porte s'ouvre.</p>`,
-  cours: `<p>Pour prendre ses décisions, un ordinateur utilise des milliards de <b>portes logiques</b>. Une porte logique reçoit un ou deux signaux, chacun <b>allumé (1)</b> ou <b>éteint (0)</b>, et n'en laisse sortir qu'un seul, selon une règle très simple. Tu utilises déjà ces règles tous les jours sans le savoir :</p>
+  histoire: `<p>Au sous-sol, la Réserve aux Jouets est protégée par une <b>alarme anti-Kère</b> branchée sur quatre capteurs. Mais la Kère a tout recâblé : l'alarme sonne quand il ne faut pas, et se tait quand il faudrait hurler !</p>
+<p>Les lutins ont retrouvé la règle d'origine, écrite sur le boîtier : à toi de rebrancher les quatre <b>portes logiques</b>… et de <b>tester</b> ton circuit avant de le valider.</p>`,
+  cours: `<p>Pour prendre ses décisions, un ordinateur utilise des milliards de <b>portes logiques</b>. Une porte reçoit des signaux, chacun <b>allumé (1)</b> ou <b>éteint (0)</b>, et en laisse sortir un seul :</p>
 <div class="defilement"><table class="tableau">
 <tr><th>Porte</th><th>Elle s'allume si…</th><th>Dans la vie</th></tr>
 <tr><td><b>ET</b></td><td class="gauche">les <b>deux</b> entrées sont allumées</td><td class="gauche">J'ai mon ticket ET le bus est là → je monte.</td></tr>
-<tr><td><b>OU</b></td><td class="gauche"><b>au moins une</b> entrée est allumée (ou les deux)</td><td class="gauche">On sonne à la porte de devant OU à celle de derrière → ça sonne.</td></tr>
+<tr><td><b>OU</b></td><td class="gauche"><b>au moins une</b> entrée est allumée</td><td class="gauche">On sonne devant OU derrière → ça sonne.</td></tr>
 <tr><td><b>NON</b></td><td class="gauche">son entrée est <b>éteinte</b> : elle fait l'inverse</td><td class="gauche">Il ne fait PAS jour → la veilleuse s'allume.</td></tr>
 </table></div>
-<p>Exemple : la porte <code>A ET B</code> ne s'allume que si l'interrupteur A <b>et</b> l'interrupteur B sont allumés tous les deux.</p>`,
-  enigme: `<p>Allume les <b>trois portes</b> en même temps pour rallumer l'étoile ! Lis bien chaque porte : elle te dit quels interrupteurs il faut allumer… ou éteindre.</p>`,
-  widget: W.portes(),
+<p>Un <b>fil</b> tout simple, lui, laisse passer le signal tel quel. En branchant des portes les unes derrière les autres, on traduit n'importe quelle phrase en circuit : « il pleut ET je n'ai PAS de parapluie » = <code>pluie ET (NON parapluie)</code>.</p>
+<p>Les ingénieurs ne devinent jamais : ils <b>testent</b> toutes les situations possibles. Avec 4 capteurs qui valent chacun 0 ou 1, il y en a 2 × 2 × 2 × 2 = <b>16</b>.</p>`,
+  enigme: `<div class="note">
+<p>🔔 <b>La règle de l'alarme</b> (écrite sur le boîtier)</p>
+<p>« L'alarme doit sonner si <b>la porte est ouverte sans badge de lutin</b>, OU si <b>la fenêtre est ouverte pendant la nuit</b>. »</p>
+</div>
+<p>Clique sur les portes P1 à P4 pour changer leur type, et sur les capteurs pour voir le courant passer. Quand tu penses avoir trouvé, lance les <b>16 tests</b> : si ton alarme réagit comme la règle dans les 16 situations, la Réserve est sauvée !</p>`,
+  widget: W.circuit({
+    titre: "Le circuit de l'alarme anti-Kère",
+    entrees: [
+      { k: 'A', emoji: '🚪', nom: 'porte ouverte' },
+      { k: 'B', emoji: '🪪', nom: 'badge de lutin' },
+      { k: 'C', emoji: '🪟', nom: 'fenêtre ouverte' },
+      { k: 'D', emoji: '🌙', nom: 'il fait nuit' },
+    ],
+    depart: ['fil', 'OU', 'OU', 'ET'],
+    attendu: tableAlarme(),
+  }),
   indices: [
-    "P1 (A ET B) ne s'allume que si A et B sont allumés tous les deux. Et P2 (NON C) veut que C soit éteint.",
-    "A allumé, B allumé, C éteint : P1, P2 et P3 s'allument toutes les trois !",
+    "Découpe la règle en deux morceaux. « Porte ouverte SANS badge », c'est : A ET (NON B). Donc P1 doit inverser le badge, et P2 relie la porte à ce « pas de badge ».",
+    "P1 = NON, P2 = ET. « Fenêtre ouverte pendant la nuit » : C ET D, donc P3 = ET. Et les deux morceaux sont reliés par un OU : P4 = OU.",
   ],
-  lecon: `<p>La solution était <b>A = 1, B = 1, C = 0</b>. P1 (une porte ET) exigeait A et B allumés ; P2 (une porte NON) exigeait C éteint ; et P3 (une porte OU) se contentait de B allumé.</p>
-<p>Les portes ET, OU, NON suivent l'<b>algèbre de Boole</b>, inventée par George Boole en 1854… presque 100 ans avant le premier ordinateur !</p>
-<p>Dans un processeur, chaque porte est construite avec des <b>transistors</b> : de minuscules interrupteurs commandés par l'électricité. En combinant des portes, on fabrique un circuit qui additionne deux nombres binaires, puis une calculatrice, puis… un ordinateur entier.</p>
+  lecon: `<p>Le bon circuit était : <b>P1 = NON</b> (pas de badge), <b>P2 = ET</b> (porte ouverte et pas de badge), <b>P3 = ET</b> (fenêtre ouverte et nuit), <b>P4 = OU</b> (l'un ou l'autre). En formule : <code>(A ET NON B) OU (C ET D)</code>.</p>
+<p>Tu as fait exactement comme un ingénieur : traduire une phrase en <b>logique</b>, puis <b>tester</b> toutes les situations. Les portes ET, OU, NON suivent l'<b>algèbre de Boole</b>, inventée par George Boole en 1854… presque 100 ans avant le premier ordinateur !</p>
+<p>Dans un processeur, chaque porte est faite de <b>transistors</b>, de minuscules interrupteurs commandés par l'électricité. En combinant des portes, on fabrique un circuit qui additionne deux nombres, puis une calculatrice, puis… un ordinateur entier.</p>
 <h4>🌍 Dans la vraie vie</h4>
 <ul>
+<li>Les programmeurs écrivent des <b>tests automatiques</b> : des milliers de petites situations rejouées à chaque modification, pour être sûrs de ne rien casser. Exactement comme ton tableau de 16 tests !</li>
 <li>Le processeur de ton téléphone contient <b>des milliards de transistors</b>, chacun plus petit qu'un virus.</li>
-<li>Les mêmes mots servent pour chercher sur Internet ou dans une base de données : « chats ET chiens », « NON cher »…</li>
 <li>Dans Minecraft, la « redstone » permet de construire de vraies portes logiques… et même des ordinateurs entiers !</li>
 </ul>`,
   fragment: [11, '01000111'],
@@ -420,51 +438,64 @@ ${tableAscii()}
   univers: "La Glacière",
   emoji: '❄️',
   couleurs: ['#1c4e80', '#5b9bd5'],
-  concept: 'La récursivité',
+  concept: 'Les algorithmes et les boucles (programmer un robot)',
   givrin: {
-    ricane: "Un flocon dans un flocon dans un flocon… Ta cervelle va geler dès l'étape 2.",
+    ricane: "J'ai gelé ton robot-lutin. Il n'obéit plus qu'à un programme… et tu n'as jamais programmé, hein ? Hi hi.",
     piques: [
-      "Faux ! Tu as compté avec tes moufles ?",
-      "Recommence. Et recommence. Et recommence… Tu vois ? C'est ça, la récursivité.",
-      "Même mon reflet dans mon reflet dans mon reflet se moque de toi.",
+      "Boum ! Ton robot vient d'embrasser un bloc de glace. C'est presque romantique.",
+      "Faux ! Même un pingouin les yeux bandés trouverait le traîneau.",
+      "Répète après moi : je… ne… sais… pas… programmer. Tu vois, toi aussi tu sais faire des boucles !",
     ],
-    fuite: "Tu as trouvé la sortie de ma boucle ?! Impossible… impossi… impo…",
+    fuite: "Il a tout ramassé ?! Avec si peu de lignes ?! Je retourne dans mon igloo, et je ferme à clé !",
   },
-  histoire: `<p>Tout au fond de la Glacière, le Maître des Flocons fabrique chaque flocon avec une seule règle magique, qu'il répète encore et encore…</p>`,
-  cours: `<p>Un <b>segment</b>, c'est simplement un <b>trait droit</b> qui relie deux points. Un triangle, par exemple, est fait de 3 segments.</p>
-<p>La règle du Maître transforme <b>chaque segment en 4 segments</b> plus petits (avec une pointe au milieu). Et elle ne s'applique pas qu'une fois : à chaque nouvelle étape, on l'applique à <b>tous</b> les segments du dessin, y compris ceux qui viennent d'être créés.</p>
-<p>Une règle qui s'applique à son propre résultat, encore et encore, s'appelle une règle <b>récursive</b>. C'est comme deux miroirs face à face : l'image contient une image, qui contient une image…</p>
-<p>Exemple avec une autre règle : « chaque branche donne 2 nouvelles branches ». 1 branche → 2 branches → 4 → 8… À chaque étape, on <b>multiplie par 2</b>. Inutile de dessiner : il suffit de répéter la multiplication !</p>`,
-  enigme: `<div class="note">
-<p>❄️ <b>La règle du Maître</b></p>
-<p>« Prends chaque segment. Coupe-le en 3 parts égales. Remplace la part du milieu par une pointe faite de deux segments. »</p>
-<p>Chaque segment devient donc <b>4 segments</b>.</p>
-</div>
-<p>À l'étape 0, le flocon est un triangle : <b>3 segments</b>. À l'étape 1, il a <b>12 segments</b>. Observe les étapes avec le curseur.</p>
-<p>Pour décorer le sapin, le Maître veut coudre une perle de glace au milieu de <b>chaque segment</b> du flocon de l'<b>étape 3</b>. <b>Combien de perles lui faut-il ?</b></p>
-<div class="rappel">📌 <b>Rappel</b> : à chaque étape, le nombre de segments est <b>multiplié par 4</b>.</div>`,
-  widget: W.koch(3),
-  reponses: ['36186cbd223297452539e6957db32c6be1d13e472abddac62f6ec1563a77fc69', '793fc5a63f273f79a18b9e8a14a97ab95beffc448d166cbdb2ef168da2804b0d', 'bbb938f4ab252e849db3ed79efc88513b314c3730f8c10918b4ed12cc6d9adf7'],
-  placeholder: 'Nombre de perles',
+  histoire: `<p>Tout au fond de la Glacière, la Kère a semé <b>quatre cadeaux</b> sur la banquise, au milieu des blocs de glace. Le seul qui peut aller les chercher, c'est <b>le robot-lutin</b>… mais elle a gelé sa télécommande : désormais, il n'obéit plus qu'à un <b>programme</b> écrit à l'avance.</p>`,
+  cours: `<p>Un <b>programme</b>, c'est une liste d'instructions que la machine exécute <b>dans l'ordre</b>, une par une, sans jamais réfléchir à ta place. Si tu te trompes, elle se trompe aussi !</p>
+<p>Le robot-lutin connaît trois instructions (une par ligne) :</p>
+<ul>
+<li><code>avancer</code> : une case tout droit, dans la direction où il regarde (<code>avancer 3</code> : trois cases) ;</li>
+<li><code>gauche</code> et <code>droite</code> : il pivote sur place d'un quart de tour, sans avancer.</li>
+</ul>
+<p>Et une instruction magique : la <b>boucle</b>. Tout ce qui est entre <code>répéter</code> et <code>fin</code> est répété plusieurs fois. Par exemple, pour faire le tour d'un carré :</p>
+<pre class="code">répéter 4
+  avancer 2
+  droite
+fin</pre>
+<p>3 lignes au lieu de 8 ! Quand un programme ne marche pas du premier coup (c'est normal !), on regarde où le robot se trompe, on corrige, et on relance : c'est le <b>débogage</b>.</p>`,
+  enigme: `<p>Écris un programme pour que le robot ramasse les <b>4 cadeaux 🎁</b> et termine <b>sur le traîneau 🛷</b>, sans foncer dans un bloc de glace 🧊. Il part en bas à gauche, tourné vers la droite.</p>
+<p>⚠️ La Kère a gelé presque toute sa mémoire : ton programme ne doit pas dépasser <b>9 lignes</b>. Tu peux le lancer autant de fois que tu veux pour le tester.</p>`,
+  widget: W.robot({
+    titre: 'La banquise de la Glacière',
+    grille: [
+      '..#.C..',
+      '#..C.#.',
+      '..C...S',
+      '.C..#..',
+      'R.....#',
+    ],
+    maxLignes: 9,
+    exemple: "# Une instruction par ligne (les lignes qui commencent par # sont ignorées)\navancer\n",
+  }),
   indices: [
-    "Étape 0 : 3 segments. Étape 1 : 3 × 4 = 12 segments. Continue de multiplier par 4 pour l'étape 2, puis l'étape 3.",
-    "Étape 2 : 12 × 4 = 48 segments. Il ne reste qu'une multiplication pour l'étape 3 !",
+    "Regarde où sont les cadeaux : ils forment un escalier ! Pour passer d'une marche à la suivante, le robot fait toujours le même petit mouvement : avancer, gauche, avancer, droite. Mets-le dans une boucle.",
+    "répéter 4 / avancer / gauche / avancer / droite / fin : le robot a les 4 cadeaux et regarde vers la droite. Il te reste 3 lignes pour rejoindre le traîneau (avancer de combien ? puis tourner de quel côté ?).",
   ],
-  lecon: `<p>À chaque étape, chaque segment devient 4 segments : 3 → 12 → 48 → <b>192</b>. Il fallait donc <b>192 perles</b> ! À l'étape 10, il en faudrait plus de 3 millions…</p>
-<p>Ce flocon s'appelle le <b>flocon de Koch</b> (1904). Sa règle s'applique à elle-même : c'est la <b>récursivité</b>. En programmation, une fonction récursive est une fonction qui <b>s'appelle elle-même</b> sur un problème plus petit :</p>
-<pre class="code">fonction dessinerSegment(segment, étape) :
-    si étape == 0 :
-        tracer le segment          ← condition d'arrêt !
-    sinon :
-        couper en 4 petits segments (avec la pointe)
-        pour chaque petit segment :
-            dessinerSegment(petit, étape − 1)</pre>
-<p>La <b>condition d'arrêt</b> est essentielle : sans elle, la fonction s'appellerait à l'infini et le programme planterait.</p>
-<p>Fait étonnant : si on continuait à l'infini, le contour du flocon deviendrait <b>infiniment long</b>… alors que le flocon tient toujours sur une feuille !</p>
+  lecon: `<p>Un programme qui marchait :</p>
+<pre class="code">répéter 4
+  avancer
+  gauche
+  avancer
+  droite
+fin
+avancer 2
+droite
+avancer 2</pre>
+<p>Sans la boucle, il aurait fallu <b>19 lignes</b> ! Repérer ce qui se répète, c'est le cœur de l'<b>algorithmique</b> : une suite d'instructions précises pour résoudre un problème. Le mot vient d'Al-Khwârizmî, un savant de Bagdad du IXᵉ siècle.</p>
+<p>Et si ton robot s'est cogné une ou deux fois avant d'y arriver : bravo, tu as <b>débogué</b>. Même les meilleurs programmeurs passent plus de temps à tester et corriger qu'à écrire !</p>
 <h4>🌍 Dans la vraie vie</h4>
 <ul>
-<li>Les montagnes, nuages et arbres des films d'animation et des jeux vidéo sont souvent générés par des fractales récursives.</li>
-<li>Pour chercher un fichier sur ton ordinateur, le programme explore un dossier, puis ses sous-dossiers, puis leurs sous-dossiers… récursivement !</li>
+<li>Les robots aspirateurs, les robots des entrepôts et le rover Perseverance sur Mars suivent des programmes écrits à l'avance (Mars est trop loin pour une télécommande : un ordre met jusqu'à 20 minutes à arriver !).</li>
+<li>Dans <b>Scratch</b> (scratch.mit.edu), tu programmes exactement comme ça, avec des blocs « répéter ».</li>
+<li>Ton lave-linge aussi exécute un programme : « répéter 30 fois : tourner à gauche, tourner à droite »…</li>
 </ul>`,
   fragment: [4, '01000001'],
 },
@@ -556,37 +587,38 @@ print(sables)</pre>
   couleurs: ['#a8650a', '#e8a923'],
   concept: 'Les piles et les files',
   givrin: {
-    ricane: "Je vole les crêpes, je mélange les assiettes, et je ne laisse que les miettes. Bon appétit !",
+    ricane: "J'ai déréglé la cuisine : les crêpes sortent dans le désordre. Tes invités vont manger de la soupe de lettres. Bon appétit !",
     piques: [
-      "Raté ! Tu as mangé la pile par le mauvais bout. Comme ton pull : à l'envers.",
+      "Raté ! Tu as pris la pile par le mauvais bout. Comme ton pull : à l'envers.",
       "Non. Les invités ont mangé tes erreurs : ils ont une indigestion.",
       "Faux ! Je garde la dernière crêpe pour moi. Et la tienne aussi.",
     ],
-    fuite: "Dernière crêpe posée, première mangée… et moi, la première à filer !",
+    fuite: "Le mot est servi dans l'ordre ?! Dernière crêpe posée, première mangée… et moi, la première à filer !",
   },
-  histoire: `<p>Dans la Salle à Manger, c'est l'heure du goûter : sur chaque crêpe, une lettre en chocolat. Mais la Kère, gloutonne, rôde autour de l'assiette…</p>`,
-  cours: `<p>Les ordinateurs passent leur temps à mettre des informations de côté en attendant de s'en servir. Il existe deux grandes façons de les ranger… et l'ordre dans lequel on les ressort change tout !</p>
-<p>🥞 La <b>pile</b>, comme une pile d'assiettes : on ne peut toucher <b>que celle du dessus</b>. La dernière posée est donc la première ressortie.</p>
-<p>🚶 La <b>file</b>, comme la file d'attente à la boulangerie : on arrive <b>au bout</b>, on est servi <b>au début</b>. Le premier arrivé est le premier servi.</p>
-<p>Exemple : on empile les crêpes <b>A</b>, puis <b>B</b>, puis <b>C</b>. C est tout en haut : si on les mange en prenant toujours celle du dessus, on mange <b>C</b>, puis <b>B</b>, puis <b>A</b>. L'ordre est retourné !</p>`,
-  enigme: `<p>Le cuisinier empile les crêpes sur l'assiette. Voici ce qui s'est passé, dans l'ordre :</p>
-<ol class="operations">
-<li>Poser <b>N</b> (tout en bas de l'assiette)</li><li>Poser <b>I</b></li><li>Poser <b>P</b></li><li>Poser <b>A</b></li><li>Poser <b>S</b></li><li>Poser <b>K</b></li><li>😈 La Kère vole la crêpe du dessus de la pile</li>
-</ol>
-<p>Ensuite, les invités mangent toutes les crêpes qui restent, en prenant toujours <b>celle du dessus</b>. Les lettres, dans l'ordre où elles sont mangées, forment le mot de passe. <b>Lequel ?</b></p>`,
-  reponses: ['ff576bb28b232dcd209933d0df5a753b8cfafb176a1995f5c4c84f21a88ce2ed'],
-  placeholder: 'Le mot formé…',
+  histoire: `<p>Dans la Salle à Manger, c'est l'heure du goûter ! Sur chaque crêpe, une lettre en chocolat : les invités veulent les manger <b>dans l'ordre</b>, pour lire le mot du jour. Mais la Kère a déréglé la cuisine, et les crêpes sortent dans le désordre…</p>
+<p>Pour remettre de l'ordre, tu as deux rangements : <b>l'assiette</b> et <b>le passe-plat</b>. Et ils ne marchent pas du tout pareil.</p>`,
+  cours: `<p>En informatique, on range souvent les données en attente de deux façons :</p>
+<div class="defilement"><table class="tableau">
+<tr><th>Rangement</th><th>Comment ça marche</th><th>Dans la vie</th></tr>
+<tr><td><b>Pile</b></td><td class="gauche">on pose <b>dessus</b>, on reprend <b>dessus</b> : <b>dernier arrivé, premier sorti</b></td><td class="gauche">une pile d'assiettes, une pile de crêpes</td></tr>
+<tr><td><b>File</b></td><td class="gauche">on entre <b>derrière</b>, on sort <b>devant</b> : <b>premier arrivé, premier servi</b></td><td class="gauche">la file d'attente de la boulangerie</td></tr>
+</table></div>
+<p>Exemple : les crêpes A, puis B, puis C arrivent. Sur une <b>pile</b>, elles ressortent C, B, A (l'ordre est <b>retourné</b>). Dans une <b>file</b>, elles ressortent A, B, C (l'ordre est <b>gardé</b>).</p>
+<p>En mélangeant les deux, on peut remettre en ordre beaucoup de choses… à condition de bien réfléchir avant de poser chaque crêpe !</p>`,
+  enigme: `<p>Les crêpes sortent de la cuisine une par une, dans l'ordre affiché. Chacune doit aller soit sur <b>l'assiette</b> (une pile), soit dans <b>le passe-plat</b> (une file). Tu peux servir aux invités le <b>dessus de l'assiette</b> ou la <b>première crêpe du passe-plat</b>, quand tu veux.</p>
+<p>Sers les crêpes pour que les invités lisent le mot <b>CHOCOLAT</b>. Tu peux annuler et recommencer autant que tu veux.</p>`,
+  widget: W.crepes({ arrivee: 'TOCOALCH', mot: 'CHOCOLAT' }),
   indices: [
-    "La Kère prend la crêpe du dessus : c'est la dernière posée, le K. Il reste N, I, P, A, S, avec S tout en haut.",
-    "Les invités mangent d'abord la crêpe du dessus (S), puis celle d'en dessous (A)… jusqu'à la dernière, tout en bas (N).",
+    "Une crêpe qui doit attendre longtemps, en gardant sa place parmi d'autres, va dans le passe-plat (elle ressortira dans le même ordre). Une crêpe qui doit passer AVANT celles d'avant va sur l'assiette. Le T, servi en tout dernier, peut attendre au fond de l'assiette.",
+    "Début de la solution : T sur l'assiette ; O, C, O, A dans le passe-plat ; L et C sur l'assiette. Sers le C (dessus de l'assiette). Le H arrive : sur l'assiette, et sers-le aussitôt. Le passe-plat contient alors O, C, O, A dans le bon ordre…",
   ],
-  lecon: `<p>La Kère a chipé le <b>K</b>, la dernière crêpe posée. Puis les invités ont mangé <b>S, A, P, I, N</b> : le <b>SAPIN</b> ! Dans une <b>pile</b> (<i>stack</i>), c'est <b>dernier arrivé, premier sorti</b> : l'ordre est retourné.</p>
-<p>Dans une <b>file</b> (<i>queue</i>), au contraire, c'est <b>premier arrivé, premier servi</b> : si les crêpes avaient attendu sur un tapis roulant, on les aurait mangées dans l'ordre où elles ont été posées.</p>
+  lecon: `<p>Une solution : le <b>T</b> attend au fond de l'assiette, <b>O, C, O, A</b> patientent dans le passe-plat (dans le même ordre), <b>L</b> et <b>C</b> vont sur l'assiette… On sert C, H, puis O, C, O du passe-plat, le L de l'assiette, le A du passe-plat et enfin le T : <b>CHOCOLAT</b> 🍫 !</p>
+<p>Dans une <b>pile</b> (<i>stack</i>), c'est <b>dernier arrivé, premier sorti</b> : l'ordre est retourné. Dans une <b>file</b> (<i>queue</i>), c'est <b>premier arrivé, premier servi</b> : l'ordre est gardé. Avec une seule des deux, ce mot était impossible à servir. Avec les deux, tout devient possible !</p>
 <h4>🌍 Dans la vraie vie</h4>
 <ul>
-<li><b>Ctrl+Z</b> (annuler) utilise une pile : la dernière action faite est la première annulée.</li>
+<li><b>Ctrl+Z</b> (annuler) utilise une pile : la dernière action faite est la première annulée. Le bouton « Annuler » de ce mini-jeu aussi !</li>
 <li>Le bouton « Retour » de ton navigateur est une pile des pages visitées.</li>
-<li>Les documents envoyés à une imprimante attendent sagement dans une <b>file</b>.</li>
+<li>Les documents envoyés à une imprimante, les messages d'un serveur, les joueurs qui attendent une partie en ligne : tout ça attend dans des <b>files</b>.</li>
 </ul>`,
   fragment: [16, '01000101'],
 },
@@ -594,47 +626,51 @@ print(sables)</pre>
 /* ======================= JOUR 12 ====================== */
 {
   jour: 12,
-  piece: {"mur":"#2f3d44","motif":"uni","sol":"parquet","elements":["photos","studio","fenetre"],"meuble":null,"objets":[]},
-  particules: ['📸', '✨', '🖼️'],
-  univers: "Le Studio Photo",
-  emoji: '📸',
-  couleurs: ['#2f3d44', '#6f8894'],
-  concept: 'Les images et la compression',
+  piece: {"mur":"#1d3b2a","motif":"bois","sol":"parquet","elements":["fenetre","tableau","etageres:📻🎧📡"],"meuble":"bureau","objets":["📻","🎙️","📜"]},
+  particules: ['📻', '❄️', '🦌'],
+  univers: "La Cabine Radio",
+  emoji: '📻',
+  couleurs: ['#1d3b2a', '#3f7d5a'],
+  concept: 'Le code Morse',
   givrin: {
-    ricane: "J'ai effacé les couleurs du code. Il ne reste que des nombres. Bonne chance pour deviner où commence le vert…",
+    ricane: "J'ai gelé le micro de la radio : plus un seul mot ne sortira de ce poste ! Il ne reste que des bips ridicules… ti, taa, ti. Personne ne comprend ce charabia !",
     piques: [
-      "Raté ! Ton chef-d'œuvre ressemble à un flocon écrasé sous une botte.",
-      "Blanc, vert, blanc, vert… Tu as perdu le compte ? Pas moi : je compte tes erreurs.",
-      "Faux. Même un écran fracassé à coups de marteau afficherait mieux.",
+      "Faux ! Ce renne-là n'existe même pas dans tes rêves.",
+      "Raté. Tu confonds les ti et les taa, on dirait.",
+      "Non ! Le traîneau va rester coincé dans le brouillard…",
     ],
-    fuite: "L'image réapparaît ?! Je disparais… dans le blanc…",
+    fuite: "Tu comprends les bips ?! Alors c'est LUI qui va guider le traîneau… Je file avant qu'il m'éblouisse avec son nez !",
   },
-  histoire: `<p>Dans le Studio Photo, le photographe avait compressé un dessin secret pour qu'il voyage plus vite. La Kère est passée par là, gomme à la main : elle a effacé <b>toutes les lettres</b> du code. Il ne reste que des nombres…</p>`,
-  cours: `<p>Une image numérique, c'est une <b>grille de petits carrés</b> de couleur : les <b>pixels</b> (souviens-toi du jour 4). Pour l'enregistrer, l'ordinateur note la couleur de chaque pixel, ligne par ligne.</p>
-<p>Problème : une photo contient des millions de pixels, et le fichier devient vite très lourd. On la <b>compresse</b> donc : on écrit la même information <b>en plus court</b>, pour qu'elle prenne moins de place et voyage plus vite.</p>
-<p>L'astuce du photographe : au lieu de dire « blanc, blanc, blanc, vert, vert », il dit « <b>3 blancs, 2 verts</b> ». Pour retrouver l'image, on fait l'inverse : <code>3 blancs, 2 verts</code> → ⬜⬜⬜🟩🟩</p>
-<p>On peut faire encore plus court ! L'image n'a que deux couleurs, qui <b>alternent</b> forcément : chaque ligne commence par du blanc, puis vient du vert, puis du blanc… Plus besoin d'écrire les couleurs : <code>3 2 1</code> veut dire 3 blancs, 2 verts, 1 blanc → ⬜⬜⬜🟩🟩⬜</p>`,
-  enigme: `<div class="note">
-<p>📸 <b>Le code, après le passage de la Kère</b></p>
-<p>Chaque ligne commence par des pixels <b>blancs</b>, puis les nombres alternent : blancs, verts, blancs, verts… <code>5 1 5</code> = 5 blancs, 1 vert, 5 blancs.</p>
-<p>L'image fait <b>11 pixels</b> de large et 9 de haut. Chaque ligne du code correspond à une ligne de l'image.</p>
-</div>
-<p>Peins la grille (clique ou glisse sur les cases) pour révéler le dessin secret. <b>Que représente-t-il ?</b></p>`,
-  widget: W.pixels(['5 1 5', '4 3 4', '3 5 3', '4 3 4', '3 5 3', '2 7 2', '1 9 1', '5 1 5', '5 1 5'], 11, 'vert'),
-  reponses: ['e31a29c5cc0415f23e84cc9a35ab1da113b89bc30c6523aeef048343d037f6c4', '73bca229c19a81b0c4ebce205091d74f2da5ce16355ae4a196a97f7660a3ad83', 'eb0b0d304d44392d619ab5b758fe2c9d6a7fc9d3553788a4f47824e2e17f78bf', '92109c407d6b5dd9659530308a228774e38a65ad3683e639fc774eaa9321afe2', '8b126daf4a1743f458f2945d1fc686b06698f57363fb98891b10d1569a0a6c5a', '1b549f1cf3c96e4b2b2531b1ab26eb0c84a018a2356a24626c0893592ff00ecf', '74dde700f93b51479c816bca84cedb9e39b10abac76d50bc5569ac5c8a5c9244', 'fe9057cb474a10e91146268db682c96c324dd795f36db4515c5d274aa97fe158', '436c7c9761cf52390f2bc14770305060b7c70b404e58319dc6e754fa76e2fa3c', 'eef978d73ad89387dcbff8456d98a029d1fef9a6bb078bcf43164ce01c25a23a'],
-  placeholder: 'Le dessin…',
+  histoire: `<p>Ce soir, un épais brouillard couvre le Pôle Nord, et le traîneau doit faire un vol d'essai. Le Père Noël a choisi le renne qui guidera l'attelage… mais la Kère a <b>gelé le micro</b> de la Cabine Radio : plus aucune voix ne passe !</p>
+<p>Heureusement, le vieux poste sait encore faire une chose : <b>biper</b>. Le Père Noël a tapoté son message en <b>code Morse</b>, et la radio l'a imprimé sur une bande de papier.</p>`,
+  cours: `<p>Avant le téléphone, comment envoyer un message très loin, par un simple fil ou par radio ? En 1838, Samuel Morse et Alfred Vail inventent un code avec seulement <b>deux signaux</b> :</p>
+<ul>
+<li><b>•</b> un bip <b>court</b>, qu'on appelle « ti » ;</li>
+<li><b>—</b> un bip <b>long</b> (trois fois plus long), qu'on appelle « taa ».</li>
+</ul>
+<p>Chaque lettre a sa petite mélodie de ti et de taa. Entre deux lettres, on fait une pause.</p>
+<div class="schema">S = <code>•••</code> &nbsp; O = <code>———</code><br>SOS = <code>••• ——— •••</code></div>
+<p>SOS, c'est le célèbre appel au secours des bateaux : ti ti ti, taa taa taa, ti ti ti. Facile à reconnaître, même dans le bruit !</p>
+<p>L'astuce de Morse : les lettres qu'on utilise le plus ont les codes les plus courts. Le <b>E</b>, la lettre la plus fréquente, c'est juste <code>•</code>. Le <b>T</b>, juste <code>—</code>. Ça fait gagner du temps !</p>
+<p>Deux signaux seulement… ça ne te rappelle rien ? C'est comme le <b>binaire</b> du jour 1, avec ses 0 et ses 1 !</p>`,
+  enigme: `<p>Voici la bande imprimée par la radio. Chaque groupe de signaux est <b>une lettre</b>. Retrouve-les une par une dans le tableau du Morse, et lis le message du Père Noël.</p>
+<div class="rappel">📌 <b>•</b> = un ti (court), <b>—</b> = un taa (long). Compte bien les signaux de chaque groupe : <code>••</code> (I) n'est pas <code>•••</code> (S) !</div>
+<p><b>Quel renne guidera le traîneau ce soir ?</b></p>`,
+  widget: W.morse({ message: 'RUDOLPH' }),
+  reponses: ['ca6e917aa0c1f1e8b46d60115e3bc4d1535024556f7391ec76f03bb9a2aeeed5', 'f38fcfe6add69dfa0a1e0f201dc632c8b0d70e5586b925ca120ecf925612c61a', '7d00c5839826c09db5948a05194d8ad184e2ecd75d3f569b442d5ddedc0d5fce', '8bf49d514b57bc2033bb00e2b75f32bd9df48a898d4e7a8dfbcc1935a85ddc0d', 'b19889f8f4d1d262dd0336fb1ead5b1642cb088536a9d1035920b82ccb9d5fd4'],
+  placeholder: 'Le nom du renne…',
   indices: [
-    "Ligne 1 : 5 blancs, 1 vert, 5 blancs. Ligne 2 : 4 blancs, 3 verts, 4 blancs. Chaque ligne fait bien 11 cases au total.",
-    "Le dessin est pointu en haut, s'élargit vers le bas, et a un petit tronc… C'est la star de Noël !",
+    "Prends les groupes un par un. Le premier, • — •, c'est « ti taa ti » : dans le tableau, c'est la lettre R. Continue avec le deuxième !",
+    "Pas sûr d'un groupe ? Tape-le sur le manipulateur (court, long…) : la radio affiche la lettre. Et compte bien les ti : • • • • (quatre) n'est pas • • • (trois).",
   ],
-  lecon: `<p>C'était un <b>sapin</b> 🎄 !</p>
-<p>Ce codage s'appelle le <b>RLE</b> (<i>Run-Length Encoding</i>, « codage par plages ») : au lieu d'écrire 5 fois « blanc », on écrit <code>5</code>.</p>
-<p>Le code tenait en 27 nombres, alors que l'image brute compte 99 cases (11 × 9) : presque <b>4 fois plus court</b> ! Les <b>télécopieurs</b> (les fax) utilisaient exactement cette astuce : une page de texte, c'est surtout du blanc, avec des plages de noir qui alternent.</p>
-<p>Le RLE est excellent pour les grandes zones unies (un ciel, une page blanche), mais mauvais pour les photos pleines de détails, où les couleurs changent à chaque pixel. C'est une compression <b>sans perte</b> : on retrouve l'image exacte. Le format <b>JPEG</b>, lui, compresse <b>avec perte</b> : il jette des détails que l'œil remarque à peine, pour obtenir des fichiers environ 10 fois plus légers.</p>
+  lecon: `<p>Le message disait <b>RUDOLPH</b> 🦌🔴 : avec son nez rouge qui brille, c'est lui qui guide le traîneau dans le brouillard !</p>
+<p>Tu viens de lire du <b>code Morse</b> : chaque lettre devient une suite de signaux courts et longs. Avec seulement deux signaux, on peut tout écrire… exactement comme le <b>binaire</b> des ordinateurs, qui n'utilise que des 0 et des 1.</p>
+<p>Et l'astuce « lettre fréquente = code court » sert encore aujourd'hui : c'est une idée de <b>compression</b>, qu'on retrouve dans les fichiers ZIP et les photos JPEG.</p>
 <h4>🌍 Dans la vraie vie</h4>
 <ul>
-<li>Les fichiers <b>.zip</b> et les images <b>.png</b> utilisent des compressions sans perte, plus malines que le RLE.</li>
-<li>Les photos (<b>.jpg</b>), la musique (<b>.mp3</b>) et les vidéos en streaming utilisent des compressions avec perte.</li>
+<li>Le Morse a été le premier « Internet » : dès les années 1840, le télégraphe envoyait des messages d'une ville à l'autre en quelques minutes, au lieu de plusieurs jours à cheval.</li>
+<li>Le <b>Titanic</b> a appelé au secours en Morse en 1912. Aujourd'hui encore, des radioamateurs s'en servent : un bip passe là où une voix se perd dans le bruit.</li>
+<li>Les balises radio qui guident les avions répètent leur nom en Morse, pour que les pilotes vérifient qu'ils écoutent la bonne.</li>
 </ul>`,
   fragment: [19, '01001001'],
 },
@@ -745,69 +781,6 @@ print(sables)</pre>
 /* ======================= JOUR 15 ====================== */
 {
   jour: 15,
-  piece: {"mur":"#10202f","motif":"metal","sol":"metal","elements":["serveurs","serveurs","serveurs"],"meuble":null,"objets":[]},
-  particules: ['0', '1', '🖥️'],
-  univers: "La Salle des Serveurs",
-  emoji: '🖥️',
-  couleurs: ['#00413a', '#00897b'],
-  concept: 'Le Web : clients, serveurs et HTTP',
-  givrin: {
-    ricane: "J'ai mis le site du Pôle Nord sens dessus dessous. Des erreurs partout, et moi, je suis en pleine forme.",
-    piques: [
-      "Faux ! Erreur 404 : intelligence introuvable.",
-      "Non, non. Erreur 403 : accès à la victoire interdit.",
-      "Raté ! Erreur 500 : ton cerveau a planté.",
-    ],
-    fuite: "Tu comprends les codes ?! Erreur 503 : Kère indisponible, je m'en vais !",
-  },
-  histoire: `<p>Dans la Salle des Serveurs, le site web du Pôle Nord (<code>www.pole-nord.noel</code>) répond avec de drôles de <b>codes à 3 chiffres</b>. Chaque code a un sens précis, compris par tous les sites du monde… et la Kère s'amuse à les provoquer.</p>`,
-  cours: `<p>Quand tu ouvres un site web, ton <b>navigateur</b> (Chrome, Firefox, Safari…) envoie une <b>demande</b> à un ordinateur allumé jour et nuit quelque part dans le monde : le <b>serveur</b>. C'est lui qui garde les pages du site.</p>
-<p>Le serveur répond avec la page… et avec un <b>code à 3 chiffres</b> qui dit comment ça s'est passé. Tu as sûrement déjà croisé le plus célèbre d'entre eux : « <b>Erreur 404</b> » (page introuvable).</p>
-<p>Ces codes sont les mêmes pour tous les sites du monde. Le <b>premier chiffre</b> donne la famille :</p>
-<div class="defilement"><table class="tableau compact">
-<tr><th>Famille</th><th>Ça veut dire…</th></tr>
-<tr><td><b>2</b>xx</td><td>✅ ça a marché</td></tr>
-<tr><td><b>3</b>xx</td><td>↪️ la page a déménagé : va voir ailleurs</td></tr>
-<tr><td><b>4</b>xx</td><td>🙋 c'est la faute du visiteur (page inconnue, accès interdit…)</td></tr>
-<tr><td><b>5</b>xx</td><td>🔥 c'est la faute du serveur (il a planté)</td></tr>
-</table></div>`,
-  enigme: `<p>Associe chaque situation au bon code de réponse du serveur. Lis bien le sens de chaque code ! (L'un d'eux est une vraie blague d'informaticiens : il ne sert à rien ici.)</p>`,
-  widget: W.http(
-    [
-      "Un enfant ouvre la page <code>/liste-des-cadeaux</code> : tout fonctionne, la page s'affiche.",
-      "L'ancienne page <code>/lettres</code> a déménagé pour toujours à l'adresse <code>/courrier</code>.",
-      "La Kère essaie d'ouvrir <code>/coffre-du-pere-noel</code>, réservé au Père Noël : c'est non !",
-      "Quelqu'un tape <code>/cadeaux-de-l-an-3000</code> : cette page n'a jamais existé.",
-      "Une erreur dans le programme du serveur le fait planter.",
-    ],
-    [
-      { code: 200, sens: '« OK » : tout va bien, voici la page' },
-      { code: 301, sens: '« Déplacé définitivement » : la page a changé d\'adresse pour toujours' },
-      { code: 403, sens: '« Interdit » : tu n\'as pas le droit d\'entrer' },
-      { code: 404, sens: '« Introuvable » : cette page n\'existe pas' },
-      { code: 418, sens: '« Je suis une théière » ☕ (oui, il existe vraiment !)' },
-      { code: 500, sens: '« Erreur interne » : le serveur a planté' },
-    ]
-  ),
-  indices: [
-    "Lis le sens de chaque code dans la liste, puis cherche la situation qui lui correspond. Le 418 (la théière) ne va avec aucune situation !",
-    "La page qui s'affiche normalement → 200. Le déménagement → 301. Il ne reste que la page interdite, la page qui n'existe pas et le serveur qui plante.",
-  ],
-  lecon: `<p>Les réponses : <b>200</b> (tout va bien), <b>301</b> (déménagement), <b>403</b> (interdit), <b>404</b> (introuvable) et <b>500</b> (le serveur a planté).</p>
-<p>Quand tu visites un site, ton navigateur (le <b>client</b>) envoie une <b>requête</b> à un ordinateur distant (le <b>serveur</b>) : « donne-moi la page <code>/liste-des-cadeaux</code> ». Le serveur répond avec la page… et un <b>code</b>. Ce langage s'appelle <b>HTTP</b> (le « http » au début des adresses).</p>
-<p>Et le code <b>418 « Je suis une théière »</b> ? Il vient d'un poisson d'avril de 1998… qui a été gardé, par amour de la blague !</p>
-<p>Avant même la requête, ton ordinateur demande à un <b>serveur DNS</b> l'adresse de <code>www.pole-nord.noel</code> : le DNS est l'annuaire d'Internet, qui traduit les noms en numéros.</p>
-<h4>🌍 Dans la vraie vie</h4>
-<ul>
-<li>Les pages « 404 » de certains sites sont de petites œuvres d'art : cherche-en quelques-unes !</li>
-<li>Les jours de soldes ou de vente de billets de concert, beaucoup de sites affichent des erreurs : trop de monde à la fois.</li>
-</ul>`,
-  fragment: [12, '01001100'],
-},
-
-/* ======================= JOUR 16 ====================== */
-{
-  jour: 16,
   piece: {"mur":"#8a1538","motif":"rayures","sol":"parquet","elements":["etageres:🎀🎁🧶","fenetre","tableau"],"meuble":"table","objets":["🎁","🏷️","✂️","🎀"]},
   particules: ['🏷️', '🎀', '✨'],
   univers: "L'Atelier d'Emballage",
@@ -815,53 +788,128 @@ print(sables)</pre>
   couleurs: ['#760c43', '#c2185b'],
   concept: 'Les expressions régulières',
   givrin: {
-    ricane: "Mon robot ne comprend qu'une formule de sorcière. Une étiquette de travers, et hop : le cadeau part à la déchiqueteuse.",
+    ricane: "J'ai glissé mes fausses étiquettes parmi les vraies. Le robot trieur a perdu son motif : tous les cadeaux vont finir à la déchiqueteuse !",
     piques: [
-      "Raté ! Ton étiquette vient de finir en confettis.",
+      "Raté ! Un vrai cadeau vient de finir en confettis.",
       "Faux. Tu lis les motifs comme une poule lit le journal.",
-      "Non ! Relis le motif : mon robot ne pardonne rien. Il tient de moi.",
+      "Non ! Mon étiquette KERE_666 est passée. J'adore ce chiffre.",
     ],
-    fuite: "Tu lis les expressions régulières ?! Personne ne lit ça ! Je m'enfuis !",
+    fuite: "Tu écris des expressions régulières ?! Personne ne sait écrire ça ! Je m'enfuis !",
   },
-  histoire: `<p>Dans l'Atelier d'Emballage, un robot trie les étiquettes des cadeaux. La Kère lui a donné un <b>motif</b> très strict : les étiquettes qui ne lui ressemblent pas partent à la déchiqueteuse ! Le motif est écrit dans un langage étrange : une <b>expression régulière</b>.</p>`,
-  cours: `<p>Une <b>expression régulière</b>, c'est un <b>portrait-robot</b> de texte : elle ne dit pas quel texte exact on attend, mais à quoi il doit <b>ressembler</b>.</p>
-<p>Par exemple, le portrait-robot <code>[0-9][0-9][0-9]</code> veut dire « 3 chiffres ». Il accepte <code>007</code> et <code>123</code>, mais refuse <code>12</code> (trop court) et <code>abc</code> (pas des chiffres).</p>
-<p>Quelques morceaux à connaître :</p>
-<ul>
-<li><code>[A-Z]</code> = une lettre majuscule, <code>[a-z]</code> = une lettre minuscule, <code>[0-9]</code> = un chiffre ;</li>
-<li><code>+</code> = « le morceau d'avant, une fois ou plus » : <code>[a-z]+</code> accepte <code>a</code>, <code>noel</code> ou <code>sapin</code> ;</li>
-<li><code>^</code> = le début et <code>$</code> = la fin : rien ne doit dépasser !</li>
-</ul>
-<p>Pour vérifier une étiquette, on avance <b>en même temps</b> dans le motif et dans l'étiquette, morceau par morceau, de gauche à droite. Si un seul morceau ne correspond pas, l'étiquette est refusée.</p>`,
-  enigme: `<div class="motif"><code>^[A-Z][a-z]+-[0-9][0-9]$</code></div>
-<table class="tableau legende-regex">
-<tr><td><code>^</code></td><td>début de l'étiquette</td></tr>
-<tr><td><code>[A-Z]</code></td><td>une lettre majuscule</td></tr>
-<tr><td><code>[a-z]+</code></td><td>une ou plusieurs lettres minuscules</td></tr>
-<tr><td><code>-</code></td><td>un tiret</td></tr>
-<tr><td><code>[0-9][0-9]</code></td><td>deux chiffres</td></tr>
-<tr><td><code>$</code></td><td>fin de l'étiquette (plus rien après !)</td></tr>
-</table>
-<p>En clair : <b>un prénom qui commence par une majuscule</b> (et seulement la première lettre), un tiret, puis <b>exactement deux chiffres</b>. Voici les étiquettes, dans l'ordre d'arrivée :</p>
-<div class="etiquettes"><span>Nael-05</span><span>lea-12</span><span>Emma-12</span><span>TOM-03</span><span>Ines-24</span><span>Sam-7</span><span>Gael-09</span><span>Elio-17</span></div>
-<p>Les <b>premières lettres</b> des étiquettes acceptées par le robot, dans l'ordre, forment le mot de passe.</p>`,
-  reponses: ['323f10c007faf32d3f56490a1879c815874867b9a1fcf13046f2f0ff7aa84100'],
-  placeholder: 'Le mot formé…',
+  histoire: `<p>Dans l'Atelier d'Emballage, un robot trie les étiquettes des cadeaux : les vraies partent vers le traîneau, les fausses à la déchiqueteuse. Mais la Kère a effacé son <b>motif</b> de tri… et a glissé ses propres étiquettes parmi les vraies !</p>
+<p>Il faut réécrire le motif dans le langage du robot : une <b>expression régulière</b>.</p>`,
+  cours: `<p>Une <b>expression régulière</b> (ou <i>regex</i>) décrit à quoi doit ressembler un texte. On l'écrit avec des petites briques :</p>
+<div class="defilement"><table class="tableau">
+<tr><th>Brique</th><th>Veut dire</th></tr>
+<tr><td><code>[A-Z]</code></td><td class="gauche">une lettre <b>majuscule</b> (de A à Z)</td></tr>
+<tr><td><code>[a-z]</code></td><td class="gauche">une lettre <b>minuscule</b></td></tr>
+<tr><td><code>[0-9]</code></td><td class="gauche">un <b>chiffre</b></td></tr>
+<tr><td><code>+</code></td><td class="gauche">la brique d'avant, <b>une ou plusieurs fois</b> : <code>[0-9]+</code> = un nombre</td></tr>
+<tr><td><code>{3}</code></td><td class="gauche">la brique d'avant, <b>exactement 3 fois</b> : <code>[a-z]{3}</code> = 3 minuscules</td></tr>
+<tr><td><code>^</code> et <code>$</code></td><td class="gauche">le <b>début</b> et la <b>fin</b> du texte (rien avant, rien après)</td></tr>
+<tr><td><code>-</code> ou <code>_</code></td><td class="gauche">les autres caractères se cherchent tels quels</td></tr>
+</table></div>
+<p>Exemple : un prénom avec une majuscule puis des minuscules s'écrit <code>^[A-Z][a-z]+$</code>. « Lou » passe ; « lou » et « LOU » ne passent pas.</p>
+<p>Attention au piège : sans <code>^</code> et <code>$</code>, le motif cherche <b>un morceau</b> du texte. <code>[0-9]{2}</code> trouve deux chiffres… même dans « 12345 » !</p>`,
+  enigme: `<p>Écris un motif qui <b>accepte toutes les vraies étiquettes</b> et <b>refuse toutes les fausses</b>. Le tri se met à jour à chaque lettre que tu tapes : regarde quelles étiquettes passent, et corrige ton motif jusqu'à ce que tout soit vert. Puis lance le tri !</p>`,
+  widget: W.trieuse({
+    garder: ['LUTIN-042', 'RENNE-117', 'ELFE-008', 'TRAINEAU-300', 'NEIGE-999', 'SAPIN-024'],
+    jeter: ['lutin-042', 'RENNE-17', 'ELFE-0089', 'KERE_666', 'SAPIN-12A', '-123', 'NOEL-12!', 'ELFE-O42'],
+    depart: '',
+  }),
   indices: [
-    "Trois étiquettes ont un défaut : une commence par une minuscule, une est tout en majuscules, et une n'a qu'un seul chiffre.",
-    "lea-12 (pas de majuscule), TOM-03 (majuscules en trop) et Sam-7 (un seul chiffre) partent à la déchiqueteuse. Lis les premières lettres des 5 autres !",
+    "Une vraie étiquette, c'est : des MAJUSCULES, un tiret, puis exactement 3 chiffres. Traduis chaque morceau avec une brique : [A-Z]+ puis - puis [0-9]{3}.",
+    "Sans ^ au début et $ à la fin, ELFE-0089 passe (il contient bien « ELFE-008 »). Le motif complet : ^[A-Z]+-[0-9]{3}$",
   ],
-  lecon: `<p>Les étiquettes acceptées étaient <b>N</b>ael-05, <b>E</b>mma-12, <b>I</b>nes-24, <b>G</b>ael-09 et <b>E</b>lio-17 → <b>NEIGE</b> ❄️</p>
-<p>Les refusées : <code>lea-12</code> (pas de majuscule au début), <code>TOM-03</code> (des majuscules là où le motif attend des minuscules) et <code>Sam-7</code> (un seul chiffre au lieu de deux).</p>
-<p>Les <b>expressions régulières</b> (ou <i>regex</i>) sont un mini-langage pour décrire des motifs de texte. Elles existent dans presque tous les langages de programmation.</p>
+  lecon: `<p>Un motif qui marchait : <code>^[A-Z]+-[0-9]{3}$</code>, c'est-à-dire « du début à la fin : des majuscules, un tiret, exactement trois chiffres ».</p>
+<p>Les fausses étiquettes de la Kère ont toutes été refusées : <code>lutin-042</code> (minuscules), <code>RENNE-17</code> (2 chiffres), <code>ELFE-0089</code> (4 chiffres), <code>KERE_666</code> (un tiret bas), <code>SAPIN-12A</code> (une lettre à la fin), <code>-123</code> (pas de nom), <code>NOEL-12!</code> et <code>ELFE-O42</code>… avec la <b>lettre O</b> à la place du zéro. Bien vu, le robot !</p>
+<p>Les <b>expressions régulières</b> sont un mini-langage qui existe dans presque tous les langages de programmation. Il y a souvent plusieurs bons motifs : <code>^[A-Z]+-\\d{3}$</code> marche aussi (<code>\\d</code> = un chiffre).</p>
 <h4>🌍 Dans la vraie vie</h4>
 <ul>
 <li>Quand un formulaire te dit « adresse e-mail invalide », c'est souvent une regex qui a vérifié.</li>
 <li>Un code postal français s'écrit <code>^[0-9]{5}$</code> (« exactement 5 chiffres »).</li>
 <li>Les développeurs s'en servent pour chercher et remplacer du texte dans des milliers de fichiers d'un coup.</li>
-</ul>
-<h4>🧪 Essaie toi-même</h4>`,
-  apresReussite: W.terrainRegex('^[A-Z][a-z]+-[0-9][0-9]$', ['Nael-05', 'lea-12', 'Emma-12', 'TOM-03', 'Ines-24', 'Sam-7', 'Gael-09', 'Elio-17']),
+</ul>`,
+  fragment: [12, '01001100'],
+},
+
+/* ======================= JOUR 16 ====================== */
+{
+  jour: 16,
+  piece: {"mur":"#2f3d44","motif":"uni","sol":"parquet","elements":["photos","studio","fenetre"],"meuble":null,"objets":[]},
+  particules: ['📸', '🎬', '🍿'],
+  univers: "Le Studio Photo",
+  emoji: '🎬',
+  couleurs: ['#2f3d44', '#6f8894'],
+  concept: 'Les images et la compression',
+  givrin: {
+    ricane: "Le 16 décembre, tout le monde court au cinéma voir les Avengers. Pff. Le VRAI film de l'hiver, c'est celui de mon idole. J'ai fait l'affiche moi-même… et je l'ai compressée. Bonne chance pour la voir !",
+    piques: [
+      "Raté ! Mon idole n'a jamais ressemblé à un bonhomme de neige écrasé.",
+      "Faux. Recompte tes cases. Moi, je compte tes erreurs… et j'adore ça.",
+      "Non ! Même un projecteur tombé dans un lac gelé afficherait mieux.",
+    ],
+    fuite: "Tu as vu l'affiche ?! Alors tu sais ce qui t'attend le 24… Je file réserver ma place au premier rang !",
+  },
+  histoire: `<p>Au Studio Photo, on préparait l'affiche du grand film de l'hiver : celui qui sort au cinéma le <b>16 décembre</b>, et que tout le monde attend. La Kère a piraté l'ordinateur du photographe. Elle a remplacé l'affiche par celle du film de <b>son idole</b>… puis elle l'a <b>compressée</b>, pour que personne ne puisse la voir sans la repeindre case par case.</p>`,
+  cours: `<p>Une image numérique, c'est une <b>grille de petits carrés</b> de couleur : les <b>pixels</b> (souviens-toi du jour 4). Pour l'enregistrer, l'ordinateur note la couleur de chaque pixel, ligne par ligne.</p>
+<p>Problème : une photo contient des millions de pixels, et le fichier devient vite très lourd. On la <b>compresse</b> donc : on écrit la même information <b>en plus court</b>, pour qu'elle prenne moins de place et voyage plus vite.</p>
+<p>L'astuce la plus simple : au lieu de dire « blanc, blanc, blanc, rouge, rouge », on dit « <b>3 blancs, 2 rouges</b> ». En abrégé, chaque couleur a sa lettre : <code>3B 2R</code>. D'abord un <b>nombre</b> (combien de pixels à la suite), puis une <b>lettre</b> (de quelle couleur).</p>
+<p>Pour retrouver l'image, on fait l'inverse : <code>3B 2R 1B</code> → ⬜⬜⬜🟥🟥⬜</p>`,
+  enigme: `<div class="note">
+<p>🎬 <b>L'affiche, compressée par la Kère</b></p>
+<p>Chaque ligne du code est une ligne de l'image, lue de gauche à droite : <code>7B 1G 7B</code> = 7 pixels blancs, 1 bleu glace, 7 blancs.</p>
+<p>Les couleurs : <b>B</b> = blanc, <b>G</b> = bleu glace, <b>M</b> = bleu marine, <b>R</b> = rouge, <b>N</b> = noir. L'image fait <b>15 pixels</b> de large et <b>20</b> de haut, et toutes les cases sont blanches au départ.</p>
+</div>
+<p>Repeins l'affiche. <b>Quel titre est écrit en bas de l'affiche ?</b></p>`,
+  widget: W.pixelsCouleurs({
+    lignes: [
+      '7B 1G 7B',
+      '3B 1G 3B 1G 3B 1G 3B',
+      '1B 1G 1B 1G 2B 3G 2B 1G 1B 1G 1B',
+      '1B 4G 1B 3G 1B 4G 1B',
+      '1B 13G 1B',
+      '2B 11M 2B',
+      '1B 1M 2B 7M 2B 1M 1B',
+      '1B 2M 3B 3M 3B 2M 1B',
+      '1B 3M 2R 3M 2R 3M 1B',
+      '1B 13M 1B',
+      '2B 1M 1N 1B 1N 1B 1N 1B 1N 1B 1N 1M 2B',
+      '2B 1M 1B 1N 1B 1N 1B 1N 1B 1N 1B 1M 2B',
+      '3B 9M 3B',
+      '4B 1M 1B 1M 1B 1M 1B 1M 4B',
+      '15B',
+      '1B 3R 1B 3R 1B 1R 2B 1R 2B',
+      '1B 1R 4B 1R 2B 2R 1B 1R 2B',
+      '1B 2R 3B 1R 2B 1R 1B 2R 2B',
+      '1B 1R 4B 1R 2B 1R 2B 1R 2B',
+      '1B 1R 3B 3R 1B 1R 2B 1R 2B',
+    ],
+    largeur: 15,
+    palette: [
+      { l: 'B', nom: 'blanc', c: '#ffffff' },
+      { l: 'G', nom: 'bleu glace', c: '#8fd3fb' },
+      { l: 'M', nom: 'bleu marine', c: '#1c2d5a' },
+      { l: 'R', nom: 'rouge', c: '#d62839' },
+      { l: 'N', nom: 'noir', c: '#111318' },
+    ],
+  }),
+  reponses: ['afd0b3ea9a5a55880d7bf40dea5de6f166950845918e4f2773c97b9bf985a1bf', '340c71c1b973d85c68e8bd48c3d8f406e6d5bf089870423eb84503f1a6947239', '979e9b64947f903267a59838685bc4fb3f869861c7d91ca99eb89ecf9a4b7a18', '5a3c8989726332563ae87eef863393ed603e8f205cf4da2a2a13377a3813aed1', 'add224d5c309ce50a463682f90a49630555b67768bdf288736ad317b2577b4b0', 'e16079d82df984a62b5f4ace7933e5e0b7c18da1d2427086c6a531256f91ec17'],
+  placeholder: 'Le titre…',
+  indices: [
+    "Commence par le haut. Ligne 2 : 3B 1G 3B 1G 3B 1G 3B, soit 3 blancs, 1 bleu glace, 3 blancs… Chaque ligne fait bien 15 cases. Survole une case : sa ligne s'éclaire dans le code, et une ligne juste s'allume ✓.",
+    "En haut, une couronne de glace, des yeux rouges et des crocs : c'est Kryos, l'idole de la Kère ! Le titre est peint en rouge dans les 5 dernières lignes : 3 lettres, le mot qu'on voit à la toute fin des films.",
+  ],
+  lecon: `<p>« <b>KRYOS : LA FIN</b> » 🎬 ! L'idole de la Kère, évidemment… Rendez-vous le 24 pour lui montrer qui écrit vraiment la fin de l'histoire.</p>
+<p>Ce codage s'appelle le <b>RLE</b> (<i>Run-Length Encoding</i>, « codage par plages ») : au lieu d'écrire 7 fois « blanc », on écrit <code>7B</code>.</p>
+<p>L'image brute compte <b>300 pixels</b> (15 × 20). Le code, lui, ne décrit que <b>142 plages</b> : deux fois moins de choses à écrire, et le gain est énorme sur une grande image pleine de zones unies ! Et quand une image n'a que <b>2 couleurs</b>, on peut même se passer des lettres, puisque les couleurs alternent forcément. Les <b>fax</b> faisaient exactement ça : une page de texte, c'est surtout du blanc, avec des plages de noir.</p>
+<p>Le RLE est excellent pour les grandes zones unies (un ciel, une page blanche), mais mauvais pour les photos pleines de détails, où la couleur change à chaque pixel. C'est une compression <b>sans perte</b> : on retrouve l'image exacte. Le format <b>JPEG</b>, lui, compresse <b>avec perte</b> : il jette des détails que l'œil remarque à peine, pour obtenir des fichiers environ 10 fois plus légers.</p>
+<h4>🌍 Dans la vraie vie</h4>
+<ul>
+<li>Les fichiers <b>.zip</b> et les images <b>.png</b> utilisent des compressions sans perte, plus malines que le RLE.</li>
+<li>Les photos (<b>.jpg</b>), la musique (<b>.mp3</b>) et les films en streaming utilisent des compressions avec perte.</li>
+<li>🍿 Et le vrai film du 16 décembre ? <i>Avengers: Doomsday</i> sort ce jour-là au cinéma, en France. La Kère, elle, boycotte.</li>
+</ul>`,
   fragment: [13, '01000001'],
 },
 
@@ -875,51 +923,93 @@ print(sables)</pre>
   couleurs: ['#3a241c', '#795548'],
   concept: 'Les bases de données (SQL)',
   givrin: {
-    ricane: "J'ai mélangé toute la liste des enfants sages et pas sages. Bonne chance pour t'y retrouver.",
+    ricane: "Mon complice s'est caché dans la liste des enfants, et il a déjà volé un cadeau. Des milliers de lignes… enfin, beaucoup. Bonne chance !",
     piques: [
-      "Faux ! Tu viens d'offrir une luge à un garnement. Je commence à t'apprécier.",
-      "Erreur de requête ! Tu as lu la liste à l'envers, comme un lutin qui a trop bu de chocolat chaud.",
+      "Faux ! Ce cadeau-là dort encore bien au chaud. Cherche mieux.",
+      "Erreur ! Tu as lu la liste à l'envers, comme un lutin qui a trop bu de chocolat chaud.",
       "Non. La base de données a soupiré. Si, si, je l'ai entendue.",
     ],
-    fuite: "SELECT sortie FROM chalet… Je disparais de la base !",
+    fuite: "SELECT sortie FROM chalet WHERE kere = 'moi'… Je disparais de la base !",
   },
-  histoire: `<p>Dans la Bibliothèque, la liste des enfants n'est plus un vieux grimoire : c'est une <b>base de données</b>. La Kère a caché le mot de passe dedans… et elle a laissé sur l'écran la <b>requête</b> qui permet de le retrouver.</p>`,
-  cours: `<p>Une <b>base de données</b>, c'est un grand tableau bien rangé, une <b>table</b> : chaque <b>ligne</b> décrit une chose (ici, un cadeau) et chaque <b>colonne</b> une information sur elle (un prénom, un prix…).</p>
-<p>Pour lui poser une question, on écrit une <b>requête</b> en <b>SQL</b>. Ses mots-clés sont de l'anglais tout simple :</p>
-<div class="defilement"><table class="tableau compact">
-<tr><td><code>SELECT</code></td><td class="gauche">choisis (la colonne à afficher)</td></tr>
-<tr><td><code>FROM</code></td><td class="gauche">dans (quelle table)</td></tr>
-<tr><td><code>WHERE</code></td><td class="gauche">seulement les lignes où…</td></tr>
-<tr><td><code>ORDER BY … DESC</code></td><td class="gauche">range le résultat par… du plus grand au plus petit</td></tr>
-</table></div>
-<p>Exemple : <code>SELECT prenom FROM eleves WHERE classe = 'CM2' ORDER BY age DESC</code> veut dire « donne-moi le prénom des élèves de CM2, du plus âgé au plus jeune ».</p>`,
-  enigme: `<p>Voici la requête laissée par la Kère :</p>
-<pre class="code sql"><span class="mot">SELECT</span> cadeau
-<span class="mot">FROM</span> liste
-<span class="mot">WHERE</span> sage = 'oui'
-<span class="mot">ORDER BY</span> prix <span class="mot">DESC</span>;</pre>
-<p class="petit">Traduction : « Dans la table liste, garde seulement les cadeaux des enfants sages, range-les du plus cher au moins cher, et affiche le nom des cadeaux. »</p>
-<p>Table <code>liste</code> :</p>
-<div class="defilement"><table class="tableau table-sql">
-<tr><th>enfant</th><th>cadeau</th><th>prix</th><th>sage</th></tr>
-<tr><td>Zoé</td><td>Nounours</td><td>9</td><td>oui</td></tr>
-<tr><td>Hugo</td><td>Luge</td><td>26</td><td>non</td></tr>
-<tr><td>Adam</td><td>Toupie</td><td>19</td><td>oui</td></tr>
-<tr><td>Inès</td><td>Ukulélé</td><td>25</td><td>oui</td></tr>
-<tr><td>Malo</td><td>Igloo en kit</td><td>12</td><td>non</td></tr>
-<tr><td>Rose</td><td>Lampe frontale</td><td>28</td><td>oui</td></tr>
-<tr><td>Léo</td><td>Igloo gonflable</td><td>14</td><td>oui</td></tr>
-</table></div>
-<p>Les <b>initiales des cadeaux</b> obtenus, dans l'ordre du résultat, forment le mot de passe.</p>`,
-  reponses: ['c12fd5047c181d7d4784e29127da729b8aa4b23fb1415f4b3f72ffb1a1aa34e4'],
-  placeholder: 'Le mot formé…',
+  histoire: `<p>Dans la Bibliothèque, la grande liste des enfants n'est plus un vieux grimoire : c'est une <b>base de données</b>. La Kère y a glissé un <b>complice</b>… qui a déjà volé un cadeau ! Sur le bureau, elle a laissé un petit mot pour narguer les lutins.</p>
+<p>Pour interroger la base, une seule solution : la <b>console SQL</b> des lutins.</p>`,
+  cours: `<p>Une <b>base de données</b> range les informations dans des <b>tables</b>, comme un tableur : une ligne par enfant, une colonne par information. Pour lui poser une question, on écrit une <b>requête</b> en <b>SQL</b>. Exemples avec la table <code>rennes</code> :</p>
+<pre class="code">SELECT * FROM rennes</pre>
+<p>« Montre toutes les colonnes (<code>*</code>) de la table rennes. »</p>
+<pre class="code">SELECT prenom, vitesse FROM rennes
+WHERE vitesse > 60 AND nez_rouge = 'non'</pre>
+<p>« Seulement le prénom et la vitesse, des rennes plus rapides que 60 <b>et</b> sans nez rouge. » Les textes s'écrivent entre guillemets : <code>'non'</code>.</p>
+<pre class="code">SELECT * FROM rennes
+ORDER BY vitesse DESC LIMIT 1</pre>
+<p>« Range du plus rapide au plus lent (<code>DESC</code>), et garde seulement la première ligne. »</p>
+<p>Les mots en majuscules (SELECT, FROM, WHERE, AND, ORDER BY, LIMIT) peuvent aussi s'écrire en minuscules.</p>`,
+  enigme: `<div class="note">
+<p>📝 <b>Le mot de la Kère</b></p>
+<p>« Mon complice se cache dans la liste : c'est le seul à avoir plus de 100 ans. Cette nuit, il a volé <b>le cadeau le plus cher d'un enfant sage de sa ville</b>. Bonne chance pour le retrouver, hi hi ! »</p>
+</div>
+<p>Interroge la table <code>liste</code> pour démasquer le complice, puis trouve le cadeau volé. <b>Quel cadeau a été volé ?</b></p>`,
+  widget: W.sql({
+    tables: {
+      liste: {
+        colonnes: ['prenom', 'ville', 'age', 'sage', 'cadeau', 'prix'],
+        lignes: [
+          ['Zoé', 'Strasbourg', 8, 'oui', 'Télescope', 89],
+          ['Hugo', 'Strasbourg', 10, 'non', 'Console de jeu', 299],
+          ['Lina', 'Strasbourg', 6, 'oui', 'Poupée', 25],
+          ['Inès', 'Lyon', 9, 'oui', 'Vélo', 189],
+          ['Adam', 'Lyon', 5, 'oui', 'Toupie', 12],
+          ['Louise', 'Lille', 6, 'oui', 'Peluche renne', 22],
+          ['Gabin', 'Lille', 11, 'oui', 'Robot à construire', 119],
+          ['Noah', 'Strasbourg', 9, 'oui', 'Puzzle', 18],
+          ['Rose', 'Lyon', 12, 'non', 'Drone', 149],
+          ['Tom', 'Brest', 10, 'oui', 'Maquette de bateau', 49],
+          ['Lou', 'Nice', 8, 'oui', 'Rollers', 69],
+          ['Jade', 'Strasbourg', 7, 'non', 'Trottinette', 79],
+          ['Paul', 'Annecy', 9, 'oui', 'Skis', 159],
+          ['Chloé', 'Lille', 9, 'non', 'Patins à glace', 59],
+          ['Léo', 'Lyon', 8, 'oui', 'Luge', 45],
+          ['Anna', 'Brest', 7, 'non', 'Ciré jaune', 35],
+          ['Timéo', 'Nice', 11, 'non', 'Planche de surf', 199],
+          ['Malo', 'Strasbourg', 11, 'oui', 'Livre de magie', 15],
+          ['Margot', 'Annecy', 12, 'non', 'Snowboard', 249],
+          ['Emma', 'Lyon', 7, 'oui', 'Ukulélé', 39],
+          ['Yanis', 'Brest', 12, 'oui', 'Appareil photo', 129],
+          ['Alice', 'Nice', 5, 'oui', 'Dînette', 34],
+          ['Grêlon', 'Strasbourg', 1000, 'non', 'Sac de glaçons', 0],
+          ['Nolan', 'Lille', 8, 'oui', 'Jeu de société', 29],
+          ['Ethan', 'Annecy', 6, 'oui', 'Bonnet à pompon', 14],
+          ['Sacha', 'Lyon', 10, 'non', 'Casque audio', 99],
+          ['Léna', 'Brest', 6, 'oui', 'Pull moche', 25],
+          ['Raphaël', 'Nice', 10, 'oui', 'Microscope', 79],
+          ['Ambre', 'Strasbourg', 5, 'oui', 'Bonhomme de neige en peluche', 30],
+          ['Mila', 'Lille', 4, 'oui', 'Xylophone', 19],
+          ['Clara', 'Annecy', 8, 'oui', 'Boule à neige', 17],
+          ['Arthur', 'Brest', 9, 'non', 'Cerf-volant', 19],
+          ['Iris', 'Nice', 7, 'oui', 'Kit de chimie', 44],
+          ['Victor', 'Annecy', 10, 'oui', 'Lampe frontale', 28],
+        ],
+      },
+      rennes: {
+        colonnes: ['prenom', 'vitesse', 'nez_rouge', 'age'],
+        lignes: [
+          ['Tornade', 62, 'non', 7], ['Danseur', 55, 'non', 9], ['Furie', 49, 'non', 8], ['Fringant', 58, 'non', 6], ['Comète', 71, 'non', 5],
+          ['Cupidon', 52, 'non', 10], ['Tonnerre', 66, 'non', 7], ['Éclair', 69, 'non', 4], ['Rodolphe', 74, 'oui', 6],
+        ],
+      },
+    },
+  }),
+  reponses: ['b0d60e51e5f662c02c1921910e0c803912582119882126275fc28dd9f87cfdd6', 'f313b0eaff14d474d52b59db00ab11a4efb5c67bc455292dbf02996570333090', '09bf79e131d439e9631761b72626a5844e31d35b6c59a8b81728a247ec30ffac'],
+  placeholder: 'Le cadeau volé…',
   indices: [
-    "Barre d'abord les lignes des enfants pas sages (sage = 'non') : la Luge de Hugo et l'Igloo en kit de Malo. Il reste 5 cadeaux.",
-    "Range les 5 cadeaux restants du plus cher au moins cher : la Lampe frontale (28) en premier, le Nounours (9) en dernier. Lis leurs initiales !",
+    "Commence par démasquer le complice : SELECT * FROM liste WHERE age > 100. Note bien sa ville.",
+    "Il te faut deux conditions reliées par AND (la ville du complice, et sage = 'oui'), puis ORDER BY prix DESC pour avoir le cadeau le plus cher en premier.",
   ],
-  lecon: `<p>La requête renvoie 5 lignes : <b>L</b>ampe frontale (28 €), <b>U</b>kulélé (25 €), <b>T</b>oupie (19 €), <b>I</b>gloo gonflable (14 €) et <b>N</b>ounours (9 €) → <b>LUTIN</b> 🧝</p>
-<p>Une <b>base de données</b> range les informations dans des <b>tables</b>, et le <b>SQL</b> permet de leur poser des questions : filtrer (<code>WHERE</code>), trier (<code>ORDER BY</code>), choisir les colonnes (<code>SELECT</code>)… Il a été inventé dans les années 1970 et il est toujours utilisé partout aujourd'hui.</p>
-<p>Avec 7 lignes, tu peux le faire à la main. Une vraie base peut contenir des <b>milliards</b> de lignes : l'ordinateur répond quand même en une fraction de seconde.</p>
+  lecon: `<p>Le complice, c'était <b>Grêlon</b>, 1000 ans, de Strasbourg (<code>WHERE age > 100</code>). Puis :</p>
+<pre class="code">SELECT prenom, cadeau, prix FROM liste
+WHERE ville = 'Strasbourg' AND sage = 'oui'
+ORDER BY prix DESC LIMIT 1</pre>
+<p>→ le <b>Télescope</b> 🔭 de Zoé (89 €) ! Si tu avais oublié <code>sage = 'oui'</code>, tu serais tombé sur la console de Hugo, qui n'a pas été sage ; et sans la ville, sur le vélo d'Inès, à Lyon.</p>
+<p>Une <b>base de données</b> range les informations dans des <b>tables</b>, et le <b>SQL</b> permet de leur poser des questions : filtrer (<code>WHERE</code>), trier (<code>ORDER BY</code>), choisir les colonnes (<code>SELECT</code>)… Il a été inventé dans les années 1970 et il est toujours utilisé partout. Une vraie base peut contenir des <b>milliards</b> de lignes : l'ordinateur répond quand même en une fraction de seconde.</p>
 <h4>🌍 Dans la vraie vie</h4>
 <ul>
 <li>Ton compte sur un réseau social, tes notes au collège ou au lycée, tes achats en ligne, ton compte en banque : tout est rangé dans des bases de données.</li>
@@ -996,43 +1086,52 @@ pour i allant de 0 à 4 :
   couleurs: ['#1f2a30', '#546e7a'],
   concept: 'Les mots de passe et la force brute',
   givrin: {
-    ricane: "Mon ordinateur de glace teste 10 milliards de mots de passe par seconde. Ton petit secret tiendra… le temps d'un éternuement.",
+    ricane: "J'ai fermé le coffre aux cadeaux avec MON mot de passe. Dix caractères, incassable. Les lutins ont essayé la force brute : ils y sont encore, hi hi.",
     piques: [
-      "Cassé ! Même ma grand-mère, congelée depuis l'an mil, l'aurait deviné.",
-      "Ha ! Ce mot de passe, je l'ai trouvé avant que tu aies fini de le taper.",
-      "Plus long, voyons ! Ton mot de passe est aussi court que ta victoire.",
+      "Raté ! Le coffre ne s'ouvre pas avec des mots au hasard, petit curieux.",
+      "Non ! Et arrête de fouiller mon profil, c'est privé. Enfin… public. Mais privé quand même.",
+      "Faux ! Tu ne trouveras JAMAIS. Personne ne connaît le nom de mon chouchou. À part mes 312 abonnés.",
     ],
-    fuite: "Mille ans ?! Je n'ai pas le temps d'attendre, j'ai d'autres Noëls à gâcher !",
+    fuite: "Comment tu as deviné ?! J'efface mon compte Kèrebook et je m'enfuis à l'autre bout de la banquise !",
   },
-  histoire: `<p>Dans la Salle des Coffres, la <b>Kère</b> des coffres a branché un ordinateur de glace qui teste <b>10 milliards de mots de passe par seconde</b> ! Il faut protéger le coffre aux cadeaux avec un nouveau mot de passe, bien solide.</p>`,
-  cours: `<p>Un pirate qui ne connaît pas ton mot de passe peut demander à un ordinateur de les <b>essayer tous</b>, un par un, jusqu'à tomber sur le bon : c'est l'<b>attaque par force brute</b>.</p>
-<p>Pour lui résister, il faut que le nombre de <b>combinaisons possibles</b> soit gigantesque. Pense à un cadenas à chiffres :</p>
-<ul>
-<li>avec 3 roues de 10 chiffres : 10 × 10 × 10 = <b>1 000</b> combinaisons ;</li>
-<li>avec 4 roues : 10 × 10 × 10 × 10 = <b>10 000</b> combinaisons.</li>
-</ul>
-<p>Chaque roue de plus <b>multiplie</b> le nombre de combinaisons. Pour un mot de passe, c'est pareil : chaque caractère est une « roue ». Conclusion : <b>la longueur, c'est ce qui compte le plus !</b></p>`,
-  enigme: `<p>Invente un mot de passe que l'ordinateur de glace de la Kère mettrait <b>au moins mille ans</b> à trouver en essayant toutes les combinaisons. La jauge te montre en direct combien de temps il tiendrait !</p>
-<p class="alerte">🚫 N'écris surtout pas un de tes vrais mots de passe ici : invente-en un nouveau !</p>`,
-  widget: W.motDePasse(1e10, 1e3, ['123456', '123456789', '12345678', 'azerty', 'qwerty', 'motdepasse', 'password', 'soleil', 'doudou', 'loulou', 'noel', 'joyeuxnoel', 'perenoel', '000000', '111111', 'abc123', 'azertyuiop', 'chocolat', 'bonjour']),
+  histoire: `<p>Dans la Salle des Coffres, la Kère a verrouillé le <b>coffre aux cadeaux</b> avec son propre mot de passe. Les lutins ont lancé leur vieil ordinateur pour essayer toutes les combinaisons… sans succès.</p>
+<p>Mais la Kère a un gros défaut : elle raconte <b>toute sa vie</b> sur son réseau social préféré, <b>Kèrebook</b>. Et son profil est public…</p>`,
+  cours: `<p>Pour casser un mot de passe, la méthode la plus bête s'appelle la <b>force brute</b> : essayer <b>toutes</b> les combinaisons, une par une. Le nombre de combinaisons, c'est :</p>
+<p class="centre"><b>(nombre de caractères possibles)<sup>longueur</sup></b></p>
+<p>Exemple : un code à 4 chiffres, c'est 10 × 10 × 10 × 10 = 10 000 combinaisons : un ordinateur les essaie en une fraction de seconde. Mais avec 10 caractères parmi les 26 lettres et les 10 chiffres, il y en a 36<sup>10</sup>, soit plus de <b>3 millions de milliards</b> !</p>
+<p>Alors les pirates sont malins : avant la force brute, ils essaient ce que la personne a <b>probablement</b> choisi. Le prénom de ses enfants, le nom de son chat, sa date de naissance… Et ces informations, beaucoup de gens les publient eux-mêmes sur les réseaux sociaux ! C'est l'<b>ingénierie sociale</b> : pirater la personne plutôt que la machine.</p>`,
+  enigme: `<p>Ouvre le coffre en retrouvant <b>le mot de passe de la Kère</b>. Mène l'enquête sur son profil Kèrebook : chaque détail compte. (Tu peux aussi lancer l'attaque par force brute des lutins… pour voir.)</p>
+<p>🚫 Rien de personnel ici : ce mot de passe-là, tu le devines, tu ne l'inventes pas !</p>`,
+  widget: W.kerebook({
+    profil: { nom: 'La Kère des Coffres', avatar: '👹', bio: 'Gardienne de coffres · Fan de glaçons · 312 abonnés' },
+    longueur: 10, alphabet: 36, vitesse: 1000,
+    posts: [
+      { date: '1er déc. 2026', texte: "Nouveau mot de passe pour le coffre aux cadeaux 🔐 10 caractères, des lettres et des chiffres. Les lutins peuvent toujours essayer 😎 #incassable", likes: 66,
+        commentaires: [{ auteur: 'Kère des Neiges', texte: "Laisse-moi deviner : tu as encore utilisé ton chouchou 😂" }, { auteur: 'La Kère des Coffres', texte: 'Chut !!! 🤫' }] },
+      { date: '28 nov. 2026', texte: "Ma petite famille ❤️ Glagla, mon pingouin chouchou, Frimas le phoque, et Grésil le hibou.", image: '🐧 🦭 🦉', likes: 128 },
+      { date: '20 nov. 2026', texte: "Grésil a 3 ans aujourd'hui ! 🦉🎉 Il a eu une souris en glace.", likes: 41 },
+      { date: '5 oct. 2026', texte: "Les gens qui mettent le nom de leur animal dans leur mot de passe… 🙄 Moi ? Jamais. Enfin… presque jamais. 🤭", likes: 23 },
+      { date: '14 juil. 2026', texte: "Frimas fête ses 11 ans 🦭🎂 (il préfère le poisson au gâteau)", likes: 57 },
+      { date: '2 fév. 2026', texte: "Astuce de pro : jamais de majuscules dans mes mots de passe, c'est trop fatigant. Et je colle tout, sans espace. 💅", likes: 19 },
+      { date: '3 déc. 2025', texte: "Joyeux anniversaire à mon Glagla ! 🎂 6 ans aujourd'hui, déjà… Il grandit trop vite 🥹", image: '🐧🎂', likes: 230 },
+      { date: '1er juin 2025', texte: "Glaçons au petit-déj, glaçons au déj, glaçons au dîner. Régime de championne. 🧊", likes: 12 },
+    ],
+  }),
+  reponses: ['21f091dd09c06547386219f81dc81f23922cf1614857460de7027033e75d287f'],
+  placeholder: 'Le mot de passe du coffre…',
   indices: [
-    "Allonge ton mot de passe : chaque caractère en plus multiplie le temps ! Une quinzaine de lettres suffit.",
-    "Astuce de pro : une petite phrase de 3 ou 4 mots sans rapport, séparés par des espaces (« pingouin volcan chaussette »). Solide et facile à retenir !",
+    "Une publication dit comment le mot de passe est fait (10 caractères, des lettres et des chiffres, en minuscules et collés). Un commentaire dit sur quoi elle l'a construit. Qui est son chouchou ?",
+    "Son chouchou, c'est Glagla (6 lettres). Il manque 4 chiffres : son année de naissance. Il a eu 6 ans le 3 décembre 2025…",
   ],
-  lecon: `<p>Le nombre de combinaisons d'un mot de passe = <b>(nombre de caractères possibles)<sup>longueur</sup></b>. Avec 10 milliards d'essais par seconde :</p>
-<ul>
-<li>8 lettres minuscules → cassé en <b>21 secondes</b> ;</li>
-<li>8 caractères de tous types (majuscules, chiffres, symboles…) → environ <b>8 jours</b> ;</li>
-<li>15 lettres minuscules → environ <b>5 000 ans</b> !</li>
-</ul>
-<p>La <b>longueur</b> compte bien plus que les symboles compliqués. Une <b>phrase de passe</b> de plusieurs mots choisis au hasard (« chaussette-volcan-pingouin-trompette ») est à la fois très solide et facile à retenir.</p>
-<p>⚠️ Notre calcul est simplifié : les pirates n'essaient pas les combinaisons dans n'importe quel ordre. Ils testent d'abord les mots de passe les plus courants (<code>123456</code>, <code>azerty</code>…), les mots du dictionnaire et ceux qui ont déjà fuité sur Internet.</p>
+  lecon: `<p>Le mot de passe était <b>glagla2019</b> 🐧 : le nom de son chouchou, plus son année de naissance (6 ans en 2025 → né en 2019). Pile 10 caractères, en minuscules et collés, comme elle s'en vantait !</p>
+<p>La force brute des lutins aurait mis plus de <b>100 000 ans</b>. Toi, tu as mis quelques minutes, parce que la Kère a choisi un mot de passe <b>devinable</b> et qu'elle a semé les indices elle-même. Les vrais pirates font exactement pareil : ils fouillent les réseaux sociaux, puis testent les prénoms, les animaux, les dates et les mots de passe les plus courants (<code>123456</code>, <code>azerty</code>…).</p>
+<p>La <b>longueur</b> compte bien plus que les symboles compliqués, mais seulement si le mot de passe est <b>imprévisible</b>. Une <b>phrase de passe</b> de plusieurs mots choisis au hasard (« chaussette-volcan-pingouin-trompette ») est à la fois très solide et facile à retenir.</p>
 <h4>🌍 Dans la vraie vie : les 4 bons réflexes</h4>
 <ul>
-<li>Un mot de passe <b>différent pour chaque site</b> (sinon, une seule fuite suffit à tout ouvrir).</li>
-<li>Un <b>gestionnaire de mots de passe</b> pour les retenir à ta place.</li>
+<li>Rien de personnel dans un mot de passe : ni prénom, ni animal, ni date de naissance.</li>
+<li>Un mot de passe <b>différent pour chaque site</b>, et un <b>gestionnaire de mots de passe</b> pour les retenir à ta place.</li>
 <li>La <b>double authentification</b> : un code reçu sur ton téléphone en plus du mot de passe.</li>
-<li>Ne jamais donner ton mot de passe, même à un « copain » ou à un prétendu « support technique ».</li>
+<li>Réfléchis à ce que tu publies en public : la date d'anniversaire de ton chien intéresse aussi les pirates.</li>
 </ul>`,
   fragment: [14, '01000011'],
 },
@@ -1047,47 +1146,58 @@ pour i allant de 0 à 4 :
   couleurs: ['#3e1277', '#7e57c2'],
   concept: 'Les fonctions de hachage',
   givrin: {
-    ricane: "J'ai glissé de fausses commandes parmi les vraies. Ton sceau ridicule n'y verra que du feu… enfin, de la glace.",
+    ricane: "J'ai changé UN mot dans UNE lettre. Un seul ! Bonne chance pour trouver lequel, avec tes petits yeux de lutin.",
     piques: [
-      "Faux ! Tom recevra une poupée. Il voulait un dinosaure, mais bon.",
-      "Raté. Tu as compté avec tes moufles ?",
-      "Encore faux ! Je finis par croire que c'est toi qui as écrit mes fausses commandes.",
+      "Faux ! Cet enfant recevra un cadeau dont il ne veut pas. Merci pour ton aide.",
+      "Raté. Ma machine ne ment jamais. Toi, par contre…",
+      "Encore faux ! Je finis par croire que c'est toi qui as écrit mes fausses lettres.",
     ],
-    fuite: "Démasquée par un simple nombre ?! Je souffle… je m'essouffle…",
+    fuite: "Démasquée par une empreinte ?! Une simple suite de chiffres et de lettres ?! Je souffle… je m'essouffle…",
   },
-  histoire: `<p>Dans le Bureau du Père Noël, chaque commande est protégée par un <b>sceau magique</b> : un nombre calculé à partir du nom du cadeau. La Kère a intercepté la commande de Tom et l'a noyée parmi de fausses commandes. Heureusement, le sceau, lui, n'a pas bougé !</p>`,
-  cours: `<p>Comment être sûr qu'un message n'a pas été modifié en chemin ? On peut lui ajouter une <b>empreinte</b> : un petit nombre calculé à partir du texte, un peu comme une empreinte digitale.</p>
-<p>Le destinataire refait le même calcul sur le texte qu'il a reçu. S'il trouve la même empreinte, le texte est intact. Sinon, quelqu'un l'a modifié !</p>
-<p>La recette du sceau du Père Noël est toute simple : on remplace chaque lettre par son <b>rang dans l'alphabet</b> (A = 1, B = 2, C = 3… Z = 26), puis on <b>additionne</b> tout.</p>
-<p>Exemple : <code>NOEL</code> → N = 14, O = 15, E = 5, L = 12 → 14 + 15 + 5 + 12 = <b>46</b>.</p>`,
-  enigme: `<p>La commande originale de Tom portait le <b>sceau 39</b>. Voici les commandes trouvées sur le bureau : une seule est la vraie !</p>
-<div class="etiquettes"><span>ROBOT</span><span>TRAIN</span><span>CHIEN</span><span>POUPEE</span><span>LUGE</span><span>BALLON</span></div>
-<p><b>Quel cadeau Tom a-t-il vraiment commandé ?</b></p>
-<div class="rappel">📌 <b>Rappel</b> : additionne les rangs des lettres dans l'alphabet.</div>
-${tableAlphabet()}`,
-  reponses: ['d313fdc7b98aa7e30efd970ca306a525fa52c1ef272b80619105dec48ec6f416', '6b815f6bf0eb07744c0db989473206959d337dc7231bdc0a2d6a418c4ff2dfa8'],
+  histoire: `<p>Dans le Bureau du Père Noël, chaque lettre d'enfant est enregistrée dans un <b>registre</b>, sous la forme d'une <b>empreinte</b> : un code calculé par une machine à partir du texte de la lettre.</p>
+<p>Cette nuit, la Kère s'est glissée dans le bureau et a modifié <b>un seul mot</b> dans <b>une seule lettre</b>, pour qu'un enfant reçoive le mauvais cadeau. À l'œil nu, impossible de voir laquelle…</p>`,
+  cours: `<p>Une <b>fonction de hachage</b> est une machine qui transforme n'importe quel texte en une <b>empreinte</b> : une suite de chiffres et de lettres, toujours de la même longueur. Elle a trois super-pouvoirs :</p>
+<ul>
+<li>le <b>même texte</b> donne <b>toujours la même empreinte</b> ;</li>
+<li>la <b>moindre modification</b> (une lettre, une virgule, une majuscule) donne une empreinte <b>complètement différente</b> ;</li>
+<li>impossible de faire le chemin inverse : l'empreinte ne permet pas de retrouver le texte. Pour savoir quel texte a donné une empreinte, il faut <b>essayer</b> des textes jusqu'à retomber dessus.</li>
+</ul>
+<p>Exemple avec <b>SHA-256</b>, la plus utilisée au monde : « Noël » donne <code>0b6e6252a4…</code>, et « noël » donne <code>5e75674763…</code>. Une seule lettre a changé, et pourtant les deux empreintes n'ont rien à voir !</p>
+<p>C'est parfait pour vérifier qu'un texte n'a pas été modifié : on compare son empreinte à celle qu'on avait notée.</p>`,
+  enigme: `<p>1. Trouve la <b>lettre modifiée</b> par la Kère : passe les lettres à la machine et compare avec le registre.</p>
+<p>2. Retrouve le cadeau que l'enfant avait <b>vraiment</b> demandé : il fait partie du catalogue de l'atelier. Tu peux modifier le texte dans la machine et essayer autant de fois que tu veux.</p>
+<p><b>Quel cadeau l'enfant avait-il vraiment demandé ?</b></p>`,
+  widget: W.empreintes((() => {
+    const originales = [
+      ['Tom', "Cher Père Noël, cette année j'ai été très sage. Je voudrais un robot. Merci ! Tom"],
+      ['Léa', "Cher Père Noël, j'ai rangé ma chambre tous les jours. Je voudrais une trottinette. Merci ! Léa"],
+      ['Inès', "Cher Père Noël, je voudrais des patins pour glisser avec mes amis. Merci ! Inès"],
+      ['Hugo', "Cher Père Noël, je voudrais un puzzle de mille pièces. Merci beaucoup ! Hugo"],
+      ['Zoé', "Cher Père Noël, je voudrais un ukulele pour jouer des chansons. Merci ! Zoé"],
+      ['Malo', "Cher Père Noël, je voudrais un train électrique, avec des rails. Merci ! Malo"],
+    ];
+    return {
+      // La Kère a remplacé « une trottinette » par « un yoyo » dans la lettre de Léa
+      lettres: originales.map(([enfant, texte]) => ({ enfant, texte: enfant === 'Léa' ? texte.replace('une trottinette', 'un yoyo') : texte })),
+      registre: originales.map(([enfant, texte]) => ({ enfant, empreinte: empreinteCourte(texte) })).sort((a, b) => a.enfant.localeCompare(b.enfant)),
+      catalogue: ['un robot', 'une luge', 'un yoyo', 'des patins', 'un puzzle', 'une toupie', 'une trottinette', 'un ukulele', 'des rollers', 'un train électrique'],
+    };
+  })()),
+  reponses: ['10670e704d25b3dd418be64841d64a4739395e8aa7a31b47b636faa745fb5085', 'ff937daecf99eb551ef11db4c05821e4d806583f67ebea59d726cf20c03fe597'],
   placeholder: 'Le vrai cadeau…',
   indices: [
-    "Calcule le sceau de chaque cadeau, comme dans l'exemple de NOEL. Par exemple, LUGE = 12 + 21 + 7 + 5 = 45 : ce n'est pas 39, ce n'est donc pas la luge.",
-    "ROBOT = 70, TRAIN = 62, POUPEE = 78, BALLON = 56… Il ne reste plus qu'un cadeau à vérifier !",
+    "Clique sur « Passer à la machine » sous chaque lettre : la lettre modifiée est la seule dont l'empreinte ne correspond à aucune ligne du registre.",
+    "C'est la lettre de Léa. Dans la machine, remplace « un yoyo » par chaque cadeau du catalogue, un par un, sans toucher au reste, jusqu'à ce que l'empreinte corresponde à celle de Léa.",
   ],
-  lecon: `<p>Le vrai cadeau était le <b>CHIEN</b> 🐶 : C + H + I + E + N = 3 + 8 + 9 + 5 + 14 = <b>39</b> ✅.</p>
-<p>Ce sceau est une <b>fonction de hachage</b> : elle transforme un texte en une <b>empreinte</b>. Mais la nôtre a un gros défaut… Calcule le sceau de <code>NICHE</code> : 14 + 9 + 3 + 8 + 5 = <b>39</b>, lui aussi ! Avec les mêmes lettres dans un autre ordre, on obtient le même total. La Kère aurait pu remplacer le chien par une niche sans que personne ne s'en aperçoive ! Deux textes différents avec la même empreinte, c'est une <b>collision</b>.</p>
-<p>Les vraies fonctions de hachage, comme <b>SHA-256</b>, produisent une empreinte de 256 bits et sont conçues pour que :</p>
-<ul>
-<li>la moindre modification du texte change <b>complètement</b> l'empreinte ;</li>
-<li>il soit impossible de retrouver le texte à partir de l'empreinte ;</li>
-<li>personne ne puisse trouver deux textes avec la même empreinte.</li>
-</ul>
-<p>🤫 <b>Le secret de ce calendrier</b> : les réponses ne sont jamais envoyées à ton navigateur. Elles restent sur le serveur du Pôle Nord… et même là, elles ne sont pas écrites en clair : le serveur ne garde que leurs <b>empreintes SHA-256</b>. Quand tu proposes une réponse, il calcule son empreinte et la compare. Même quelqu'un qui volerait le serveur ne pourrait pas lire les réponses !</p>
+  lecon: `<p>C'était la lettre de <b>Léa</b> : la Kère avait remplacé « une trottinette » par « un yoyo ». Avec « une <b>trottinette</b> » 🛴, l'empreinte retombe pile sur celle du registre ✅.</p>
+<p>Tu as utilisé une vraie <b>fonction de hachage</b> : <b>SHA-256</b>. Ses empreintes font 256 bits (64 caractères ; le registre n'en montrait que les 10 premiers). Pour la lettre de Léa, tu as dû <b>essayer</b> les cadeaux un par un : on ne peut pas « remonter » une empreinte, seulement tester des textes. Avec 10 cadeaux, c'est rapide. Avec un vrai mot de passe bien choisi, ce serait des milliards d'années.</p>
+<p>🤫 <b>Le secret de ce calendrier</b> : les réponses ne sont jamais envoyées à ton navigateur, et le serveur du Pôle Nord ne les garde même pas en clair : seulement leurs <b>empreintes SHA-256</b>. Quand tu proposes une réponse, il calcule son empreinte et la compare. Même quelqu'un qui volerait le serveur ne pourrait pas lire les réponses !</p>
 <h4>🌍 Dans la vraie vie</h4>
 <ul>
 <li>Les sites sérieux ne stockent jamais ton mot de passe : seulement son empreinte (avec un « sel » ajouté pour plus de sécurité).</li>
 <li>Quand on télécharge un logiciel, on peut comparer son empreinte avec celle du site officiel pour vérifier qu'un pirate ne l'a pas modifié.</li>
-<li>Les cryptomonnaies comme le Bitcoin utilisent SHA-256 en permanence.</li>
-</ul>
-<h4>🧪 Essaie toi-même</h4>`,
-  apresReussite: W.terrainHachage(),
+<li><b>Git</b>, l'outil des programmeurs pour garder l'historique de leur code, donne à chaque version (chaque <i>commit</i>) un nom qui est… une empreinte de son contenu !</li>
+</ul>`,
   fragment: [5, '01000101'],
 },
 
@@ -1246,54 +1356,68 @@ ${tableAlphabet()}`,
   couleurs: ['#014a80', '#29a8e0'],
   concept: "L'intelligence artificielle (apprendre par l'exemple)",
   givrin: {
-    ricane: "Ton lutin-robot n'a aucune règle. Il ne devinera jamais rien… comme toi. Vous allez bien vous entendre.",
+    ricane: "J'ai remis le cerveau du lutin-robot à zéro. Il ne sait plus rien, il croit que les rennes aiment tout… ou rien. Comme toi, en somme.",
     piques: [
       "Faux ! Les rennes boudent. Ils boudent très fort. Ils mordent, aussi.",
-      "Raté. Même un grille-pain apprendrait plus vite que toi.",
-      "Non ! Ta règle ne marche pas pour tous les exemples. Regarde mieux !",
+      "Raté. Même un grille-pain apprendrait plus vite que ton robot.",
+      "Ton robot a appris par cœur, comme un perroquet. Devant un nouveau jouet, il est perdu !",
     ],
     fuite: "Il apprend… il apprend tout seul ! Même moi, il m'a devinée ! Je file !",
   },
-  histoire: `<p>Au Laboratoire, un <b>robot intelligent</b> doit deviner quels jouets plaisent aux rennes. Personne ne lui a donné de règle : on lui a seulement montré des <b>exemples</b>. À toi de faire comme le robot : trouve la règle cachée !</p>`,
-  cours: `<p>D'habitude, pour qu'un ordinateur fasse quelque chose, un humain lui écrit des <b>règles</b> précises. Mais certaines règles sont presque impossibles à écrire : comment expliquer à une machine ce qui fait qu'une photo montre un chat ?</p>
-<p>Avec l'<b>apprentissage automatique</b>, on fait autrement : on montre à la machine plein d'<b>exemples avec la bonne réponse</b> (« ceci est un chat », « ceci n'est pas un chat »), et c'est elle qui cherche une règle qui marche pour tous ces exemples. Exactement comme un petit enfant qui apprend à reconnaître les chiens après en avoir vu beaucoup.</p>
-<p>Pour trouver une règle cachée, compare les exemples : qu'ont en commun <b>tous</b> ceux qui ont la même réponse ? Une règle n'est bonne que si elle marche pour <b>tous</b> les exemples, sans exception.</p>`,
-  enigme: `<p><b>Les exemples montrés au robot :</b></p>
-<div class="defilement"><table class="tableau table-ia">
-<tr><th>Jouet</th><th>Couleur</th><th>Fait du bruit ?</th><th>Taille</th><th>Les rennes…</th></tr>
-<tr><td>🔔 Clochette</td><td>rouge</td><td>oui</td><td>petite</td><td>❤️ adorent</td></tr>
-<tr><td>🧸 Peluche</td><td>rouge</td><td>non</td><td>grande</td><td>😐 bof</td></tr>
-<tr><td>🥁 Tambour</td><td>bleu</td><td>oui</td><td>grand</td><td>❤️ adorent</td></tr>
-<tr><td>⚽ Ballon</td><td>vert</td><td>non</td><td>petit</td><td>😐 bof</td></tr>
-<tr><td>🎺 Trompette</td><td>verte</td><td>oui</td><td>grande</td><td>❤️ adorent</td></tr>
-<tr><td>🧊 Cube</td><td>bleu</td><td>non</td><td>petit</td><td>😐 bof</td></tr>
-<tr><td>🍎 Pomme en bois</td><td>rouge</td><td>non</td><td>petite</td><td>😐 bof</td></tr>
-<tr><td>🛎️ Grelot</td><td>vert</td><td>oui</td><td>petit</td><td>❤️ adorent</td></tr>
-</table></div>
-<p><b>Les nouveaux jouets</b> (chacun porte une lettre) :</p>
-<div class="defilement"><table class="tableau table-ia">
-<tr><th>Lettre</th><th>Jouet</th><th>Couleur</th><th>Fait du bruit ?</th><th>Taille</th></tr>
-<tr><td><b>L</b></td><td>🎷 Saxophone</td><td>bleu</td><td>oui</td><td>petit</td></tr>
-<tr><td><b>X</b></td><td>🧣 Écharpe</td><td>rouge</td><td>non</td><td>grande</td></tr>
-<tr><td><b>U</b></td><td>🔔 Grosse cloche</td><td>verte</td><td>oui</td><td>grande</td></tr>
-<tr><td><b>A</b></td><td>📕 Livre</td><td>bleu</td><td>non</td><td>grand</td></tr>
-<tr><td><b>G</b></td><td>🎸 Guitare</td><td>rouge</td><td>oui</td><td>grande</td></tr>
-<tr><td><b>T</b></td><td>🪀 Yoyo</td><td>rouge</td><td>non</td><td>petit</td></tr>
-<tr><td><b>E</b></td><td>📯 Sifflet</td><td>vert</td><td>oui</td><td>petit</td></tr>
-</table></div>
-<p>Quels nouveaux jouets les rennes vont-ils adorer ? <b>Leurs lettres, dans l'ordre, forment le mot de passe.</b></p>`,
-  reponses: ['8aed39df1ddd3e19ed1d58a7b4c154df840f93147d46cd12d3cd8c347082c523'],
-  placeholder: 'Le mot formé…',
+  histoire: `<p>Au Laboratoire, le lutin-robot doit choisir les jouets à offrir aux rennes. Personne ne lui a donné de règle : il doit <b>apprendre à partir d'exemples</b>. Mais la Kère a remis son cerveau à zéro…</p>
+<p>Heureusement, son cerveau est tout simple : quelques boutons à régler. À toi de jouer les ingénieurs en intelligence artificielle !</p>`,
+  cours: `<p>Une <b>intelligence artificielle</b> n'apprend pas comme on apprend une leçon : on lui montre des <b>exemples</b> (ici, des jouets et ce que les rennes en ont pensé), et elle se règle toute seule jusqu'à ne plus se tromper.</p>
+<p>Le cerveau du lutin-robot est un <b>neurone artificiel</b>, la brique de base des IA :</p>
+<ul>
+<li>chaque <b>critère</b> (le jouet fait du bruit, il brille…) rapporte des <b>points</b> quand il est vrai. Ces points peuvent être <b>négatifs</b> si le critère fait plutôt baisser l'envie ;</li>
+<li>le robot additionne les points ; si le total atteint le <b>seuil</b>, il dit « adoré », sinon « bof ».</li>
+</ul>
+<p>Exemple : bruit = +2, seuil = 2. Une trompette (bruit) a 2 points : adorée. Un ballon (pas de bruit) a 0 point : bof.</p>
+<p>Le vrai test d'une IA, c'est quand elle découvre des cas <b>qu'elle n'a jamais vus</b>. Un robot qui a seulement « appris par cœur » ses exemples se trompera devant un nouveau jouet.</p>`,
+  enigme: `<p>Règle les points de chaque critère et le seuil pour que le robot devine juste sur <b>tous les exemples</b>. Le tableau se met à jour à chaque réglage.</p>
+<p>Puis teste-le sur <b>les nouveaux jouets</b>, qu'il n'a jamais vus : s'il a compris ce que les rennes aiment vraiment (et pas juste appris par cœur), il ne se trompera pas.</p>`,
+  widget: W.neurone({
+    criteres: [
+      { k: 'bruit', emoji: '🔔', nom: 'fait du bruit' },
+      { k: 'brille', emoji: '✨', nom: 'brille' },
+      { k: 'grand', emoji: '📏', nom: 'est grand' },
+      { k: 'rouge', emoji: '🔴', nom: 'est rouge' },
+    ],
+    exemples: [
+      { emoji: '🔔', nom: 'Clochette', v: { bruit: 1, brille: 0, grand: 0, rouge: 1 }, aime: true },
+      { emoji: '🛎️', nom: 'Grelot doré', v: { bruit: 1, brille: 1, grand: 0, rouge: 0 }, aime: true },
+      { emoji: '🪩', nom: 'Boule à facettes', v: { bruit: 0, brille: 1, grand: 0, rouge: 0 }, aime: true },
+      { emoji: '🍭', nom: 'Sucette pailletée', v: { bruit: 0, brille: 1, grand: 0, rouge: 1 }, aime: true },
+      { emoji: '📯', nom: 'Sifflet', v: { bruit: 1, brille: 0, grand: 0, rouge: 0 }, aime: true },
+      { emoji: '🎺', nom: 'Trompette dorée', v: { bruit: 1, brille: 1, grand: 0, rouge: 0 }, aime: true },
+      { emoji: '🥁', nom: 'Tambour géant', v: { bruit: 1, brille: 0, grand: 1, rouge: 1 }, aime: false },
+      { emoji: '🎄', nom: 'Grande guirlande lumineuse', v: { bruit: 0, brille: 1, grand: 1, rouge: 0 }, aime: false },
+      { emoji: '🎹', nom: 'Piano géant vernis', v: { bruit: 1, brille: 1, grand: 1, rouge: 0 }, aime: false },
+      { emoji: '🧱', nom: 'Cube en bois', v: { bruit: 0, brille: 0, grand: 0, rouge: 1 }, aime: false },
+      { emoji: '🧸', nom: 'Grosse peluche', v: { bruit: 0, brille: 0, grand: 1, rouge: 0 }, aime: false },
+      { emoji: '⚽', nom: 'Ballon', v: { bruit: 0, brille: 0, grand: 0, rouge: 0 }, aime: false },
+    ],
+    nouveaux: [
+      { emoji: '🎻', nom: 'Petit violon', v: { bruit: 1, brille: 0, grand: 0, rouge: 1 } },
+      { emoji: '🛋️', nom: 'Gros fauteuil rouge', v: { bruit: 0, brille: 0, grand: 1, rouge: 1 } },
+      { emoji: '🔮', nom: 'Boule de cristal', v: { bruit: 0, brille: 1, grand: 0, rouge: 0 } },
+      { emoji: '🎠', nom: 'Grand manège rouge, musical et brillant', v: { bruit: 1, brille: 1, grand: 1, rouge: 1 } },
+      { emoji: '🪇', nom: 'Maracas', v: { bruit: 1, brille: 0, grand: 0, rouge: 0 } },
+      { emoji: '🧦', nom: 'Chaussette rouge', v: { bruit: 0, brille: 0, grand: 0, rouge: 1 } },
+      { emoji: '🌟', nom: 'Petite étoile scintillante', v: { bruit: 0, brille: 1, grand: 0, rouge: 1 } },
+    ],
+  }),
+  // Ce que les rennes ont vraiment pensé des nouveaux jouets (ne quitte jamais le serveur)
+  verite: [true, false, true, false, true, false, true],
   indices: [
-    "La couleur ? Il y a des jouets rouges adorés et d'autres « bof ». La taille ? Pareil. Regarde la colonne qui reste…",
-    "Tous les jouets adorés font du bruit, et aucun jouet silencieux n'est adoré : les rennes adorent les jouets qui font du bruit ! Applique cette règle aux nouveaux jouets.",
+    "Commence par donner des points au bruit et à ce qui brille, puis règle le seuil pour que les jouets silencieux et ternes restent « bof ». Ensuite, regarde ce qui fait rater les jouets GRANDS : il faut que ce critère fasse perdre des points.",
+    "Un réglage qui marche : bruit +2, brille +2, grand −3, rouge 0, seuil 2. La couleur ne compte pas du tout pour les rennes !",
   ],
-  lecon: `<p>La règle cachée : <b>les rennes adorent les jouets qui font du bruit</b> 🔔 (ça leur rappelle les grelots de leur harnais !). Ni la couleur, ni la taille ne comptaient.</p>
-<p>Les jouets adorés sont donc L (saxophone), U (grosse cloche), G (guitare) et E (sifflet) → <b>LUGE</b> 🛷.</p>
-<p>Tu viens de faire ce que fait une <b>intelligence artificielle</b> : de l'<b>apprentissage automatique</b> (<i>machine learning</i>). Au lieu d'écrire la règle à la main, on montre à la machine des <b>exemples étiquetés</b> (« adorent » / « bof »), et elle trouve elle-même une règle qui les explique. Puis elle l'applique à des cas qu'elle n'a jamais vus.</p>
-<p>Les informations sur chaque jouet (couleur, bruit, taille) s'appellent des <b>caractéristiques</b>. Le travail de la machine, c'est de trouver lesquelles comptent vraiment.</p>
-<h4>⚠️ Le danger des biais</h4>
-<p>Si on n'avait montré au robot que des jouets rouges et bruyants, il n'aurait jamais pu savoir si les rennes aiment le rouge ou le bruit. Une IA n'est jamais meilleure que ses exemples : s'ils sont incomplets ou injustes, elle apprendra une règle fausse ou injuste. C'est ce qu'on appelle un <b>biais</b>.</p>
+  lecon: `<p>Les rennes adorent les jouets <b>qui font du bruit ou qui brillent</b>… <b>sauf s'ils sont grands</b> (ils ne rentrent pas dans l'écurie !). Et la couleur ne compte pas du tout. Un réglage qui marchait : bruit +2, brille +2, grand −3, rouge 0, seuil 2.</p>
+<p>Parmi les nouveaux jouets, le robot a choisi le petit violon 🎻, la boule de cristal 🔮, les maracas 🪇 et la petite étoile 🌟. Il a laissé de côté le fauteuil, la chaussette… et le grand manège, malgré sa musique et ses paillettes : trop grand ! Les rennes sont ravis 🦌</p>
+<p>Tu viens de faire ce que font les ingénieurs en <b>intelligence artificielle</b> : régler les « poids » d'un <b>neurone artificiel</b> à partir d'<b>exemples étiquetés</b>, puis vérifier qu'il <b>généralise</b> à des cas jamais vus. Une vraie IA fait la même chose… avec des milliards de neurones, réglés automatiquement par l'ordinateur.</p>
+<h4>⚠️ Le danger d'apprendre par cœur</h4>
+<p>Si le robot avait donné des points au rouge, il aurait pu réussir tous les exemples… et se tromper sur le grand manège rouge. Une IA n'est jamais meilleure que ses exemples : s'ils sont incomplets ou injustes, elle apprend une règle fausse ou injuste. C'est ce qu'on appelle un <b>biais</b>.</p>
 <h4>🌍 Dans la vraie vie</h4>
 <ul>
 <li>Le filtre anti-spam de ta messagerie a appris à partir de millions d'e-mails marqués « spam » ou « pas spam ».</li>
@@ -1320,24 +1444,77 @@ ${tableAlphabet()}`,
       "Tu trembles ? C'est normal : il fait −80 °C dans mon cœur. Quand j'en avais un.",
       "Mille ans dans un glacier pour finir face à toi… J'en pleurerais de rire, si mes larmes ne gelaient pas.",
     ],
-    fuite: "Nooon ! Cette lumière… Je reviendrai… dans mille ans… avec un manteau plus chaud !",
+    fuite: "“Lumière éternelle”… Rien n'est éternel, mortel. Ni ta lumière, ni ta victoire. Le jour où elle vacillera, le givre reviendra. Et moi avec.",
   },
-  histoire: `<p>C'est le grand soir ! Te voici dans le Grand Salon, devant le sapin. <b>Kryos</b> est là, drapé dans un manteau de glace, une main posée sur <b>l'étoile éteinte</b>. Il y a mille ans, c'est une <b>formule secrète</b> qui l'a enfermé dans son glacier, la seule capable de rallumer l'étoile. Alors il l'a découpée en <b>23 fragments</b> et l'a confiée à ses Kères… sans savoir que chaque Kère, en s'enfuyant, t'en a laissé un !</p>`,
-  cours: `<p>Dernière ligne droite ! Chaque fragment que tu as gagné contient une lettre et sa <b>position</b> dans la formule secrète, écrite en <b>binaire</b> sur 5 places. Comme au jour 1, additionne les places où il y a un 1 :</p>
-<div class="defilement"><table class="tableau compact">
-<tr><th>16</th><th>8</th><th>4</th><th>2</th><th>1</th><th>Position</th></tr>
-<tr><td>0</td><td class="allume">1</td><td>0</td><td>0</td><td class="allume">1</td><td>8 + 1 = <b>9</b></td></tr>
-<tr><td class="allume">1</td><td>0</td><td class="allume">1</td><td>0</td><td>0</td><td>16 + 4 = <b>20</b></td></tr>
-</table></div>
-<p>Place ensuite chaque lettre dans la case qui porte ce numéro. Les cases ne contiennent que des lettres, sans espaces : quand tout sera en place, à toi de repérer les mots !</p>`,
-  enigme: `<p>Chaque fragment est une lettre accompagnée de sa <b>position</b> dans la formule secrète… écrite en <b>binaire</b> (merci le jour 1 !). Remets les lettres dans l'ordre pour reconstituer la formule, puis rallume l'étoile.</p>
-<div class="rappel">📌 <b>Rappel</b> : les positions sont écrites sur 5 places, qui valent <code>16 · 8 · 4 · 2 · 1</code>. Exemple : <code>00110</code> = 4 + 2 = 6.</div>`,
-  widget: W.finale(23),
+  histoire: `<p>C'est le grand soir ! Te voici dans le Grand Salon, devant le sapin. Mais quand tu allumes l'écran de NOËL-OS pour rallumer l'étoile, un rire glacé sort des haut-parleurs : <b>Kryos</b> a pris le contrôle de l'ordinateur du Pôle Nord.</p>
+<p>Il y a mille ans, une <b>formule secrète</b> l'a enfermé dans son glacier. Il l'a découpée en <b>23 fragments</b>… que ses Kères t'ont laissés en s'enfuyant. Kryos les a rangés dans un dossier, et il l'a scellé. C'est le duel final : <b>toi contre lui, dans le terminal</b>.</p>`,
+  cours: `<p>Tu te souviens du terminal de l'Elfe Hacker (jour 22) ? <code>ls</code>, <code>ls -a</code> pour les éléments cachés, <code>cd</code> pour entrer dans un dossier, <code>cat</code> pour lire un fichier. Ce soir, tu auras besoin de trois armes de plus :</p>
+<ul>
+<li><code>rev</code> écrit un texte <b>à l'envers</b> : <code>echo sapin | rev</code> affiche <code>nipas</code> ;</li>
+<li><code>sort</code> <b>trie</b> des lignes ; avec <code>sort -n</code>, il les trie comme des <b>nombres</b> (sinon « 10 » passe avant « 2 », comme dans un dictionnaire) ;</li>
+<li>le <b>tube</b> <code>|</code> envoie le résultat d'une commande à la suivante, comme un tuyau : <code>cat liste.txt | sort</code> lit la liste, puis la trie.</li>
+</ul>
+<p>Et le joker <code>*</code> veut dire « tous les fichiers » : <code>cat *.txt</code> affiche tous les fichiers qui finissent par <code>.txt</code>.</p>
+<p>Kryos ne se laissera pas faire. Garde ton sang-froid… même s'il gèle ton écran.</p>`,
+  enigme: `<p>Kryos a pris le contrôle de NOËL-OS. Retrouve tes fragments, remets-les dans l'ordre et <b>prononce la formule</b> pour rallumer l'étoile.</p>
+<p>Clique dans le terminal et commence par lire le message que les lutins t'ont laissé : <code>cat lisez-moi.txt</code></p>`,
+  widget: W.duelFinal({
+    utilisateurParDefaut: 'sauveur', maisonJoueur: 'sauveur', motDePasse: 'miehlfin',
+    racine: {
+      home: {
+        sauveur: {
+          'lisez-moi.txt': "Psst, c'est nous, les lutins ! On a réussi à te connecter à NOËL-OS… mais Kryos est partout.\n\nTes 23 fragments sont dans le dossier /glacier, et Kryos l'a scellé avec SON mot de passe.\n\nTa mission :\n  1. Trouve le mot de passe de Kryos. Il habite dans /home/kryos.\n     Fouille TOUT, même ce qui est caché (ls -a).\n  2. Ouvre le glacier :            deverrouiller <mot de passe>\n  3. Remets les fragments dans l'ordre.\n  4. Prononce la formule :         allumer-etoile <la formule>\n\nTape help pour voir toutes les commandes. On croit en toi ! 🧝",
+        },
+        kryos: {
+          'trophees.txt': "🏆 SALLE DES TROPHÉES DE KRYOS 🏆\n\n- Coupe de l'Hiver Éternel ............. an 1024\n- Médaille du Blizzard le plus long .... an 1025\n- Plaque gravée : « Ici fut enfermé Kryos, dans le glacier de NIFLHEIM, an 1026 »\n      (j'ai gardé la plaque. Souvenir.)",
+          'plan-machiavelique.txt': "PLAN MACHIAVÉLIQUE (version 47)\n\n1. Geler Noël ............................ ✅\n2. Capturer les lutins ..................... ✅\n3. Éteindre l'étoile ....................... ✅\n4. Empêcher le Sauveur de Noël de prononcer\n   la formule ............................. ⏳\n5. Hiver éternel. Chocolat chaud INTERDIT.",
+          '.journal': "JOURNAL SECRET DE KRYOS — NE PAS LIRE (oui, c'est à TOI que je parle)\n\nJour 1. Le glacier s'est fendu. Mille ans d'ennui, enfin terminés.\nJour 2. J'ai gelé NOËL-OS. Les lutins pleurent. Délicieux.\nJour 3. Il me faut un mot de passe pour sceller /glacier.\n        Je prends le nom du glacier où ces maudits lutins m'ont enfermé…\n        mais écrit À L'ENVERS, tout en minuscules. Génie absolu.\n        (Le nom est gravé sur un de mes trophées. Personne ne lit les trophées.)\nJour 4. Note pour plus tard : apprendre à faire des sorbets.",
+        },
+      },
+      etc: {
+        'noel-os.conf': "# Configuration de NOËL-OS\nsysteme        = NOËL-OS v24.12\nstatut         = GELÉ ❄️\nadministrateur = kryos (usurpé !)\nsauvegardes    = activées (les lutins y tiennent beaucoup)",
+      },
+    },
+    sauvegarde: {
+      'lisez-moi.txt': "Bravo, tu as trouvé notre sauvegarde secrète ! 😄\nKryos a effacé les fragments… mais nous, on garde une copie de TOUT.\n\nChaque fichier .frag contient une ligne :  « position lettre ».\n  - cat *.frag      affiche tous les fragments d'un coup ;\n  - sort            trie des lignes (ajoute -n pour trier des nombres) ;\n  - le tube |       envoie le résultat d'une commande à la suivante.\n\nÀ toi d'assembler tout ça ! Lis ensuite les lettres de haut en bas :\nc'est la formule. Elle est en latin et fait 4 mots.",
+    },
+    fragmentGele: "(fragment gelé : le jour {n} n'est pas résolu)",
+    aide: "Commandes disponibles :\n  help                       affiche cette aide\n  ls   /   ls -a             liste le dossier (-a : avec les éléments cachés)\n  cd <dossier>               entre dans un dossier (cd .. pour remonter)\n  pwd                        affiche le dossier où tu es\n  cat <fichier>              affiche un fichier (cat *.frag : tous les .frag)\n  echo <texte>               écrit un texte\n  rev                        écrit chaque ligne à l'envers\n  sort                       trie les lignes (sort -n : comme des nombres)\n  grep <mot>                 garde les lignes qui contiennent un mot\n  deverrouiller <mot>        ouvre un dossier scellé\n  allumer-etoile <formule>   prononce la formule finale\n  clear                      efface l'écran\nLe tube | envoie le résultat d'une commande à la suivante. Exemple :  echo bonjour | rev\nAstuces : Tab complète les noms, ↑ et ↓ rappellent les commandes précédentes.",
+    systeme: ['NOËL-OS v24.12 — connexion de « {u} »…', "⚠ ALERTE : l'utilisateur « kryos » a pris le contrôle du système."],
+    kryosIntro: ['Tiens, tiens… {u}, le fameux Sauveur de Noël. Bienvenue dans MON système.', 'Tes petits fragments ? Sous clé, dans /glacier. Et la clé, tu ne la trouveras JAMAIS.'],
+    invitation: "Les lutins t'ont laissé un message. Tape :  cat lisez-moi.txt",
+    verrouille: '🔒 Accès refusé : /glacier est scellé par kryos. Utilise :  deverrouiller <mot de passe>',
+    usageDeverrouiller: 'Utilisation :  deverrouiller <mot de passe>',
+    dejaOuvert: 'Le glacier est déjà ouvert.',
+    mauvaisMdp: '❌ Mot de passe incorrect.',
+    kryosMauvaisMdp: ["Raté ! Tu crois vraiment que j'utiliserais un mot de passe aussi bête ?", "Hahaha ! Encore ! Encore ! J'adore te regarder échouer.", 'Non. Et tu ne trouveras pas en tapant au hasard, petit lutin.'],
+    ouvert: '🔓 /glacier déverrouillé !',
+    kryosRiposte: ['QUOI ?! Tu as lu mon journal ?! PERSONNE ne lit mon journal !', 'Très bien. Si je ne peux pas garder les fragments… PERSONNE ne les aura.  rm /glacier/*'],
+    suppression: 'rm : suppression de « {f} »',
+    kryosRire: 'Plus de fragments, plus de formule, plus de Noël ! MOUAHAHAHA !',
+    lutinsSecours: ['Psst… pas de panique ! Nous, les lutins, on fait des SAUVEGARDES de tout.', 'Elle est cachée dans /glacier. Tu sais comment voir ce qui est caché… 😉'],
+    kryosFouille: "Hé ! Qui t'a permis de fouiller chez moi ? Sors de là !",
+    kryosJournal: 'MON JOURNAL ! Ferme ça tout de suite ! Je gèle ton écran !',
+    gel: '❄ Terminal gelé par kryos ❄',
+    kryosApresGel: "… Bon. Tu n'as rien vu. Et de toute façon, tu ne comprendras rien.",
+    kryosOrdre: 'Non… non non non… Ne fais pas ça. Ne prononce pas cette formule !',
+    lutinsTriNombres: 'Presque ! Sans -n, sort range « 10 » avant « 2 », comme dans un dictionnaire. Essaie sort -n.',
+    usageEtoile: 'Utilisation :  allumer-etoile <la formule>',
+    prononce: '✨ Tu prononces la formule : « {f} »…',
+    kryosMauvaiseFormule: ['Hahaha ! Rien ne se passe. Ton latin est aussi gelé que mon cœur.', "Raté ! L'étoile reste éteinte. Elle est à MOI.", 'Même pas un petit scintillement. Pathétique.'],
+    kryosFin: ['NOOOOON ! Cette lumière… elle… elle brûle !', 'Savoure ta victoire, mortel. Chaque hiver, quand le givre mordra tes fenêtres… souviens-toi de moi. JE REVIENDRAI.'],
+    victoire: ['☀ La formule résonne dans tout le chalet.', '☀ NOËL-OS dégèle : système restauré, utilisateur kryos supprimé.', "⭐ L'étoile du sapin se rallume !"],
+    kryosSudo: "sudo ? Ici, le seul administrateur, c'est MOI.",
+    kryosRm: "rm ? C'est MA commande préférée. Pas touche.",
+    kryosKill: 'Me supprimer ? Avec une commande ? Je suis immortel, petit lutin.',
+    kryosExit: "Partir ? Mais on s'amuse tellement, tous les deux…",
+    kryosAttente: ["Alors ? Tu dors ? Le chocolat chaud refroidit… ah non, je l'ai gelé.", 'Tic-tac… Noël approche… et toi, tu restes planté là.', "Tu veux un indice ? Abandonne. C'est mon seul conseil.", "Je commence à m'ennuyer. Mille ans dans un glacier, c'était plus palpitant."],
+  }),
   reponses: ['22cbd35071bff0460b8fdd2c952cf7f9d3e2d7ca2fbc10d1dde07b318b647124'],
   sansChamp: true,
   indices: [
-    "Convertis chaque position binaire en nombre : 00001 = 1, 00010 = 2, 00011 = 3, 00100 = 4… (les ampoules valent 16, 8, 4, 2, 1).",
-    "C'est une formule magique en latin, la langue des vieux grimoires. Elle fait 4 mots, et le premier veut dire « lumière ».",
+    "Le mot de passe est dans le journal SECRET de Kryos : cd /home/kryos puis ls -a pour le voir. Le nom du glacier est gravé sur un de ses trophées ; écris-le à l'envers (par exemple : echo niflheim | rev).",
+    "Après le rm de Kryos : cd /glacier puis ls -a pour trouver la sauvegarde des lutins. Dedans : cat *.frag | sort -n, puis lis les lettres de haut en bas. 4 mots latins, et le premier veut dire « lumière ».",
   ],
   lecon: `<p class="grand">🌟 « Lux aeterna glaciem vincit ! » 🌟</p>
 <p class="centre petit">« La lumière éternelle triomphe de la glace » : la formule latine qui avait déjà enfermé Kryos il y a mille ans ✨</p>
@@ -1362,7 +1539,7 @@ ${tableAlphabet()}`,
 <p class="ps">P.-S. : Les lutins ont voté à l'unanimité : tu deviens Grand Lutin d'Honneur du Pôle Nord ! 🎖️</p>
 </div></div>
 </div>
-<p>Pour cette dernière énigme, tu as converti du binaire (jour 1) et remis des morceaux dans l'ordre comme le fait TCP (jour 14). En 24 jours, voici tout ce que tu as découvert :</p>
+<p>Pour ce duel final, tu as fouillé des fichiers cachés (jour 22), lu à l'envers avec <code>rev</code>, retrouvé une <b>sauvegarde</b> (la meilleure arme contre un pirate qui efface tout !) et trié des données avec <code>sort</code>, en les faisant passer dans un tube. En 24 jours, voici tout ce que tu as découvert :</p>
 {{RECAP}}
 <h4>🧑‍🔬 Deux pionniers à connaître</h4>
 <ul>

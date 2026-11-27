@@ -5,6 +5,8 @@
    ========================================================= */
 'use strict';
 const crypto = require('crypto');
+// Les règles des mini-jeux « à tester » : le même fichier que celui du navigateur
+const L = require('../public/js/logique-jeux');
 
 function normaliser(texte) {
   return String(texte)
@@ -24,8 +26,6 @@ const M = {
     trajet: (t) => `🦌 Arrivé en <b>${t} minutes</b>… Le Père Noël a calculé qu'il existe un trajet plus rapide. Recommence !`,
     message14: 'DÉCOLLAGE À MINUIT',
     paquets: '📭 Le message reconstitué ne veut rien dire… Convertis chaque numéro binaire (4 · 2 · 1) et clique sur les paquets dans l\'ordre : 1, 2, 3…',
-    codesManquants: 'Choisis un code pour chaque situation.',
-    codes: (b, n) => `🔥 Le serveur affiche : <b>${b} / ${n}</b> bonnes réponses. Encore un effort !`,
     explications: [
       'Ligne 1 : la liste contient bien les 5 poids. Rien à signaler.',
       'Ligne 2 : la liste a 5 cases, numérotées de 0 à 4 : la boucle les parcourt toutes. Correct !',
@@ -47,14 +47,22 @@ const M = {
     piege: '🎣 Raté, c\'était un faux ! Lis l\'explication sur le message, puis continue ton enquête.',
     vide: 'Écris une réponse avant de valider.',
     numero: (max) => `Choisis un numéro entre 1 et ${max.toLocaleString('fr-FR')}.`,
+    circuit: (n) => `🔔 Ton alarme ne réagit comme la règle que dans <b>${n} situations sur 16</b>. Lance les tests et regarde les lignes en rouge !`,
+    robotErreur: '🤖 Le robot ne comprend pas ton programme. Relance-le pour voir quelle ligne pose problème.',
+    robotLong: (n, max) => `🤖 Ton programme fait ${n} lignes : la mémoire gelée du robot n'en accepte que ${max}.`,
+    robotRate: '🤖 Le robot ne ramasse pas tous les cadeaux, ou ne finit pas sur le traîneau.',
+    crepes: '🥞 Les invités ne lisent pas le bon mot… Recommence !',
+    motifLong: 'Écris un motif (80 caractères au maximum).',
+    motifInvalide: "⚠️ Ce motif n'est pas une expression régulière valide.",
+    tri: (b, n) => `📦 Le robot a bien trié <b>${b} étiquettes sur ${n}</b>. Regarde celles qui sont en rouge !`,
+    neuroneExemples: (n) => `🤖 Ton robot se trompe encore sur ${n} exemple(s). Règle-le pour qu'il ait tout juste avant de le tester.`,
+    neuroneNouveaux: (n) => `🤖 Ton robot ne se trompe sur aucun exemple… mais il se trompe sur <b>${n} nouveau(x) jouet(s)</b> ! Il a appris par cœur au lieu de comprendre ce que les rennes aiment. Un des critères ne compte peut-être pas du tout…`,
   },
   en: {
     tropEchanges: '⛽ Too many swaps: start again!',
     trajet: (t) => `🦌 You arrived in <b>${t} minutes</b>… Santa worked out that there's a faster route. Try again!`,
     message14: 'SLEIGH AT MIDNIGHT',
     paquets: "📭 The rebuilt message doesn't make sense… Convert each binary number (4 · 2 · 1) and click the packets in order: 1, 2, 3…",
-    codesManquants: 'Pick a code for each situation.',
-    codes: (b, n) => `🔥 The server says: <b>${b} / ${n}</b> correct answers. Keep going!`,
     explications: [
       'Line 1: the list does contain the 5 weights. Nothing wrong here.',
       'Line 2: the list has 5 boxes, numbered 0 to 4: the loop goes through all of them. Correct!',
@@ -76,6 +84,16 @@ const M = {
     piege: '🎣 Wrong, that was a fake! Read the explanation on the message, then keep investigating.',
     vide: 'Type an answer before checking.',
     numero: (max) => `Pick a number between 1 and ${max.toLocaleString('en-US')}.`,
+    circuit: (n) => `🔔 Your alarm only follows the rule in <b>${n} situations out of 16</b>. Run the tests and look at the red rows!`,
+    robotErreur: "🤖 The robot doesn't understand your program. Run it again to see which line is the problem.",
+    robotLong: (n, max) => `🤖 Your program has ${n} lines: the robot's frozen memory only accepts ${max}.`,
+    robotRate: "🤖 The robot doesn't pick up all the presents, or doesn't end on the sleigh.",
+    crepes: "🥞 The guests aren't reading the right word… Start again!",
+    motifLong: 'Type a pattern (80 characters at most).',
+    motifInvalide: "⚠️ This pattern isn't a valid regular expression.",
+    tri: (b, n) => `📦 The robot sorted <b>${b} labels out of ${n}</b> correctly. Look at the red ones!`,
+    neuroneExemples: (n) => `🤖 Your robot is still wrong about ${n} example(s). Adjust it until it gets everything right before testing it.`,
+    neuroneNouveaux: (n) => `🤖 Your robot doesn't get a single example wrong… but it's wrong about <b>${n} new toy(s)</b>! It learned by heart instead of understanding what the reindeer like. Maybe one of the criteria doesn't matter at all…`,
   },
 };
 
@@ -102,12 +120,45 @@ const MINI_JEUX = {
     return { ok: r.bits.reduce((s, b, i) => s + (b === true ? 128 >> i : 0), 0) === 25 };
   },
 
-  // Circuit logique (le même que dans public/js/widgets.js) : seule A=1 B=1 C=0 allume l'étoile.
-  5(r) {
-    if (!estObjet(r)) return { ok: false };
-    const { A, B, C } = r;
-    if (![A, B, C].every(v => typeof v === 'boolean')) return { ok: false };
-    return { ok: (A && B) && !C && (B || C) };
+  // Alarme anti-Kère : le circuit doit réagir comme la règle dans les 16 situations.
+  5(r, J, m) {
+    const p = estObjet(r) ? r.portes : null;
+    if (!L.circuitValide(p)) return { ok: false };
+    const n = L.testerCircuit(p, J.widget.params[0].attendu);
+    return n === 16 ? { ok: true } : { ok: false, message: m.circuit(n) };
+  },
+
+  // Robot-lutin : on relit le programme et on le rejoue sur la banquise.
+  9(r, J, m) {
+    const src = estObjet(r) ? r.programme : null;
+    if (typeof src !== 'string' || src.length > 1000) return { ok: false };
+    const cfg = J.widget.params[0];
+    const a = L.analyserProgramme(src);
+    if (a.erreur) return { ok: false, message: m.robotErreur };
+    if (a.lignes > cfg.maxLignes) return { ok: false, message: m.robotLong(a.lignes, cfg.maxLignes) };
+    return L.executerProgramme(a.prog, cfg.grille).ok ? { ok: true } : { ok: false, message: m.robotRate };
+  },
+
+  // Crêpes : on rejoue les gestes (assiette = pile, passe-plat = file).
+  11(r, J, m) {
+    const ops = estObjet(r) ? r.ops : null;
+    if (typeof ops !== 'string' || ops.length > 40 || !/^[PFpf]*$/.test(ops)) return { ok: false };
+    const cfg = J.widget.params[0];
+    const x = L.simulerCrepes(cfg.arrivee, ops);
+    return !x.erreur && x.servi === cfg.mot ? { ok: true } : { ok: false, message: m.crepes };
+  },
+
+  // Trieuse : le motif doit accepter toutes les vraies étiquettes et refuser toutes les fausses.
+  // (Les étiquettes font 12 caractères au plus : même un motif mal écrit reste rapide à tester.)
+  15(r, J, m) {
+    const motif = estObjet(r) ? r.motif : null;
+    if (typeof motif !== 'string' || !motif || motif.length > 80) return { ok: false, message: m.motifLong };
+    let re;
+    try { re = new RegExp(motif); } catch (e) { return { ok: false, message: m.motifInvalide }; }
+    const { garder, jeter } = J.widget.params[0];
+    const bons = garder.filter(x => re.test(x)).length + jeter.filter(x => !re.test(x)).length;
+    const total = garder.length + jeter.length;
+    return bons === total ? { ok: true } : { ok: false, message: m.tri(bons, total) };
   },
 
   // Tri : on rejoue les échanges sur le serveur.
@@ -146,16 +197,6 @@ const MINI_JEUX = {
     return { ok: false, message: m.paquets };
   },
 
-  // Codes HTTP.
-  15(r, J, m) {
-    const attendu = [200, 301, 403, 404, 500];
-    const c = estObjet(r) ? r.codes : null;
-    if (!Array.isArray(c) || c.length !== attendu.length) return { ok: false, message: m.codesManquants };
-    const bons = c.filter((x, i) => Number(x) === attendu[i]).length;
-    if (bons === attendu.length) return { ok: true };
-    return { ok: false, message: m.codes(bons, attendu.length) };
-  },
-
   // Débogage : la ligne 3 (indice 2) contient le bug (le total remis à zéro à chaque tour).
   18(r, J, m) {
     const i = estObjet(r) ? r.ligne : -1;
@@ -164,23 +205,30 @@ const MINI_JEUX = {
     return { ok: false };
   },
 
-  // Mot de passe : le navigateur n'envoie QUE des mesures (jamais le mot de passe lui-même).
-  19(r, J, m) {
-    if (!estObjet(r)) return { ok: false };
-    const L = Number(r.longueur), A = Number(r.alphabet), U = Number(r.uniques);
-    if (!(L > 0 && L <= 200 && A > 0 && A <= 95 && U >= 5 && U <= L) || r.courant !== false) return { ok: false, message: m.mdpFaible };
-    // (la vitesse de l'ordinateur de glace et la durée à tenir viennent du jour : W.motDePasse(vitesse, ansMin, …))
-    const [vitesse, ansMin] = J.widget.params;
-    const log10Annees = L * Math.log10(A) - Math.log10(vitesse) - Math.log10(31557600);
-    return { ok: log10Annees >= Math.log10(ansMin) };
-  },
-
   // Hameçonnage : seul le 3e message (indice 2, l'alerte de connexion) est authentique.
   21(r, J, m) {
     const i = estObjet(r) ? r.choix : -1;
     if (i === 2) return { ok: true };
     if (m.pieges[i]) return { ok: false, piege: m.pieges[i], message: m.piege };
     return { ok: false };
+  },
+
+  // Neurone : tout juste sur les exemples… ET sur les nouveaux jouets (la vérité reste sur le serveur).
+  23(r, J, m) {
+    if (!estObjet(r) || !estObjet(r.poids)) return { ok: false };
+    const cfg = J.widget.params[0];
+    const poids = {};
+    for (const c of cfg.criteres) {
+      const v = r.poids[c.k];
+      if (!Number.isInteger(v) || v < -3 || v > 3) return { ok: false };
+      poids[c.k] = v;
+    }
+    const seuil = r.seuil;
+    if (!Number.isInteger(seuil) || seuil < -3 || seuil > 6) return { ok: false };
+    const fautesExemples = cfg.exemples.filter(x => L.predire(poids, seuil, x.v).aime !== x.aime).length;
+    if (fautesExemples) return { ok: false, message: m.neuroneExemples(fautesExemples) };
+    const fautes = cfg.nouveaux.filter((x, i) => L.predire(poids, seuil, x.v).aime !== J.verite[i]).length;
+    return fautes ? { ok: false, message: m.neuroneNouveaux(fautes) } : { ok: true };
   },
 };
 

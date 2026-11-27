@@ -134,7 +134,8 @@ app.get('/api/etat', async (req, res) => {
     prochaine: prochaineOuverture(),
     jours,
     langue: req.langue,
-    fragments: req.jours.filter(J => J.fragment).map(J => (etatPourJoueur(J.jour, prog) === 'resolu' ? fragment(J) : { jour: J.jour })),
+    // (la position d'un fragment pas encore gagné est connue : seule sa lettre reste cachée)
+    fragments: req.jours.filter(J => J.fragment).map(J => (etatPourJoueur(J.jour, prog) === 'resolu' ? fragment(J) : { jour: J.jour, position: J.fragment[0] })),
   });
 });
 
