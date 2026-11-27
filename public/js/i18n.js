@@ -14,6 +14,9 @@
   document.documentElement.lang = langue;
 
   const EN = {
+    /* ---- Version plus dure : textes des décors (scenes.js) ---- */
+    'LÉA': 'LEA', 'REGISTRE': 'REGISTER',
+    'répéter 4': 'repeat 4', 'avancer': 'forward', 'gauche': 'left', 'droite': 'right', 'fin': 'end',
     /* ---- Les scènes des énigmes (scenes.js) et les nouveaux mini-jeux ---- */
     "CALENDRIER DE L'AVENT": 'ADVENT CALENDAR',
     'GELÉ': 'FROZEN',
@@ -22,6 +25,9 @@
     '« Portrait du patron »': '“Portrait of the boss”',
     'COMMANDE : JAUNE': 'ORDER: YELLOW',
     'V': 'G',
+    'BIENTÔT AU CINÉMA': 'COMING SOON',
+    'CODE MORSE': 'MORSE CODE',
+    '7B 1G 7B · 3B 1G 3B …': '7W 1I 7W · 3W 1I 3W …',
     'vide': 'empty',
     'plein': 'full',
     'CARBURANT': 'FUEL',
@@ -36,8 +42,6 @@
     'P1, P2 et P3 toutes allumées': 'P1, P2 and P3 all on',
     '↑ PLUS HAUT': '↑ HIGHER',
     '↓ PLUS BAS': '↓ LOWER',
-    'étape': 'step',
-    '3 segments': '3 segments',
     'sablés : ?': 'cookies: ?',
     'sablés ← 3': 'cookies ← 3',
     'RÉPÈTE 5 FOIS :': 'REPEAT 5 TIMES:',
@@ -66,9 +70,7 @@
     'Produits': 'Products',
     'TAILLE': 'SIZE',
     'La dernière case (en doré) est la clé de contrôle. Les lignes « Produits » sont ton brouillon.': 'The last box (in gold) is the check digit. The “Products” rows are your rough work.',
-    '10 milliards / s': '10 billion / s',
-    'CHIEN': 'SKATE',
-    'NICHE': 'STEAK',
+    '1 000 essais / s': '1,000 tries / s',
     '📥 Boîte de réception (5)': '📥 Inbox (5)',
     '⚠️ URGENT !!!': '⚠️ URGENT!!!',
     '🔔 Nouvelle connexion…': '🔔 New sign-in…',
@@ -175,7 +177,7 @@
     'Opération Dégel': 'Operation Thaw',
     '{n} / 23 fragments': '{n} / 23 fragments',
     'Tes fragments': 'Your fragments',
-    'Chaque fragment est une lettre de la phrase secrète du 24 décembre. Le nombre écrit en binaire est sa position dans la phrase.': "Each fragment is a letter of December 24's secret phrase. The number written in binary is its position in the phrase.",
+    'Chaque fragment est une lettre de la phrase secrète du 24 décembre. Le numéro est sa position dans la phrase.': "Each fragment is a letter of December 24's secret phrase. The number is its position in the phrase.",
     'Noël est sauvé': 'Christmas is saved',
     'NOËL EST SAUVÉ !': 'CHRISTMAS IS SAVED!',
     "L'étoile brille… Kryos s'enfuit en hurlant dans son glacier… Le traîneau décolle ! 🛷✨": 'The star is shining… Kryos flees, howling, into his glacier… The sleigh takes off! 🛷✨',

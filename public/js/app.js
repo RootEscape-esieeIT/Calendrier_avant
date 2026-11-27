@@ -1007,7 +1007,7 @@
       const f = res.fragment;
       if (f) {
         zoneResultat.append(h('div', { class: 'fragment-gagne', html:
-          `<div class="ticket"><span class="ticket-titre">${t('🧩 Fragment récupéré')}</span><span class="ticket-lettre">${f.lettre}</span><span class="ticket-position">${t('position')} <code>${f.positionBinaire}</code></span></div>` +
+          `<div class="ticket"><span class="ticket-titre">${t('🧩 Fragment récupéré')}</span><span class="ticket-lettre">${f.lettre}</span><span class="ticket-position">${t('position')} <code>${f.position}</code></span></div>` +
           '<small>' + (G ? t("En s'enfuyant, {nom} a laissé tomber ce fragment. Garde-le précieusement pour le 24 décembre ! (Bouton 🧩 en haut de la page.)", { nom: G.nom || t('la Kère') }) : t('Garde-le précieusement pour le 24 décembre ! (Bouton 🧩 en haut de la page.)')) + '</small>' }));
       }
       const section = h('section', { class: 'lecon' }, h('h3', {}, n === 24 ? t('🎓 Bravo, Sauveur de Noël !') : t('📚 Ce que tu as appris : {c}', { c: J.concept })),
@@ -1067,10 +1067,16 @@
       jour: n,
       champ: null,
       message: afficherMessage,
+      // Le volume des bruitages (0 à 1), pour un mini-jeu qui fait ses propres sons (les bips du Morse)
+      volumeSons: () => prefs.volSons || 0,
       async soumettre(reponse) {
         try {
           const r = await appel('POST', `/api/jours/${n}/reponse`, { reponse });
-          if (r.ok) await traiterReussite(r);
+          if (r.ok) {
+            // Un mini-jeu peut jouer sa propre fin avant la fête (le duel du 24 : Kryos fond dans le terminal)
+            if (api.avantReussite) { try { await api.avantReussite(r); } catch (e) { /* la fête aura lieu quand même */ } }
+            await traiterReussite(r);
+          }
           else {
             majTentatives(r.tentatives);
             if (r.message) afficherMessage(r.message, r.type || 'erreur');
@@ -1100,6 +1106,7 @@
         }
       },
       fragments: () => (S ? S.fragments : []),
+      prenom: () => (S && S.nom) || '',
     };
 
     if (J.champ) {
@@ -2021,14 +2028,14 @@
     const frags = S ? S.fragments : [];
     const liste = frags.map(f => h('div', { class: 'carte-fragment' + (f.lettre ? '' : ' vide') },
       h('small', {}, t('Jour {n}', { n: f.jour })),
-      h('code', {}, f.lettre ? f.positionBinaire : '?????'),
+      h('code', {}, f.lettre ? '#' + f.position : '?'),
       h('b', {}, f.lettre || '❓')));
     const nb = frags.filter(f => f.lettre).length;
     const J = { jour: 98, decor: 'montagnes', particules: ['✨', '⭐', '❄️'], couleurs: ['#2a1d00', '#7a5a10'], emoji: '🧩' };
     const c = h('article', { class: 'jour' },
       bandeau(J, t('{n} / 23 fragments', { n: nb }), t('Tes fragments'), null),
       h('div', { class: 'corps-jour' },
-        h('p', {}, t('Chaque fragment est une lettre de la phrase secrète du 24 décembre. Le nombre écrit en binaire est sa position dans la phrase.')),
+        h('p', {}, t('Chaque fragment est une lettre de la phrase secrète du 24 décembre. Le numéro est sa position dans la phrase.')),
         h('div', { class: 'inventaire' }, liste)));
     ouvrirModale(c);
   }

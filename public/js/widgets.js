@@ -10,6 +10,9 @@
      api.message(html)      → afficher un message
      api.champ              → le champ de réponse (s'il existe)
      api.fragments()        → les fragments récupérés (jour 24)
+     api.prenom()           → le prénom du joueur (jour 24)
+   Les mini-jeux « à tester » (terminal, circuit, robot…) sont
+   dans widgets-dur.js.
    ========================================================= */
 (function (global) {
   'use strict';
@@ -135,50 +138,6 @@
     if (api.champ) api.champ.addEventListener('input', maj);
     maj();
     zone.append(h('p', { class: 'petit centre' }, t("Quelques couleurs de base, pour t'inspirer :")), nuancier, h('div', { class: 'atelier-peinture' }, boule, detail));
-  };
-
-  /* ---------- Jour 5 : les portes logiques (3 interrupteurs, 3 portes) ---------- */
-  W.portes = () => (zone, api) => {
-    const etat = { A: false, B: false, C: false };
-    const memo = h('div', { class: 'memo-portes', html:
-      '<div>' + t('<b>ET</b> : allumée si les <b>deux</b> entrées sont allumées') + '</div>' +
-      '<div>' + t('<b>OU</b> : allumée si <b>au moins une</b> entrée est allumée') + '</div>' +
-      '<div>' + t("<b>NON</b> : fait l'<b>inverse</b> (allumé ↔ éteint)") + '</div>' });
-    const interrupteurs = h('div', { class: 'interrupteurs' });
-    for (const k of Object.keys(etat)) {
-      const b = h('button', { type: 'button', class: 'interrupteur', 'aria-pressed': 'false', 'aria-label': t('Interrupteur {k}', { k }) },
-        h('span', { class: 'levier' }), h('b', {}, k), h('small', { class: 'etat' }, '0'));
-      b.addEventListener('click', () => {
-        etat[k] = !etat[k];
-        b.classList.toggle('on', etat[k]);
-        b.setAttribute('aria-pressed', String(etat[k]));
-        b.querySelector('.etat').textContent = etat[k] ? '1' : '0';
-        maj();
-      });
-      interrupteurs.append(b);
-    }
-    // Le circuit (même logique dans serveur/verification.js) : une seule position allume l'étoile.
-    const [ET, OU, NON] = [t('ET'), t('OU'), t('NON')];
-    const portes = [
-      { nom: 'P1', formule: `A  ${ET}  B`, f: () => etat.A && etat.B },
-      { nom: 'P2', formule: `${NON} C`, f: () => !etat.C },
-      { nom: 'P3', formule: `B  ${OU}  C`, f: () => etat.B || etat.C },
-    ];
-    const lignes = portes.map(p => {
-      const lampe = h('span', { class: 'lampe', 'aria-hidden': 'true' });
-      return { p, lampe, el: h('div', { class: 'porte-logique' }, h('b', {}, p.nom), h('code', {}, p.formule), lampe) };
-    });
-    const etoile = h('span', { class: 'etoile-circuit', 'aria-hidden': 'true' }, '★');
-    const sortie = h('div', { class: 'porte-logique sortie' }, h('b', {}, t('ÉTOILE')), h('code', {}, t('P1, P2 et P3 toutes allumées')), etoile);
-    let dejaGagne = false;
-    function maj() {
-      const valeurs = lignes.map(({ p, lampe }) => { const r = p.f(); lampe.classList.toggle('on', r); return r; });
-      const allumee = valeurs.every(Boolean);
-      etoile.classList.toggle('on', allumee);
-      if (allumee && !dejaGagne) { dejaGagne = true; setTimeout(() => api.soumettre({ ...etat }), 600); }
-    }
-    maj();
-    zone.append(memo, interrupteurs, h('div', { class: 'circuit' }, lignes.map(l => l.el), sortie));
   };
 
   /* ---------- Jour 6 : le tri des cadeaux ---------- */
@@ -345,59 +304,6 @@
     zone.append(h('p', { class: 'petit centre seulement-mobile' }, t('↔ Fais glisser la carte pour voir tous les lieux.')), h('div', { class: 'cadre-carte' }, svg), trajet, h('div', { class: 'centre' }, annuler, recommencer));
   };
 
-  /* ---------- Jour 9 : le flocon de Koch ---------- */
-  W.koch = (niveauMax) => (zone) => {
-    const taille = 420;
-    const canvas = h('canvas', { class: 'toile-koch', width: taille, height: taille, 'aria-label': t('Flocon de Koch') });
-    const curseur = h('input', { type: 'range', min: '0', max: String(niveauMax), value: '0', class: 'curseur', 'aria-label': t('Étape') });
-    const label = h('b', {}, '0');
-    const ratio = Math.min(window.devicePixelRatio || 1, 2);
-    canvas.width = taille * ratio; canvas.height = taille * ratio;
-    const ctx = canvas.getContext('2d');
-    ctx.scale(ratio, ratio);
-    function flocon(n) {
-      const cx = taille / 2, cy = taille / 2, r = 150;
-      let pts = [0, 1, 2].map(i => {
-        const a = -Math.PI / 2 + i * (2 * Math.PI / 3);
-        return [cx + r * Math.cos(a), cy + r * Math.sin(a)];
-      });
-      pts.push(pts[0]);
-      const cos = Math.cos(-Math.PI / 3), sin = Math.sin(-Math.PI / 3);
-      for (let k = 0; k < n; k++) {
-        const nv = [pts[0]];
-        for (let i = 0; i < pts.length - 1; i++) {
-          const [x1, y1] = pts[i], [x2, y2] = pts[i + 1];
-          const dx = (x2 - x1) / 3, dy = (y2 - y1) / 3;
-          const a = [x1 + dx, y1 + dy], c = [x1 + 2 * dx, y1 + 2 * dy];
-          const b = [a[0] + dx * cos - dy * sin, a[1] + dx * sin + dy * cos];
-          nv.push(a, b, c, [x2, y2]);
-        }
-        pts = nv;
-      }
-      return pts;
-    }
-    function dessiner() {
-      const n = +curseur.value;
-      label.textContent = n;
-      ctx.clearRect(0, 0, taille, taille);
-      const pts = flocon(n);
-      ctx.beginPath();
-      pts.forEach(([x, y], i) => (i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)));
-      ctx.closePath();
-      ctx.fillStyle = 'rgba(160, 210, 255, 0.18)';
-      ctx.fill();
-      ctx.lineWidth = n < 3 ? 2.2 : 1.4;
-      ctx.strokeStyle = '#e8f4ff';
-      ctx.shadowColor = '#7fc8ff';
-      ctx.shadowBlur = 10;
-      ctx.stroke();
-      ctx.shadowBlur = 0;
-    }
-    curseur.addEventListener('input', dessiner);
-    dessiner();
-    zone.append(h('div', { class: 'reglage' }, h('label', {}, t('❄️ Étape :') + ' ', label, t(" (le curseur s'arrête à {max}, le Maître est fatigué)", { max: niveauMax })), curseur), h('div', { class: 'centre' }, canvas));
-  };
-
   /* ---------- Jour 10 : tableau de suivi (brouillon) ---------- */
   W.tableauSuivi = (colonnes, nbLignes) => (zone) => {
     const table = h('table', { class: 'tableau suivi' });
@@ -408,7 +314,7 @@
     zone.append(h('div', { class: 'defilement' }, table));
   };
 
-  /* ---------- Jour 12 : pixels et RLE (couleur : 'rouge' ou 'vert') ---------- */
+  /* ---------- Pixels et RLE à 2 couleurs, version simple (couleur : 'rouge' ou 'vert') ---------- */
   W.pixels = (lignesRLE, largeur, couleur = 'rouge') => (zone) => {
     const hauteur = lignesRLE.length;
     const codes = h('ol', { class: 'codes-rle' }, lignesRLE.map(l => h('li', {}, h('code', {}, l))));
@@ -546,7 +452,7 @@
     zone.append(h('p', { class: 'petit' }, t("Paquets reçus (dans l'ordre d'arrivée) :")), zonePaquets, reassemblage, h('div', { class: 'centre' }, vider, transmettre));
   };
 
-  /* ---------- Jour 15 : les codes HTTP ---------- */
+  /* ---------- Codes HTTP (version simple : jour 15 sur la branche dev) ---------- */
   W.http = (situations, codes) => (zone, api) => {
     const legende = h('div', { class: 'legende-http' }, codes.map(c => h('div', {}, h('code', {}, c.code), ' ', h('span', { html: c.sens }))));
     const liste = h('ol', { class: 'situations' });
@@ -578,76 +484,6 @@
     zone.append(bloc);
   };
 
-  /* ---------- Jour 19 : la force des mots de passe ---------- */
-  W.motDePasse = (vitesse, ansMin, interdits) => (zone, api) => {
-    const champ = h('input', { type: 'text', class: 'champ-mdp', autocomplete: 'off', spellcheck: 'false', autocapitalize: 'off', placeholder: t('Invente un mot de passe…'), 'aria-label': t('Mot de passe inventé') });
-    const criteres = h('ul', { class: 'criteres' });
-    const resultat = h('div', { class: 'resultat-mdp' });
-    const remplissage = h('div', { class: 'jauge-remplissage' });
-    const jauge = h('div', { class: 'jauge' }, remplissage);
-    const bouton = h('button', { type: 'button', class: 'btn btn-principal' }, t('🔐 Verrouiller le coffre'));
-    const types = [
-      { nom: t('minuscules (a-z)'), taille: 26, test: /[a-z]/ },
-      { nom: t('majuscules (A-Z)'), taille: 26, test: /[A-Z]/ },
-      { nom: t('chiffres (0-9)'), taille: 10, test: /[0-9]/ },
-      { nom: t('symboles, espaces, accents…'), taille: 33, test: /[^a-zA-Z0-9]/ },
-    ];
-    const AN = 31557600;
-    function analyser(mdp) {
-      const presents = types.filter(t => t.test.test(mdp));
-      const alphabet = presents.reduce((a, t) => a + t.taille, 0);
-      const L = [...mdp].length;
-      const log10comb = L && alphabet ? L * Math.log10(alphabet) : 0;
-      const log10sec = log10comb - Math.log10(vitesse);
-      return { presents, alphabet, L, log10comb, log10sec, log10ans: log10sec - Math.log10(AN) };
-    }
-    function nombre(log10) {
-      if (log10 < 15) return I18N.nombre(Math.round(Math.pow(10, log10)));
-      return t('environ 10<sup>{e}</sup> (un nombre de {c} chiffres)', { e: Math.floor(log10), c: Math.floor(log10) + 1 });
-    }
-    function duree(log10sec) {
-      if (log10sec < -3) return t("un instant (moins d'un millième de seconde)");
-      const sec = Math.pow(10, log10sec);
-      const unite = (valeur, mot, pluriel = mot + 's') => { const v = Math.round(valeur); return `${I18N.nombre(v)} ${t(I18N.pluriel(v) ? pluriel : mot)}`; };
-      if (sec < 1) return t("moins d'une seconde");
-      if (sec < 60) return unite(sec, 'seconde');
-      if (sec < 3600) return unite(sec / 60, 'minute');
-      if (sec < 86400) return unite(sec / 3600, 'heure');
-      if (sec < AN) return unite(sec / 86400, 'jour');
-      const ans = sec / AN;
-      if (ans < 1e3) return unite(ans, 'an');
-      if (ans < 1e6) return t('{n} mille ans', { n: I18N.nombre(Math.round(ans / 1e3)) });
-      if (ans < 1e9) return unite(ans / 1e6, 'million d\'années', 'millions d\'années');
-      if (ans < 1.38e10) return unite(ans / 1e9, 'milliard d\'années', 'milliards d\'années');
-      return t("plus que l'âge de l'univers ! (environ 10<sup>{e}</sup> ans)", { e: Math.floor(Math.log10(ans)) });
-    }
-    function maj() {
-      const mdp = champ.value;
-      const a = analyser(mdp);
-      criteres.innerHTML = `<li>${t(I18N.pluriel(a.L) ? '📏 Longueur : <b>{n}</b> caractères' : '📏 Longueur : <b>{n}</b> caractère', { n: a.L })}</li>` +
-        types.map(ty => `<li class="${ty.test.test(mdp) ? 'ok' : ''}">${ty.test.test(mdp) ? '✅' : '⬜'} ${ty.nom} <small>${t('(+{n} possibilités)', { n: ty.taille })}</small></li>`).join('') +
-        `<li>${t('🔤 Caractères possibles à chaque position : <b>{n}</b>', { n: a.alphabet })}</li>`;
-      if (!a.L) { resultat.innerHTML = t("Commence à taper pour voir combien de temps l'ordinateur de glace mettrait à le casser."); remplissage.style.width = '0%'; return; }
-      resultat.innerHTML = `${t('Combinaisons possibles :')} ${a.alphabet}<sup>${a.L}</sup> = <b>${nombre(a.log10comb)}</b><br>${t('⏱️ Temps pour toutes les essayer :')} <b>${duree(a.log10sec)}</b>`;
-      const objectif = Math.log10(ansMin);
-      const pct = Math.max(2, Math.min(100, ((a.log10ans + 8) / (objectif + 8)) * 100));
-      remplissage.style.width = pct + '%';
-      remplissage.classList.toggle('fort', a.log10ans >= objectif);
-    }
-    bouton.addEventListener('click', () => {
-      const mdp = champ.value;
-      const a = analyser(mdp);
-      if (!a.L) { api.message(t("Tape d'abord un mot de passe.")); return; }
-      if (interdits.includes(mdp.toLowerCase())) { api.message(t("💥 Ce mot de passe fait partie des plus utilisés au monde : l'ordinateur de glace le teste en tout premier. Cassé instantanément !")); return; }
-      if (new Set(mdp.toLowerCase()).size < 5) { api.message(t('💥 Trop répétitif ! Les pirates testent en premier les motifs comme « aaaa » ou « abab ». Utilise des caractères plus variés.')); return; }
-      if (a.log10ans >= Math.log10(ansMin)) api.soumettre({ longueur: a.L, alphabet: a.alphabet, uniques: new Set(mdp).size, courant: false });
-      else api.message(t("💥 L'ordinateur de glace le casserait en <b>{d}</b>. Il faut tenir au moins {ans} ans !", { d: duree(a.log10sec), ans: I18N.nombre(ansMin) }));
-    });
-    champ.addEventListener('input', maj);
-    maj();
-    zone.append(champ, jauge, resultat, criteres, h('div', { class: 'centre' }, bouton));
-  };
-
   /* ---------- Jour 21 : le hameçonnage ---------- */
   W.phishing = (messages) => (zone, api) => {
     const boite = h('div', { class: 'boite-mail' });
@@ -672,259 +508,6 @@
       boite.append(carte);
     });
     zone.append(boite);
-  };
-
-  /* ---------- Jour 22 : le terminal ---------- */
-  W.terminal = (racine, depart) => (zone) => {
-    let cwd = depart.slice();
-    const sortie = h('div', { class: 'term-sortie', 'aria-live': 'polite' });
-    const invite = h('span', { class: 'term-invite' });
-    const champ = h('input', { class: 'term-champ', autocomplete: 'off', spellcheck: 'false', autocapitalize: 'off', 'aria-label': t('Commande') });
-    const form = h('form', { class: 'term-ligne' }, invite, champ);
-    const ecran = h('div', { class: 'terminal' }, sortie, form);
-    ecran.addEventListener('click', () => { if (!window.getSelection().toString()) champ.focus(); });
-    const historique = [];
-    let posHist = 0;
-    const MAISON = depart.slice();
-    const UTILISATEUR = MAISON[MAISON.length - 1];
-    const CHEMIN_MAISON = '/' + MAISON.join('/');
-
-    const texteChemin = (p) => {
-      const c = '/' + p.join('/');
-      if (c === CHEMIN_MAISON) return '~';
-      if (c.startsWith(CHEMIN_MAISON + '/')) return '~' + c.slice(CHEMIN_MAISON.length);
-      return c;
-    };
-    const majInvite = () => { invite.textContent = `${UTILISATEUR}@${t('pole-nord')}:${texteChemin(cwd)}$ `; };
-    function noeud(p) {
-      let n = racine;
-      for (const part of p) {
-        if (typeof n !== 'object' || !Object.prototype.hasOwnProperty.call(n, part)) return undefined;
-        n = n[part];
-      }
-      return n;
-    }
-    function resoudre(arg) {
-      let parts, reste = arg;
-      if (arg.startsWith('/')) parts = [];
-      else if (arg === '~' || arg.startsWith('~/')) { parts = MAISON.slice(); reste = arg.slice(1); }
-      else parts = cwd.slice();
-      for (const seg of reste.split('/')) {
-        if (!seg || seg === '.') continue;
-        if (seg === '..') parts.pop(); else parts.push(seg);
-      }
-      return parts;
-    }
-    function ecrire(contenu, classe) {
-      const l = h('div', { class: 'term-l ' + (classe || '') });
-      if (contenu && contenu.nodeType) l.append(contenu); else l.textContent = contenu;
-      sortie.append(l);
-      sortie.scrollTop = sortie.scrollHeight;
-    }
-    const AIDE = I18N.langue === 'en' ? t('TERMINAL_AIDE') : [
-      'Commandes disponibles :',
-      '  help            affiche cette aide',
-      '  ls              liste le contenu du dossier actuel',
-      '  ls -a           liste aussi les éléments cachés (qui commencent par un point)',
-      '  cd <dossier>    entre dans un dossier',
-      '  cd ..           remonte au dossier parent',
-      '  cd /            va à la racine (tout en haut)',
-      '  pwd             affiche le chemin du dossier actuel',
-      '  cat <fichier>   affiche le contenu d\'un fichier',
-      '  clear           efface l\'écran',
-      'Astuces : la touche Tab complète les noms, ↑ et ↓ rappellent les commandes précédentes.',
-    ].join('\n');
-    const commandes = {
-      help: () => AIDE,
-      aide: () => AIDE,
-      ls(args) {
-        const tous = args.some(a => /^-[a-zA-Z]*a/.test(a));
-        const cible = args.find(a => !a.startsWith('-'));
-        const p = cible ? resoudre(cible) : cwd;
-        const n = noeud(p);
-        if (n === undefined) return t("ls: impossible d'accéder à '{c}': Aucun fichier ou dossier de ce nom", { c: cible });
-        if (typeof n === 'string') return cible;
-        const noms = Object.keys(n).filter(k => tous || !k.startsWith('.')).sort((a, b) => a.replace(/^\./, '').localeCompare(b.replace(/^\./, '')));
-        const ligne = h('div', { class: 'term-ls' });
-        if (tous) ligne.append(h('span', { class: 'dossier' }, '.'), h('span', { class: 'dossier' }, '..'));
-        noms.forEach(k => ligne.append(h('span', { class: typeof n[k] === 'object' ? 'dossier' : 'fichier' }, k + (typeof n[k] === 'object' ? '/' : ''))));
-        if (!noms.length && !tous) return t('(dossier vide… vraiment ?)');
-        return ligne;
-      },
-      dir(args) { return commandes.ls(args); },
-      cd(args) {
-        const cible = args[0] || '~';
-        const p = resoudre(cible);
-        const n = noeud(p);
-        if (n === undefined) return t('cd: {c}: Aucun fichier ou dossier de ce nom', { c: cible });
-        if (typeof n === 'string') return t("cd: {c}: N'est pas un dossier (c'est un fichier : utilise cat pour le lire)", { c: cible });
-        cwd = p; majInvite();
-        return '';
-      },
-      pwd: () => '/' + cwd.join('/'),
-      cat(args) {
-        if (!args[0]) return t('cat: indique un nom de fichier, par exemple : cat lisez-moi.txt');
-        const p = resoudre(args[0]);
-        const n = noeud(p);
-        if (n === undefined) return t('cat: {c}: Aucun fichier ou dossier de ce nom', { c: args[0] });
-        if (typeof n === 'object') return t('cat: {c}: Est un dossier (utilise cd pour y entrer)', { c: args[0] });
-        return n;
-      },
-      clear() { sortie.innerHTML = ''; return ''; },
-      whoami: () => UTILISATEUR,
-      echo: (args) => args.join(' '),
-      date: () => new Date().toLocaleString(I18N.locale),
-      sudo: () => t("Bien essayé 😏 mais la Kère a confisqué les droits d'administrateur."),
-      rm: () => t('rm: Hé ! On ne supprime rien au Pôle Nord. 🎅'),
-      exit: () => t('Impossible de quitter : le Pôle Nord a besoin de toi !'),
-    };
-    function executer(ligne) {
-      ecrire(invite.textContent + ligne, 'term-cmd');
-      const morceaux = ligne.trim().split(/\s+/);
-      const cmd = (morceaux[0] || '').toLowerCase();
-      if (!cmd) return;
-      const f = commandes[cmd];
-      if (!f) { ecrire(t('{c} : commande introuvable. Tape « help » pour voir la liste des commandes.', { c: morceaux[0] }), 'term-erreur'); return; }
-      const r = f(morceaux.slice(1));
-      if (r) ecrire(r);
-    }
-    form.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const ligne = champ.value;
-      champ.value = '';
-      if (ligne.trim()) historique.push(ligne);
-      posHist = historique.length;
-      executer(ligne);
-    });
-    champ.addEventListener('keydown', (e) => {
-      if (e.key === 'ArrowUp') { e.preventDefault(); if (posHist > 0) champ.value = historique[--posHist]; }
-      else if (e.key === 'ArrowDown') { e.preventDefault(); if (posHist < historique.length - 1) champ.value = historique[++posHist]; else { posHist = historique.length; champ.value = ''; } }
-      else if (e.key === 'Tab') {
-        e.preventDefault();
-        const val = champ.value;
-        const debut = val.lastIndexOf(' ') + 1;
-        const mot = val.slice(debut);
-        const coupe = mot.lastIndexOf('/');
-        const dossierTxt = coupe >= 0 ? mot.slice(0, coupe + 1) : '';
-        const prefixe = coupe >= 0 ? mot.slice(coupe + 1) : mot;
-        const dossier = noeud(dossierTxt ? resoudre(dossierTxt) : cwd);
-        if (!dossier || typeof dossier !== 'object') return;
-        const choix = Object.keys(dossier).filter(k => k.startsWith(prefixe) && (prefixe.startsWith('.') || !k.startsWith('.')));
-        if (choix.length === 1) {
-          const k = choix[0];
-          champ.value = val.slice(0, debut) + dossierTxt + k + (typeof dossier[k] === 'object' ? '/' : ' ');
-        } else if (choix.length > 1) {
-          ecrire(invite.textContent + val, 'term-cmd');
-          ecrire(choix.join('   '));
-        }
-      }
-    });
-    majInvite();
-    ecrire(t('NOËL-OS terminal v24.12 — connecté en tant que « {u} »', { u: UTILISATEUR }), 'term-info');
-    ecrire(t('Tape « help » puis Entrée pour voir les commandes disponibles.'), 'term-info');
-    zone.append(ecran);
-  };
-
-  /* ---------- Jour 24 : la finale ---------- */
-  W.finale = (longueur) => (zone, api) => {
-    const frags = api.fragments();
-    const manquants = frags.filter(f => !f.lettre).length;
-    const inventaire = h('div', { class: 'inventaire' }, frags.map(f =>
-      h('div', { class: 'carte-fragment' + (f.lettre ? '' : ' vide') },
-        h('small', {}, t('Jour {n}', { n: f.jour })),
-        f.lettre ? h('code', {}, f.positionBinaire) : h('code', {}, '?????'),
-        h('b', {}, f.lettre || '❓'))));
-    const cases = [];
-    const rangee = h('div', { class: 'cases-finales' });
-    // Seules les lettres comptent (un espace entre deux mots ne doit pas décaler toute la formule) ;
-    // une case déjà remplie prend la nouvelle lettre (avec maxlength=1, on ne pouvait plus corriger
-    // une faute : la frappe était ignorée) ; un texte collé remplit les cases suivantes.
-    const lettresDe = (s) => Array.from(String(s || '').toUpperCase()).filter(ch => /\p{L}/u.test(ch));
-    function remplir(i, texte) {
-      const lettres = lettresDe(texte).slice(0, longueur - i);
-      if (!lettres.length) { cases[i].value = cases[i].dataset.v || ''; return; }
-      lettres.forEach((l, k) => { cases[i + k].value = cases[i + k].dataset.v = l; });
-      const suivante = cases[Math.min(i + lettres.length, longueur - 1)];
-      suivante.focus();
-      suivante.select();
-    }
-    for (let i = 0; i < longueur; i++) {
-      const c = h('input', { type: 'text', class: 'case-finale', 'aria-label': t('Lettre {n}', { n: i + 1 }), autocomplete: 'off', autocapitalize: 'characters', spellcheck: 'false' });
-      c.addEventListener('focus', () => c.select());
-      c.addEventListener('beforeinput', (e) => {
-        if (!e.cancelable || !/^insert(Text|FromPaste|FromDrop|ReplacementText)$/.test(e.inputType)) return;
-        e.preventDefault();
-        remplir(i, e.data ?? (e.dataTransfer ? e.dataTransfer.getData('text/plain') : ''));
-      });
-      // Claviers de téléphone : la saisie passe par une composition qu'on ne peut pas annuler, on
-      // garde alors seulement ce qui vient d'être ajouté.
-      c.addEventListener('input', () => {
-        const avant = c.dataset.v || '', apres = c.value;
-        if (!apres) { c.dataset.v = ''; return; }
-        const ajout = apres.startsWith(avant) ? apres.slice(avant.length) : apres.endsWith(avant) ? apres.slice(0, apres.length - avant.length) : apres;
-        remplir(i, ajout || apres);
-      });
-      c.addEventListener('keydown', (e) => {
-        if (e.key === 'Backspace' && !c.value && i > 0) { cases[i - 1].focus(); }
-        else if (e.key === 'ArrowLeft' && i > 0) cases[i - 1].focus();
-        else if (e.key === 'ArrowRight' && i < longueur - 1) cases[i + 1].focus();
-        else if (e.key === 'Enter') bouton.click();
-      });
-      cases.push(c);
-      rangee.append(h('label', { class: 'case' }, c, h('small', {}, i + 1)));
-    }
-    const bouton = h('button', { type: 'button', class: 'btn btn-principal btn-etoile' }, t("⭐ Rallumer l'étoile"));
-    bouton.addEventListener('click', () => {
-      const texte = cases.map(c => c.value || ' ').join('');
-      if (cases.some(c => !c.value)) { api.message(t('Il reste des cases vides : remplis les {n} lettres.', { n: longueur })); return; }
-      api.verifier(texte);
-    });
-    if (manquants) zone.append(h('p', { class: 'alerte' }, t(I18N.pluriel(manquants) ? '⚠️ Il te manque encore {n} fragments. Retourne résoudre les jours manquants… ou tente de deviner les lettres manquantes !' : '⚠️ Il te manque encore {n} fragment. Retourne résoudre les jours manquants… ou tente de deviner les lettres manquantes !', { n: manquants })));
-    zone.append(h('p', { class: 'petit' }, t('🧩 Tes fragments (position en binaire → lettre) :')), inventaire,
-      h('p', { class: 'petit' }, t('✍️ Place chaque lettre à sa position :')), h('div', { class: 'defilement' }, rangee), h('div', { class: 'centre' }, bouton));
-  };
-
-  /* ---------- Terrains de jeu (après réussite) ---------- */
-  W.terrainAscii = () => (zone) => {
-    const champ = h('input', { type: 'text', class: 'champ-libre', value: 'Noël 🎄', 'aria-label': t('Texte à encoder') });
-    const sortie = h('div', { class: 'defilement' });
-    function maj() {
-      const lignes = [...champ.value].slice(0, 30).map(c => {
-        const code = c.codePointAt(0);
-        const octets = [...new TextEncoder().encode(c)].map(b => b.toString(16).toUpperCase().padStart(2, '0')).join(' ');
-        return `<tr><td class="gros">${echapper(c === ' ' ? '␣' : c)}</td><td>${code}</td><td><code>${code < 256 ? code.toString(2).padStart(8, '0') : '—'}</code></td><td><code>${octets}</code></td></tr>`;
-      }).join('');
-      sortie.innerHTML = `<table class="tableau"><tr><th>${t('Caractère')}</th><th>${t('Numéro')}</th><th>${t('En binaire')}</th><th>${t('Octets UTF-8')}</th></tr>${lignes}</table>`;
-    }
-    champ.addEventListener('input', maj);
-    maj();
-    zone.append(h('p', { class: 'petit' }, t("Tape n'importe quoi (même un emoji) et regarde comment l'ordinateur le stocke :")), champ, sortie);
-  };
-
-  W.terrainRegex = (motif, exemples) => (zone) => {
-    const champMotif = h('input', { type: 'text', class: 'champ-libre mono', value: motif, 'aria-label': t('Expression régulière') });
-    const champTextes = h('textarea', { class: 'champ-libre mono', rows: '6', 'aria-label': t('Textes à tester') });
-    champTextes.value = exemples.join('\n');
-    const sortie = h('ul', { class: 'resultats-regex' });
-    function maj() {
-      let re;
-      try { re = new RegExp(champMotif.value); champMotif.classList.remove('invalide'); }
-      catch (e) { champMotif.classList.add('invalide'); sortie.innerHTML = '<li>' + t('⚠️ Motif invalide') + '</li>'; return; }
-      sortie.innerHTML = champTextes.value.split('\n').filter(Boolean).map(t => `<li class="${re.test(t) ? 'ok' : 'non'}">${re.test(t) ? '✅' : '❌'} <code>${echapper(t)}</code></li>`).join('');
-    }
-    champMotif.addEventListener('input', maj);
-    champTextes.addEventListener('input', maj);
-    maj();
-    zone.append(h('p', { class: 'petit' }, t('Modifie le motif ou les textes (un par ligne). Essaie par exemple ^[0-9]{5}$ avec ton code postal !')), champMotif, h('div', { class: 'deux-colonnes' }, champTextes, sortie));
-  };
-
-  W.terrainHachage = () => (zone) => {
-    const champ = h('input', { type: 'text', class: 'champ-libre', value: t('Joyeux Noël'), 'aria-label': t('Texte à hacher') });
-    const sortie = h('div', { class: 'empreinte' });
-    function maj() { sortie.innerHTML = t('Empreinte SHA-256 :') + '<br><code>' + global.sha256(champ.value) + '</code>'; }
-    champ.addEventListener('input', maj);
-    maj();
-    zone.append(h('p', { class: 'petit' }, t("Remplace « Noël » par « noël » : un seul caractère change, et toute l'empreinte est bouleversée !")), champ, sortie);
   };
 
   global.h = h;

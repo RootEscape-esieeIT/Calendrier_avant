@@ -356,53 +356,41 @@
       objet: `<line x1="50" y1="40" x2="50" y2="96" stroke="#555" stroke-width="6"/><circle cx="50" cy="30" r="20" fill="#d62839"/><circle cx="44" cy="24" r="6" fill="#fff" opacity=".6"/>` },
   };
 
-  /* ---- Jour 9 : sur le mur de glace, les étapes du flocon (0 à 3) et le fil de perles du Maître ;
-     à droite, un cadre où la Kère tient un cadre où la Kère tient un cadre… La Kère, elle, tourne en rond. ---- */
-  function koch(niveaux, cx, cy, r) {
-    let pts = [0, 1, 2].map(i => { const a = -Math.PI / 2 + i * 2 * Math.PI / 3; return [cx + r * Math.cos(a), cy + r * Math.sin(a)]; });
-    pts.push(pts[0]);
-    const co = Math.cos(-Math.PI / 3), si = Math.sin(-Math.PI / 3);
-    for (let k = 0; k < niveaux; k++) {
-      const nv = [pts[0]];
-      for (let i = 0; i < pts.length - 1; i++) {
-        const [x1, y1] = pts[i], [x2, y2] = pts[i + 1], dx = (x2 - x1) / 3, dy = (y2 - y1) / 3;
-        const a = [x1 + dx, y1 + dy], c = [x1 + 2 * dx, y1 + 2 * dy];
-        nv.push(a, [a[0] + dx * co - dy * si, a[1] + dx * si + dy * co], c, [x2, y2]);
-      }
-      pts = nv;
-    }
-    return pts.map(p => p.map(v => v.toFixed(1)).join(',')).join(' ');
-  }
+  /* ---- Jour 9 : sur le mur de glace, la banquise en petit (l'escalier de cadeaux, le traîneau) où le
+     robot-lutin grimpe de marche en marche ; à droite, son programme affiché au mur. La Kère brandit
+     la télécommande qu'elle a gelée. ---- */
+  const S9 = { x: 318, y: 40, c: 34, l: 24 }; // la petite grille : 7 colonnes × 5 lignes
   SC[9] = {
     piece: { mur: '#7fb8dd', motif: 'glace', sol: 'glace', elements: [null, null, null] },
     dessin() {
       let f = '';
-      [0, 1, 2, 3].forEach(k => {
-        const x = 322 + k * 66, cx = x + 28;
-        f += `<rect x="${x}" y="44" width="56" height="64" rx="5" fill="#0f2c44" opacity=".85" stroke="#e8f7ff" stroke-width="2"/>`;
-        f += `<polygon points="${koch(k, cx, 78, 20)}" fill="rgba(160,210,255,.25)" stroke="#e8f7ff" stroke-width="${k < 2 ? 1.4 : 0.9}" stroke-linejoin="round"/>`;
-        f += texte(cx, 122, tr('étape') + ' ' + k, { taille: 7.5, couleur: '#0f2c44', police: MONO, gras: true });
+      const grille = ['..#.C..', '#..C.#.', '..C...S', '.C..#..', 'R.....#'];
+      f += `<rect x="${S9.x - 8}" y="${S9.y - 8}" width="${7 * S9.c + 16}" height="${5 * S9.l + 16}" rx="6" fill="#0f2c44" opacity=".88" stroke="#e8f7ff" stroke-width="2"/>`;
+      grille.forEach((ligne, j) => [...ligne].forEach((ch, i) => {
+        const x = S9.x + i * S9.c, y = S9.y + j * S9.l;
+        f += `<rect x="${x + 1}" y="${y + 1}" width="${S9.c - 2}" height="${S9.l - 2}" rx="3" fill="${(i + j) % 2 ? '#b9dcf3' : '#cfe9fb'}"/>`;
+        if (ch === '#') f += `<rect x="${x + 7}" y="${y + 4}" width="${S9.c - 14}" height="${S9.l - 8}" rx="3" fill="#7cc6ee" stroke="#e8f7ff" stroke-width="1.2"/>`;
+        if (ch === 'C') f += `<rect x="${x + 11}" y="${y + 6}" width="12" height="12" fill="#d62839"/><rect x="${x + 16}" y="${y + 6}" width="2.4" height="12" fill="#f5c542"/><rect x="${x + 11}" y="${y + 10.5}" width="12" height="2.4" fill="#f5c542"/>`;
+        if (ch === 'S') f += `<path d="M${x + 6} ${y + 15} h20 q4 0 5 -4 M${x + 8} ${y + 15} v-6 h14 v6" stroke="#d62839" stroke-width="2.4" fill="none" stroke-linecap="round"/>`;
+      }));
+      // Le programme du robot, affiché au mur
+      f += `<rect x="612" y="40" width="128" height="104" rx="6" fill="#06150a" stroke="#1e5a2a" stroke-width="2"/>`;
+      [tr('répéter 4'), '  ' + tr('avancer'), '  ' + tr('gauche'), '  ' + tr('avancer'), '  ' + tr('droite'), tr('fin')].forEach((l, i) => {
+        f += texte(622, 58 + i * 14, l, { taille: 9, couleur: i === 0 || i === 5 ? '#f5c542' : '#7dff9b', police: MONO, ancre: 'start', extra: 'xml:space="preserve"' });
       });
-      // Le mètre ruban, déroulé sous le triangle de l'étape 0
-      f += `<rect x="318" y="128" width="64" height="9" fill="#f5c542" stroke="#a07a10" stroke-width=".8"/>`;
-      for (let x = 322; x < 380; x += 4) f += `<line x1="${x}" y1="128" x2="${x}" y2="${x % 12 === 2 ? 133 : 131}" stroke="#5a4500" stroke-width=".7"/>`;
-      f += texte(350, 146, tr('3 segments'), { taille: 7, couleur: '#0f2c44', police: MONO, gras: true });
-      f += `<rect x="382" y="126" width="16" height="13" rx="3" fill="#d62839"/>`;
-      // Le cadre sans fin, à droite (le dessin qui s'enfonce est un calque)
-      f += `<rect x="634" y="34" width="132" height="132" rx="4" fill="#c9a35a"/><rect x="640" y="40" width="120" height="120" fill="#0f2c44"/>`;
-      let a = '';
-      let n = '';
-      for (let k = 0; k < 7; k++) {
-        const s = 112 * Math.pow(0.5, k), x0 = 700 - s / 2, y0 = 100 - s / 2;
-        n += `<rect x="${x0}" y="${y0}" width="${s}" height="${s}" fill="${k ? '#16405f' : 'none'}" stroke="#e9c46a" stroke-width="${Math.max(0.3, 2.4 * Math.pow(0.5, k))}"/>`;
-        n += `<image href="media/kere.webp" x="${x0 + 0.02 * s}" y="${y0 + 0.36 * s}" width="${0.24 * s}" height="${0.24 * s}"/>`;
-      }
-      a += calque('s9-droste clip', 640, 40, 120, 120, `<g class="s9-zoom">${n}</g>`);
+      // Le robot-lutin grimpe l'escalier (calque : seul le robot bouge)
+      const rx = S9.x + S9.c / 2, ry = S9.y + 4 * S9.l + S9.l / 2;
+      const robot = `<g class="s9-robot"><circle cx="${rx}" cy="${ry}" r="9" fill="#f4f9ff" stroke="#2a6fb0" stroke-width="1.6"/><rect x="${rx - 5}" y="${ry - 4}" width="10" height="6" rx="2" fill="#2a6fb0"/><circle cx="${rx - 2.4}" cy="${ry - 1}" r="1.2" fill="#9fe7ff"/><circle cx="${rx + 2.4}" cy="${ry - 1}" r="1.2" fill="#9fe7ff"/><path d="M${rx} ${ry - 9} v-4" stroke="#d62839" stroke-width="1.6"/><circle cx="${rx}" cy="${ry - 14}" r="1.8" fill="#d62839"/></g>`;
+      let a = calque('s9-banquise', S9.x, S9.y - 10, 7 * S9.c, 5 * S9.l + 10, robot);
       a += calque('s9-flocon f1', 250, 30, 12, 12, etincelle(256, 36, 5, '#ffffff'));
       a += calque('s9-flocon f2', 600, 26, 12, 12, etincelle(606, 32, 4, '#ffffff'));
       return { fond: f, calques: a };
     },
-    kere: { x: 230, y: 44, taille: 72, classe: 's9-kere' },
+    kere: {
+      x: 214, y: 44, taille: 72, classe: 's9-kere', main: 'd', tailleObjet: 40,
+      // la télécommande du robot, prise dans un bloc de glace
+      objet: '<rect x="34" y="14" width="32" height="72" rx="9" fill="#3a3f47"/><circle cx="50" cy="32" r="7" fill="#d62839"/><rect x="42" y="50" width="16" height="6" rx="2" fill="#9aa4b0"/><rect x="42" y="62" width="16" height="6" rx="2" fill="#9aa4b0"/><rect x="24" y="6" width="52" height="88" rx="12" fill="#cfeaff" opacity=".55" stroke="#ffffff" stroke-width="2"/>',
+    },
   };
 
   /* ---- Jour 10 : le robot-cuisinier déroule son programme sur son écran, le four fume, et la
@@ -467,36 +455,41 @@
       objet: `<ellipse cx="50" cy="56" rx="44" ry="18" fill="#e6b468" stroke="#b9823a" stroke-width="3"/><path d="M80 44 A44 18 0 0 1 94 56 L76 54Z" fill="#c98f5a"/><text x="48" y="64" font-size="22" font-weight="700" text-anchor="middle" fill="#5a2e10" font-family="Georgia, serif">K</text>` },
   };
 
-  /* ---- Jour 12 : l'écran de pixels du Studio, le code (sans lettres !) qui défile en dessous, et la
-     Kère qui gomme les B (blanc) et les V (vert) ; le flash de l'appareil photo crépite. ---- */
+  /* ---- Jour 12 : la Cabine Radio ; le poste bipe (ondes de l'antenne, voyant), l'affiche du code
+     Morse au mur, la bande de papier imprime les bips, et la Kère brandit le micro qu'elle a gelé. ---- */
   SC[12] = {
-    piece: { mur: '#2f3d44', motif: 'uni', sol: 'parquet', elements: [null, null, 'photos'] },
+    piece: { mur: '#1d3b2a', motif: 'bois', sol: 'parquet', elements: ['fenetre', null, null] },
     dessin() {
       let f = '';
-      // L'appareil photo sur son trépied
-      f += `<line x1="196" y1="120" x2="176" y2="${SOL}" stroke="#222" stroke-width="3"/><line x1="196" y1="120" x2="216" y2="${SOL}" stroke="#222" stroke-width="3"/><line x1="196" y1="120" x2="196" y2="${SOL}" stroke="#222" stroke-width="3"/>`;
-      f += `<rect x="172" y="96" width="50" height="30" rx="5" fill="#2a2f36"/><circle cx="197" cy="111" r="10" fill="#111"/><circle cx="197" cy="111" r="6" fill="#3a5a8a"/><rect x="178" y="90" width="14" height="7" rx="2" fill="#c9cfd6"/>`;
-      // L'écran de pixels : 17 × 7 cases
-      const X0 = 348, Y0 = 40, T = 12;
-      f += `<rect x="${X0 - 8}" y="${Y0 - 8}" width="${17 * T + 16}" height="${7 * T + 16}" rx="5" fill="#1b2430"/><rect x="${X0}" y="${Y0}" width="${17 * T}" height="${7 * T}" fill="#f4f6f8"/>`;
-      for (let i = 1; i < 17; i++) f += `<line x1="${X0 + i * T}" y1="${Y0}" x2="${X0 + i * T}" y2="${Y0 + 7 * T}" stroke="#cfd6de" stroke-width=".6"/>`;
-      for (let j = 1; j < 7; j++) f += `<line x1="${X0}" y1="${Y0 + j * T}" x2="${X0 + 17 * T}" y2="${Y0 + j * T}" stroke="#cfd6de" stroke-width=".6"/>`;
-      f += `<rect x="${X0 + 8.5 * T - 5}" y="${Y0 + 7 * T + 8}" width="10" height="${SOL - (Y0 + 7 * T + 8)}" fill="#1b2430"/>`;
-      // La bande de film avec le code, sans ses lettres
-      f += `<rect x="330" y="146" width="240" height="18" fill="#111"/>`;
-      for (let x = 334; x < 568; x += 10) f += `<rect x="${x}" y="148" width="5" height="3" fill="#555"/><rect x="${x}" y="159" width="5" height="3" fill="#555"/>`;
-      f += texte(450, 158.5, '5 1 5 · 4 3 4 · 3 5 3 …', { taille: 7.5, couleur: '#ffe9b0', police: MONO, gras: true });
+      // Le bureau et le poste radio, à gauche
+      f += `<rect x="236" y="150" width="140" height="8" rx="3" fill="#5a3418"/><rect x="246" y="158" width="8" height="${SOL - 158}" fill="#3a2010"/><rect x="358" y="158" width="8" height="${SOL - 158}" fill="#3a2010"/>`;
+      f += `<rect x="252" y="108" width="104" height="42" rx="6" fill="#6b4a2b" stroke="#3a2010" stroke-width="2"/><rect x="260" y="116" width="44" height="26" rx="3" fill="#2a1a0e"/>`;
+      for (let y = 119; y < 141; y += 4) f += `<line x1="263" y1="${y}" x2="301" y2="${y}" stroke="#7a5a3a" stroke-width="1.4"/>`;
+      f += `<circle cx="320" cy="124" r="7" fill="#c9a35a" stroke="#5a3a1e" stroke-width="1.2"/><line x1="320" y1="124" x2="324" y2="119" stroke="#3a2010" stroke-width="1.5"/><circle cx="340" cy="124" r="5" fill="#c9a35a" stroke="#5a3a1e" stroke-width="1.2"/>`;
+      f += `<rect x="314" y="134" width="34" height="8" rx="2" fill="#f5e6b0"/><line x1="330" y1="134" x2="330" y2="142" stroke="#d62839" stroke-width="1.5"/>`;
+      // L'antenne
+      f += `<line x1="344" y1="108" x2="362" y2="46" stroke="#9aa5b1" stroke-width="2.5"/><circle cx="362" cy="45" r="3" fill="#d62839"/>`;
+      // L'affiche du code Morse, au centre
+      f += papier(404, 46, 92, 92, 0);
+      f += texte(450, 62, tr('CODE MORSE'), { taille: 8, couleur: '#5a2e10', police: MONO, gras: true });
+      ['A •—', 'E •', 'O ———', 'S •••', 'T —'].forEach((l, i) => { f += texte(450, 78 + i * 11, l, { taille: 8, couleur: '#1d3b2a', police: MONO, gras: true }); });
+      f += texte(450, 133, '…', { taille: 8, couleur: '#5a2e10', police: MONO });
+      f += clou(450, 49);
+      // Les bips imprimés par le poste sur une bande de papier
+      f += `<path d="M356 146 Q370 152 384 148 L560 148 L560 162 L384 162 Q370 166 356 158 Z" fill="#fff8e6" stroke="#c9b48a" stroke-width="1"/>`;
+      f += texte(472, 158, '•—•  ••—  —••  ———  •—••  …', { taille: 7.5, couleur: '#3a2508', police: MONO, gras: true });
       let a = '';
-      // Des pixels verts qui se peignent un à un (une étoile, pas le dessin secret !)
-      const etoile = [[8, 1], [7, 2], [8, 2], [9, 2], [5, 3], [6, 3], [7, 3], [8, 3], [9, 3], [10, 3], [11, 3], [7, 4], [8, 4], [9, 4], [6, 5], [10, 5]];
-      a += calque('s12-pixels', X0, Y0, 17 * T, 7 * T, etoile.map(([i, j], k) => `<rect class="px" style="animation-delay:${(k * 0.18).toFixed(2)}s" x="${X0 + i * T + 0.5}" y="${Y0 + j * T + 0.5}" width="${T - 1}" height="${T - 1}" fill="#1f8a4c"/>`).join(''));
-      a += calque('s12-flash', 150, 70, 60, 60, `<circle cx="185" cy="93" r="22" fill="#fffbe0" opacity=".7"/>${etincelle(185, 93, 14, '#ffffff')}`);
-      a += calque('s12-lettre l1', 520, 140, 16, 16, texte(528, 152, 'B', { taille: 11, couleur: '#ffffff', police: MONO, gras: true }));
-      a += calque('s12-lettre l2', 540, 140, 16, 16, texte(548, 152, tr('V'), { taille: 11, couleur: '#5fd38d', police: MONO, gras: true }));
+      // Les ondes de l'antenne et le voyant du poste
+      const onde = (r, k) => `<path class="onde o${k}" d="M${362 - r} ${45 - r * 0.6} A${r} ${r} 0 0 1 ${362 + r} ${45 - r * 0.6}" stroke="#7fe0a8" stroke-width="2" fill="none" stroke-linecap="round"/>`;
+      a += calque('s12-ondes', 336, 14, 52, 34, onde(8, 1) + onde(15, 2) + onde(22, 3));
+      a += calque('s12-voyant', 345, 133, 10, 10, `<circle cx="350" cy="138" r="3" fill="#3ddc84"/>`);
       return { fond: f, calques: a };
     },
-    kere: { x: 560, y: 70, taille: 70, classe: 's12-kere', main: 'g', tailleObjet: 38,
-      objet: `<rect x="14" y="30" width="72" height="40" rx="8" fill="#ff8fb1" transform="rotate(-20 50 50)"/><rect x="14" y="30" width="30" height="40" rx="8" fill="#5a8fd6" transform="rotate(-20 50 50)"/>` },
+    kere: { x: 566, y: 66, taille: 70, classe: 's12-kere', main: 'g', tailleObjet: 46,
+      // Le micro de la radio, pris dans un bloc de glace : elle le brandit en ricanant
+      objet: `<rect x="40" y="22" width="20" height="34" rx="10" fill="#3a4250" stroke="#1b2430" stroke-width="2"/><line x1="43" y1="31" x2="57" y2="31" stroke="#8a96a3" stroke-width="1.5"/><line x1="42" y1="38" x2="58" y2="38" stroke="#8a96a3" stroke-width="1.5"/><line x1="43" y1="45" x2="57" y2="45" stroke="#8a96a3" stroke-width="1.5"/>` +
+        `<path d="M35 44 Q35 64 50 64 Q65 64 65 44" stroke="#5a6470" stroke-width="3" fill="none"/><rect x="48" y="64" width="4" height="12" fill="#5a6470"/><rect x="39" y="76" width="22" height="4" rx="2" fill="#5a6470"/>` +
+        `<rect x="22" y="12" width="56" height="74" rx="9" fill="#bfe6ff" fill-opacity=".5" stroke="#e8f6ff" stroke-width="3"/><path d="M29 22 L38 17 M29 30 L33 28" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>` },
   };
 
   /* ---- Jour 13 : trois cadeaux et leurs étiquettes sur le comptoir ; la caisse refuse un code,
@@ -554,35 +547,9 @@
       objet: `<g><rect x="20" y="10" width="44" height="30" rx="3" fill="#e8d7a8"/><path d="M20 10 l22 15 22 -15" stroke="#b39a6a" stroke-width="2" fill="none"/></g>` },
   };
 
-  /* ---- Jour 15 : la Salle des Serveurs ; le grand écran crache des codes d'erreur, une théière fume
-     (code 418 !), et la Kère tire sur les câbles. ---- */
-  SC[15] = {
-    piece: { mur: '#10202f', motif: 'metal', sol: 'metal', elements: ['serveurs', null, 'serveurs'] },
-    dessin() {
-      let f = '';
-      // Le grand écran de supervision
-      f += `<rect x="350" y="34" width="200" height="104" rx="8" fill="#1a1f26" stroke="#3a4250" stroke-width="4"/><rect x="360" y="44" width="180" height="84" rx="3" fill="#06121c"/>`;
-      f += texte(372, 58, 'www.pole-nord.noel', { taille: 7, couleur: '#4aa3ff', police: MONO, ancre: 'start' });
-      f += `<rect x="440" y="138" width="20" height="16" fill="#3a4250"/><rect x="420" y="152" width="60" height="6" rx="3" fill="#3a4250"/>`;
-      // La petite table et la théière
-      f += `<rect x="560" y="150" width="70" height="7" rx="2" fill="#5a3418"/><rect x="568" y="157" width="6" height="${SOL - 157}" fill="#3a2010"/><rect x="616" y="157" width="6" height="${SOL - 157}" fill="#3a2010"/>`;
-      f += `<ellipse cx="594" cy="138" rx="16" ry="12" fill="#d62839"/><rect x="586" y="124" width="16" height="5" rx="2" fill="#a51e2c"/><circle cx="594" cy="122" r="3" fill="#f5c542"/><path d="M609 136 q12 -2 14 -12" stroke="#d62839" stroke-width="4" fill="none"/><path d="M579 132 q-10 2 -8 12" stroke="#d62839" stroke-width="3" fill="none"/>`;
-      f += texte(594, 146, '418', { taille: 6, couleur: '#ffe9b0', police: MONO, gras: true });
-      // Des câbles qui pendent
-      f += `<path d="M300 30 Q320 120 300 ${SOL}" stroke="#ff5a5f" stroke-width="3" fill="none"/><path d="M308 30 Q340 110 330 ${SOL}" stroke="#4aa3ff" stroke-width="3" fill="none"/><path d="M316 30 Q350 90 360 140" stroke="#3ddc84" stroke-width="3" fill="none"/>`;
-      let a = '';
-      const code = (classe, n, sens, couleur) => calque('s15-code ' + classe, 360, 66, 180, 56, texte(450, 100, n, { taille: 30, couleur, police: MONO, gras: true }) + texte(450, 116, sens, { taille: 7, couleur: '#cfe8ff', police: MONO }));
-      a += code('k1', '404', tr('Introuvable'), '#ffd23f') + code('k2', '500', tr('Le serveur a planté'), '#ff5a5f') + code('k3', '403', tr('Interdit'), '#ff8a5a') + code('k4', '301', tr('Déménagé'), '#4aa3ff');
-      a += calque('s15-vapeur', 612, 98, 24, 26, `<circle cx="622" cy="116" r="4" fill="#fff" opacity=".6"/><circle cx="626" cy="108" r="5" fill="#fff" opacity=".45"/><circle cx="621" cy="101" r="4" fill="#fff" opacity=".3"/>`);
-      return { fond: f, calques: a };
-    },
-    kere: { x: 262, y: 70, taille: 70, classe: 's15-kere', tailleObjet: 60,
-      objet: `<path d="M8 20 Q40 30 60 60 Q72 80 96 86" stroke="#3ddc84" stroke-width="7" fill="none"/><rect x="88" y="78" width="12" height="14" rx="2" fill="#c9cfd6"/>` },
-  };
-
-  /* ---- Jour 16 : le robot trieur d'étiquettes et sa déchiqueteuse ; les cadeaux défilent, le voyant
+  /* ---- Jour 15 : le robot trieur d'étiquettes et sa déchiqueteuse ; les cadeaux défilent, le voyant
      passe du vert au rouge, et la Kère nourrit la machine en confettis. ---- */
-  SC[16] = {
+  SC[15] = {
     piece: { mur: '#8a1538', motif: 'rayures', sol: 'parquet', elements: ['etageres:🎀🎁🧶', null, null] },
     dessin() {
       let f = '';
@@ -600,14 +567,52 @@
       f += `<path d="M590 ${SOL} l6 -10 4 6 5 -9 4 8 6 -6 5 11z" fill="#f5c542" opacity=".8"/>`;
       let a = '';
       const colis = (x, c) => `<rect x="${x}" y="128" width="22" height="18" fill="${c}"/><rect x="${x + 9}" y="128" width="4" height="18" fill="#f5c542"/><rect x="${x + 3}" y="133" width="16" height="6" fill="#fff"/>`;
-      a += calque('s16-tapis', 300, 126, 250, 22, `<g class="s16-defile">${colis(310, '#1d4f86')}${colis(370, '#1f6a3d')}${colis(430, '#9b1b30')}${colis(490, '#5a1784')}</g>`);
-      a += calque('s16-vert', 443, 83, 14, 14, `<circle cx="450" cy="90" r="5.5" fill="#3ddc84"/>`);
-      a += calque('s16-rouge', 443, 83, 14, 14, `<circle cx="450" cy="90" r="5.5" fill="#ff5a5f"/>`);
-      a += calque('s16-confettis', 584, 72, 60, 40, `<rect x="596" y="96" width="4" height="7" fill="#f5c542"/><rect x="610" y="88" width="4" height="7" fill="#ff5a5f"/><rect x="624" y="94" width="4" height="7" fill="#4aa3ff"/><rect x="604" y="80" width="4" height="7" fill="#3ddc84"/><rect x="630" y="82" width="4" height="7" fill="#fff"/>`);
+      a += calque('s15-tapis', 300, 126, 250, 22, `<g class="s15-defile">${colis(310, '#1d4f86')}${colis(370, '#1f6a3d')}${colis(430, '#9b1b30')}${colis(490, '#5a1784')}</g>`);
+      a += calque('s15-vert', 443, 83, 14, 14, `<circle cx="450" cy="90" r="5.5" fill="#3ddc84"/>`);
+      a += calque('s15-rouge', 443, 83, 14, 14, `<circle cx="450" cy="90" r="5.5" fill="#ff5a5f"/>`);
+      a += calque('s15-confettis', 584, 72, 60, 40, `<rect x="596" y="96" width="4" height="7" fill="#f5c542"/><rect x="610" y="88" width="4" height="7" fill="#ff5a5f"/><rect x="624" y="94" width="4" height="7" fill="#4aa3ff"/><rect x="604" y="80" width="4" height="7" fill="#3ddc84"/><rect x="630" y="82" width="4" height="7" fill="#fff"/>`);
       return { fond: f, calques: a };
     },
-    kere: { x: 590, y: 20, taille: 70, classe: 's16-kere', main: 'g', tailleObjet: 40,
+    kere: { x: 590, y: 20, taille: 70, classe: 's15-kere', main: 'g', tailleObjet: 40,
       objet: `<rect x="16" y="24" width="64" height="40" rx="4" fill="#fff" transform="rotate(-12 48 44)"/><rect x="24" y="34" width="40" height="6" fill="#999" transform="rotate(-12 48 44)"/><rect x="24" y="46" width="28" height="6" fill="#999" transform="rotate(-12 48 44)"/>` },
+  };
+
+  /* ---- Jour 16 : l'affiche « Bientôt au cinéma » du Studio ; la couronne de glace et les yeux rouges
+     de l'idole se peignent pixel par pixel (le titre reste secret), le code en couleurs défile sur la
+     bande de film, le flash crépite, et la Kère attend la séance avec son pop-corn. ---- */
+  SC[16] = {
+    piece: { mur: '#2f3d44', motif: 'uni', sol: 'parquet', elements: [null, null, 'photos'] },
+    dessin() {
+      let f = '';
+      // L'appareil photo sur son trépied
+      f += `<line x1="196" y1="120" x2="176" y2="${SOL}" stroke="#222" stroke-width="3"/><line x1="196" y1="120" x2="216" y2="${SOL}" stroke="#222" stroke-width="3"/><line x1="196" y1="120" x2="196" y2="${SOL}" stroke="#222" stroke-width="3"/>`;
+      f += `<rect x="172" y="96" width="50" height="30" rx="5" fill="#2a2f36"/><circle cx="197" cy="111" r="10" fill="#111"/><circle cx="197" cy="111" r="6" fill="#3a5a8a"/><rect x="178" y="90" width="14" height="7" rx="2" fill="#c9cfd6"/>`;
+      // L'affiche en pixels, accrochée au mur : 9 × 12 cases, sous la guirlande (y < 44 est caché par elle)
+      const NX = 9, NY = 12, T = 6.5, X0 = 450 - NX * T / 2, Y0 = 58;
+      f += `<rect x="${X0 - 5}" y="44" width="${NX * T + 10}" height="${Y0 - 44 + NY * T + 4}" rx="3" fill="#1b2430"/><rect x="${X0}" y="${Y0}" width="${NX * T}" height="${NY * T}" fill="#ffffff"/>`;
+      f += texte(450, 54, tr('BIENTÔT AU CINÉMA'), { taille: 5.6, couleur: '#ffd23f', police: MONO, gras: true });
+      for (let i = 1; i < NX; i++) f += `<line x1="${X0 + i * T}" y1="${Y0}" x2="${X0 + i * T}" y2="${Y0 + NY * T}" stroke="#d5dbe2" stroke-width=".5"/>`;
+      for (let j = 1; j < NY; j++) f += `<line x1="${X0}" y1="${Y0 + j * T}" x2="${X0 + NX * T}" y2="${Y0 + j * T}" stroke="#d5dbe2" stroke-width=".5"/>`;
+      // La bande de film avec le code en couleurs
+      f += `<rect x="330" y="146" width="240" height="18" fill="#111"/>`;
+      for (let x = 334; x < 568; x += 10) f += `<rect x="${x}" y="148" width="5" height="3" fill="#555"/><rect x="${x}" y="159" width="5" height="3" fill="#555"/>`;
+      f += texte(450, 158.5, tr('7B 1G 7B · 3B 1G 3B …'), { taille: 7.5, couleur: '#ffe9b0', police: MONO, gras: true });
+      let a = '';
+      // La couronne de glace, puis les yeux rouges, se peignent un à un (le titre de l'affiche reste secret)
+      const couronne = [[4, 0], [1, 1], [4, 1], [7, 1], [1, 2], [3, 2], [4, 2], [5, 2], [7, 2], [0, 3], [1, 3], [2, 3], [3, 3], [4, 3], [5, 3], [6, 3], [7, 3], [8, 3]];
+      const yeux = [[2, 6], [3, 6], [5, 6], [6, 6]];
+      const px = ([i, j], k, c) => `<rect class="px" style="animation-delay:${(k * 0.16).toFixed(2)}s" x="${X0 + i * T + 0.4}" y="${Y0 + j * T + 0.4}" width="${T - 0.8}" height="${T - 0.8}" fill="${c}"/>`;
+      a += calque('s16-pixels', X0, Y0, NX * T, NY * T, couronne.map((p, k) => px(p, k, '#8fd3fb')).join('') + yeux.map((p, k) => px(p, couronne.length + k, '#d62839')).join(''));
+      a += calque('s16-flash', 150, 70, 60, 60, `<circle cx="185" cy="93" r="22" fill="#fffbe0" opacity=".7"/>${etincelle(185, 93, 14, '#ffffff')}`);
+      // Le pop-corn qui saute du seau de la Kère
+      const grain = (x, y) => `<circle cx="${x}" cy="${y}" r="3.2" fill="#fff3c4"/><circle cx="${x + 2.6}" cy="${y - 1.6}" r="2.6" fill="#fff8de"/><circle cx="${x - 2.2}" cy="${y - 1.8}" r="2.2" fill="#ffe9a0"/>`;
+      a += calque('s16-mais m1', 540, 92, 14, 14, grain(547, 100));
+      a += calque('s16-mais m2', 552, 86, 14, 14, grain(559, 94));
+      return { fond: f, calques: a };
+    },
+    kere: { x: 560, y: 70, taille: 70, classe: 's16-kere', main: 'g', tailleObjet: 40,
+      objet: `<path d="M24 42 H76 L68 96 H32 Z" fill="#ffffff" stroke="#b81d2c" stroke-width="2"/><path d="M36 42 H45 L44 96 H38 Z M55 42 H64 L62 96 H56 Z" fill="#d62839"/>` +
+        `<g fill="#fff3c4" stroke="#e8b923" stroke-width="1.5"><circle cx="30" cy="40" r="8"/><circle cx="43" cy="36" r="9"/><circle cx="57" cy="37" r="9"/><circle cx="70" cy="40" r="8"/><circle cx="37" cy="28" r="7"/><circle cx="52" cy="25" r="8"/><circle cx="64" cy="29" r="7"/></g>` },
   };
 
   /* ---- Jour 17 : la Bibliothèque ; le gros registre de la LISTE et celui des CADEAUX, l'ordinateur et
@@ -663,8 +668,8 @@
     kere: { x: 404, y: 84, taille: 52, classe: 's18-kere' },
   };
 
-  /* ---- Jour 19 : la porte du coffre aux cadeaux, et l'ordinateur de glace de la Kère qui essaie
-     des milliers de milliards de mots de passe ; la Kère tape comme une forcenée. ---- */
+  /* ---- Jour 19 : la porte du coffre aux cadeaux, et le vieil ordinateur des lutins qui essaie les
+     mots de passe un par un (la force brute… qui n'aboutira jamais) ; la Kère tape comme une forcenée. ---- */
   SC[19] = {
     piece: { mur: '#263238', motif: 'metal', sol: 'metal', elements: ['casiers', null, null] },
     dessin() {
@@ -678,7 +683,7 @@
       f += `<rect x="520" y="140" width="110" height="${SOL - 140}" rx="4" fill="#bfe6ff" opacity=".85"/><path d="M526 150 l30 0 M580 166 l40 0" stroke="#fff" stroke-width="3" opacity=".7"/>`;
       f += `<rect x="524" y="58" width="102" height="72" rx="6" fill="#a9dcff" opacity=".9"/><rect x="532" y="66" width="86" height="56" rx="3" fill="#06121c"/>`;
       f += `<rect x="560" y="130" width="30" height="10" fill="#a9dcff"/><rect x="534" y="132" width="82" height="8" rx="3" fill="#d6f1ff"/>`;
-      f += texte(575, 54, tr('10 milliards / s'), { taille: 6.5, couleur: '#cfefff', police: MONO, gras: true });
+      f += texte(575, 54, tr('1 000 essais / s'), { taille: 6.5, couleur: '#cfefff', police: MONO, gras: true });
       let a = '';
       const essais = ['aaaaaa', 'aaaaab', 'azerty', '123456', 'noel24', 'sapin!', 'Rudolf9', 'mdp2026', 'motdepasse', 'hohoho', 'qwerty'];
       const bloc = (dy) => essais.map((e, i) => texte(538, 76 + dy + i * 7, e + ' ✗', { taille: 5.6, couleur: '#ff6b6b', police: MONO, ancre: 'start' })).join('');
@@ -689,17 +694,18 @@
     kere: { x: 548, y: 108, taille: 56, classe: 's19-kere' },
   };
 
-  /* ---- Jour 20 : le bureau du Père Noël, les commandes scellées à la cire ; la Kère tamponne une
-     fausse commande… et deux lettres se ressemblent étrangement (CHIEN / NICHE). ---- */
+  /* ---- Jour 20 : le bureau du Père Noël : la lettre de Léa, cachetée d'un sceau douteux, et le
+     registre des empreintes ; la Kère tamponne une fausse lettre. ---- */
   SC[20] = {
     piece: { mur: '#4a1c1c', motif: 'papier', sol: 'tapis', elements: ['cheminee', null, 'etageres:livres'] },
     dessin() {
       let f = '';
       // Le bureau
       f += `<rect x="320" y="146" width="270" height="12" rx="3" fill="#5a3418"/><rect x="332" y="158" width="14" height="${SOL - 158}" fill="#3a2010"/><rect x="564" y="158" width="14" height="${SOL - 158}" fill="#3a2010"/>`;
-      // Deux commandes presque jumelles, avec leur sceau de cire
-      const lettre = (x, rot, mot, sceau, coul) => papier(x, 96, 70, 48, rot, texte(x + 35, 114, mot, { taille: 11, couleur: '#3a2508', police: MONO, gras: true }) + lignes(x + 8, 124, 54, 2, 5) + `<circle cx="${x + 56}" cy="${136}" r="8" fill="${coul}"/>` + texte(x + 56, 139, sceau, { taille: 7, couleur: '#ffe9b0', gras: true }));
-      f += lettre(360, -5, tr('CHIEN'), '?', '#9b1b30') + lettre(450, 4, tr('NICHE'), '?', '#9b1b30');
+      // Une lettre d'enfant au sceau douteux, et le registre des empreintes
+      f += papier(360, 96, 70, 48, -5, texte(395, 112, tr('LÉA'), { taille: 10, couleur: '#3a2508', police: MONO, gras: true }) + lignes(368, 122, 54, 2, 5) + `<circle cx="416" cy="136" r="8" fill="#9b1b30"/>` + texte(416, 139, '?', { taille: 7, couleur: '#ffe9b0', gras: true }));
+      f += papier(450, 92, 76, 54, 4, texte(488, 104, tr('REGISTRE'), { taille: 7.5, couleur: '#3a2508', police: MONO, gras: true }) +
+        ['876dfb61a5', '9a781fbda9', '6c97cbad8d', 'd8fbe8af7c'].map((e, i) => texte(458, 116 + i * 8, e, { taille: 6, couleur: i === 2 ? '#9b1b30' : '#5a1784', police: MONO, ancre: 'start' })).join(''));
       // La bougie, l'encrier
       f += `<rect x="540" y="118" width="10" height="28" rx="2" fill="#f4ead2"/><rect x="534" y="143" width="22" height="5" rx="2" fill="#c9a35a"/><rect x="336" y="132" width="16" height="14" rx="3" fill="#1b2430"/>`;
       let a = '';
